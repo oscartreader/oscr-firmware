@@ -1,0 +1,89 @@
+## Arduino Mega w/ ATmega2560 (Standard)
+## -------------------------
+mega.menu.cpu.atmega2560s=ATmega2560 (Mega 2560) [Standard]
+
+mega.menu.cpu.atmega2560s.upload.protocol=wiring
+mega.menu.cpu.atmega2560s.upload.maximum_size=253952
+mega.menu.cpu.atmega2560s.upload.speed=115200
+
+mega.menu.cpu.atmega2560s.bootloader.high_fuses=0xD8
+mega.menu.cpu.atmega2560s.bootloader.extended_fuses=0xFD
+mega.menu.cpu.atmega2560s.bootloader.file=stk500v2/stk500boot_v2_mega2560-standard.hex
+
+mega.menu.cpu.atmega2560s.build.mcu=atmega2560
+mega.menu.cpu.atmega2560s.build.board=AVR_MEGA2560
+
+## Arduino Mega w/ ATmega2560 (VSELECT)
+## -------------------------
+mega.menu.cpu.atmega2560v=ATmega2560 (Mega 2560) [VSELECT]
+
+mega.menu.cpu.atmega2560v.upload.protocol=wiring
+mega.menu.cpu.atmega2560v.upload.maximum_size=253952
+mega.menu.cpu.atmega2560v.upload.speed=115200
+
+mega.menu.cpu.atmega2560v.bootloader.high_fuses=0xD8
+mega.menu.cpu.atmega2560v.bootloader.extended_fuses=0xFD
+mega.menu.cpu.atmega2560v.bootloader.file=stk500v2/stk500boot_v2_mega2560-vs.hex
+
+mega.menu.cpu.atmega2560v.build.mcu=atmega2560
+mega.menu.cpu.atmega2560v.build.board=AVR_MEGA2560
+
+## Arduino Mega w/ ATmega2560 (On-Board)
+## -------------------------
+mega.menu.cpu.atmega2560ob=ATmega2560 (Mega 2560) [On-Board]
+
+mega.menu.cpu.atmega2560ob.upload.protocol=wiring
+mega.menu.cpu.atmega2560ob.upload.maximum_size=253952
+mega.menu.cpu.atmega2560ob.upload.speed=115200
+
+mega.menu.cpu.atmega2560ob.bootloader.high_fuses=0xD8
+mega.menu.cpu.atmega2560ob.bootloader.extended_fuses=0xFD
+mega.menu.cpu.atmega2560ob.bootloader.file=stk500v2/stk500boot_v2_mega2560-obm.hex
+
+mega.menu.cpu.atmega2560ob.build.mcu=atmega2560
+mega.menu.cpu.atmega2560ob.build.board=AVR_MEGA2560
+
+## Arduino Mega w/ ATmega2560 (Minimal)
+## -------------------------
+mega.menu.cpu.atmega2560min=ATmega2560 (Mega 2560) [Minimal]
+
+mega.menu.cpu.atmega2560min.upload.protocol=wiring
+mega.menu.cpu.atmega2560min.upload.maximum_size=260096
+mega.menu.cpu.atmega2560min.upload.speed=115200
+
+mega.menu.cpu.atmega2560min.bootloader.high_fuses=0xD8
+mega.menu.cpu.atmega2560min.bootloader.extended_fuses=0xFD
+mega.menu.cpu.atmega2560min.bootloader.file=stk500v2/stk500boot_v2_mega2560-min.hex
+
+mega.menu.cpu.atmega2560min.build.mcu=atmega2560
+mega.menu.cpu.atmega2560min.build.board=AVR_MEGA2560
+
+## Arduino Mega w/ ATmega2560 (Minimal+VSELECT)
+## -------------------------
+mega.menu.cpu.atmega2560mv=ATmega2560 (Mega 2560) [Minimal+VSELECT]
+
+mega.menu.cpu.atmega2560mv.upload.protocol=wiring
+mega.menu.cpu.atmega2560mv.upload.maximum_size=260096
+mega.menu.cpu.atmega2560mv.upload.speed=115200
+
+mega.menu.cpu.atmega2560mv.bootloader.high_fuses=0xD8
+mega.menu.cpu.atmega2560mv.bootloader.extended_fuses=0xFD
+mega.menu.cpu.atmega2560mv.bootloader.file=stk500v2/stk500boot_v2_mega2560-min-vs.hex
+
+mega.menu.cpu.atmega2560mv.build.mcu=atmega2560
+mega.menu.cpu.atmega2560mv.build.board=AVR_MEGA2560
+
+## Arduino Mega w/ ATmega2560 (Minimal On-Board)
+## -------------------------
+mega.menu.cpu.atmega2560mob=ATmega2560 (Mega 2560) [Minimal On-Board]
+
+mega.menu.cpu.atmega2560mob.upload.protocol=wiring
+mega.menu.cpu.atmega2560mob.upload.maximum_size=258048
+mega.menu.cpu.atmega2560mob.upload.speed=115200
+
+mega.menu.cpu.atmega2560mob.bootloader.high_fuses=0xD8
+mega.menu.cpu.atmega2560mob.bootloader.extended_fuses=0xFD
+mega.menu.cpu.atmega2560mob.bootloader.file=stk500v2/stk500boot_v2_mega2560-min-obm.hex
+
+mega.menu.cpu.atmega2560mob.build.mcu=atmega2560
+mega.menu.cpu.atmega2560mob.build.board=AVR_MEGA2560

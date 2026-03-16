@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "new": "cpp",
+        "*.def": "cpp",
+        "chrono": "cpp"
+    },
+    "editor.tabSize": 2
+}
