@@ -826,12 +826,12 @@ namespace OSCR::Cores::GameBoyAdvance
       romRecord = gbaCRDB->record();
       romDetail = romRecord->data();
 
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
       OSCR::Serial::printSync(F("Found ROM: "));
       OSCR::Serial::printLineSync(romDetail->name);
 
       romRecord->debug();
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
 
       // Print current database entry
       OSCR::UI::printLine(romDetail->name);
@@ -1033,7 +1033,7 @@ namespace OSCR::Cores::GameBoyAdvance
   {
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::GameBoyAdvance), FS(OSCR::Strings::Directory::ROM), fileName, FS(OSCR::Strings::FileType::SaveRAM));
 
-    OSCR::UI::printLine(FS(OSCR::Strings::Status::Reading));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
     cartOn();
 
@@ -1065,7 +1065,7 @@ namespace OSCR::Cores::GameBoyAdvance
   {
     OSCR::selectFile(FS(OSCR::Strings::MenuOptions::SelectFile), O_RDONLY);
 
-    OSCR::UI::print(FS(OSCR::Strings::Status::Writing));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Writing));
 
     // Seek to a new position in the file
     if (pos != 0)
@@ -1086,7 +1086,7 @@ namespace OSCR::Cores::GameBoyAdvance
 
     OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
 
-    OSCR::UI::print(FS(OSCR::Strings::Status::Verifying));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Verifying));
 
     OSCR::Storage::Shared::rewind();
 

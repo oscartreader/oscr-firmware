@@ -105,9 +105,9 @@ namespace OSCR::CRDB
 
     if (!file.available())
     {
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
       OSCR::Serial::printLine(F("File not available."));
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
       databaseError();
       return;
     }
@@ -119,12 +119,12 @@ namespace OSCR::CRDB
     readLen = readNum32(&fileHeader);
     if (readLen != 4 || fileHeader != kDatabaseFileHeader)
     {
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
       OSCR::Serial::printLine(F("Header is incorrect."));
       OSCR::Serial::printLine(readLen);
       OSCR::Serial::printLine(fileHeader);
       OSCR::Serial::printLine(kDatabaseFileHeader);
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
       databaseError();
       return;
     }
@@ -132,11 +132,11 @@ namespace OSCR::CRDB
     readLen = readNum16(&fileVersion);
     if (readLen != 2 || fileVersion != kVersion)
     {
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
       OSCR::Serial::printLine(F("Version is incorrect."));
       OSCR::Serial::printLine(readLen);
       OSCR::Serial::printLine(fileVersion);
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
       databaseError();
       return;
     }
@@ -146,11 +146,11 @@ namespace OSCR::CRDB
     readLen = readNum32(&datestamp);
     if (readLen != 4 || datestamp < kDatestampMinimum)
     {
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
       OSCR::Serial::printLine(F("Datestamp is incorrect."));
       OSCR::Serial::printLine(readLen);
       OSCR::Serial::printLine(datestamp);
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
       databaseError();
       return;
     }
@@ -158,11 +158,11 @@ namespace OSCR::CRDB
     readLen = readNum32(&fileRecordSize);
     if (readLen != 4 || fileRecordSize != recordSize)
     {
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
       OSCR::Serial::printLine(F("Record size is incorrect."));
       OSCR::Serial::printLine(readLen);
       OSCR::Serial::printLine(fileRecordSize);
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
       databaseError();
       return;
     }
@@ -173,7 +173,7 @@ namespace OSCR::CRDB
     recordCount = datasize64 / recordSize;
     recordNum = 0;
 
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
     uint32_t datasize = (datasize64 > UINT32_MAX ? UINT32_MAX : datasize64);
 
     OSCR::Serial::printLine(F("Successfully loaded CRDB"));
@@ -184,7 +184,7 @@ namespace OSCR::CRDB
     OSCR::Serial::print(F("- Records: "));
     OSCR::Serial::printLine(recordCount);
     OSCR::Serial::flush();
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
   }
 
   CRDBBase::~CRDBBase()
@@ -296,12 +296,12 @@ namespace OSCR::CRDB
   {
     clearError();
 
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
     OSCR::Serial::printLine(F("<CRDB> Searching..."));
 
     OSCR::Serial::print(F("<CRDB> CRC32 Search: "));
     OSCR::Serial::printLine(idSearch);
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
 
     for (uint_fast32_t i = 0; gotoRecordIndex(i) && file.seekCur(offset); ++i)
     {
@@ -314,18 +314,18 @@ namespace OSCR::CRDB
       {
         loadRecordIndex(i);
 
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
         OSCR::Serial::print(F("<CRDB> "));
         OSCR::Serial::printLine(FS(OSCR::Strings::Common::OK));
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
 
         return true;
       }
     }
 
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
     OSCR::Serial::printLine(F("<CRDB> NOT FOUND"));
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
 
     gotoRecordIndex(0);
     return false;
@@ -360,40 +360,38 @@ namespace OSCR::CRDB
 
     if (crc32ptr == nullptr)
     {
-#if defined(ENABLE_CRDB_DEBUG)
-      OSCR::Serial::print(F("<CRDB> CRC32 File: "));
-      OSCR::Serial::printLine(OSCR::Storage::Shared::sharedFileName);
-      OSCR::Serial::flush();
+#if CRDB_DEBUGGING
+      OSCR::Serial::printSync(F("<CRDB> CRC32 File: "));
+      OSCR::Serial::printLineSync(OSCR::Storage::Shared::sharedFileName);
 #endif
-      *crc32ptr = OSCR::CRC32::current;
+      crc32ptr = &OSCR::CRC32::current;
     }
 
-#if defined(ENABLE_CRDB_DEBUG)
-      OSCR::Serial::print(F("<CRDB> CRC32 Matching: "));
-      OSCR::Serial::printLine(*crc32ptr);
+#if CRDB_DEBUGGING
+      OSCR::Serial::printSync(F("<CRDB> CRC32 Matching: "));
+      OSCR::Serial::printLineSync(*crc32ptr);
 #endif
 
 #if defined(NEEDS_CRDB_ISQUIET)
     if (!isQuiet())
     {
 #endif
-      OSCR::UI::print(*crc32ptr);
-      OSCR::UI::update();
+      OSCR::UI::printSync(*crc32ptr);
 #if defined(NEEDS_CRDB_ISQUIET)
     }
 #endif
 
     bool found = (cmprCRC32(crc32ptr)) || (findRecord(*crc32ptr, dbOffset) && !hasError());
 
-#if defined(ENABLE_CRDB_DEBUG)
-    OSCR::Serial::print(F("<CRDB> Found: "));
-    OSCR::Serial::printLine(getRecordName());
+#if CRDB_DEBUGGING
+    OSCR::Serial::printSync(F("<CRDB> Found: "));
+    OSCR::Serial::printLineSync(getRecordName());
 #endif
 #if defined(NEEDS_CRDB_ISQUIET)
     if (!isQuiet())
     {
 #endif
-      OSCR::UI::print(FS(OSCR::Strings::Symbol::Arrow));
+      OSCR::UI::printSync(FS(OSCR::Strings::Symbol::Arrow));
 #if defined(NEEDS_CRDB_ISQUIET)
     }
 #endif
@@ -451,12 +449,12 @@ namespace OSCR::CRDB
   {
     clearError();
 
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
     OSCR::Serial::printLine(F("<CRDB> Searching..."));
 
     OSCR::Serial::print(F("<CRDB> CRC32 Search: "));
     OSCR::Serial::printLine(crc32search);
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
 
     for (uint_fast32_t i = 0; gotoRecordIndex(i) && file.seekCur(offset); ++i)
     {
@@ -469,18 +467,18 @@ namespace OSCR::CRDB
       {
         loadRecordIndex(i);
 
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
         OSCR::Serial::print(F("<CRDB> "));
         OSCR::Serial::printLine(FS(OSCR::Strings::Common::OK));
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
 
         return true;
       }
     }
 
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
     OSCR::Serial::printLine(F("<CRDB> NOT FOUND"));
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
 
     gotoRecordIndex(0);
     return false;
@@ -490,7 +488,7 @@ namespace OSCR::CRDB
   {
     clearError();
 
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
     OSCR::Serial::printLine(F("<CRDB> Searching..."));
 
     OSCR::Serial::print(F("<CRDB> CRC32 Search[1]: "));
@@ -498,7 +496,7 @@ namespace OSCR::CRDB
 
     OSCR::Serial::print(F("<CRDB> CRC32 Search[2]: "));
     OSCR::Serial::printLine(crc32search2);
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
 
     for (uint_fast32_t i = 0; gotoRecordIndex(i) && file.seekCur(offset); ++i)
     {
@@ -512,18 +510,18 @@ namespace OSCR::CRDB
       {
         loadRecordIndex(i);
 
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
         OSCR::Serial::print(F("<CRDB> "));
         OSCR::Serial::printLine(FS(OSCR::Strings::Common::OK));
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
 
         return true;
       }
     }
 
-#if defined(ENABLE_CRDB_DEBUG)
+#if CRDB_DEBUGGING
     OSCR::Serial::printLine(F("<CRDB> NOT FOUND"));
-#endif /* ENABLE_CRDB_DEBUG */
+#endif /* CRDB_DEBUGGING */
 
     gotoRecordIndex(0);
     return false;

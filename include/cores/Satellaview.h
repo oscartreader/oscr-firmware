@@ -9,7 +9,7 @@
 #   include "common/Types.h"
 
 /**
- * @brief System core for %SNES Satellaview memory packs
+ * @brief System core for %SNES %Satellaview memory packs
  */
 namespace OSCR::Cores::Satellaview
 {

@@ -19,7 +19,7 @@ namespace OSCR::Databases
   public:
     void debug()
     {
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
       OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugROM));
 
       OSCR::Serial::printSync(FS(OSCR::Strings::Labels::NAME));
@@ -38,7 +38,7 @@ namespace OSCR::Databases
       OSCR::Serial::printLineSync(_data.saveType);
 
       OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugEnd));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
     }
   };
 
@@ -55,9 +55,9 @@ namespace OSCR::Databases
       readNum16(&currentRecord->data()->saveType);
       readBytes(&currentRecord->data()->name, 100);
 
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
       OSCR::Serial::printLineSync(currentRecord->data()->name);
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
     }
 
     bool searchRecord(char const * serialSearch, uint16_t startingRecord = 0)
@@ -65,11 +65,11 @@ namespace OSCR::Databases
       constexpr uint8_t const offset = 4;
       clearError();
 
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
       OSCR::Serial::printLineSync(F("<CRDB> Searching..."));
       OSCR::Serial::printSync(F("<CRDB> Serial Search: "));
       OSCR::Serial::printLineSync(serialSearch);
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
 
       for (uint_fast32_t i = startingRecord; gotoRecordIndex(i) && file.seekCur(offset); ++i)
       {
@@ -85,31 +85,31 @@ namespace OSCR::Databases
           (serial[3] == serialSearch[3])
         )
         {
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
           OSCR::Serial::printSync(F("<CRDB> "));
           OSCR::Serial::printLineSync(FS(OSCR::Strings::Common::OK));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
 
           if (!loadRecordIndex(i))
           {
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
             OSCR::Serial::printLineSync(F("<CRDB> Failed to load record!"));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
             error(OSCR::CRDB::ERRORS::E_READ_ERROR);
             return false;
           }
 
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
           OSCR::Serial::printLineSync(F("<CRDB> Loaded record."));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
 
           return true;
         }
       }
 
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
       OSCR::Serial::printLineSync(F("<CRDB> NOT FOUND"));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
 
       gotoRecordIndex(0);
       return false;

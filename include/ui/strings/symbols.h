@@ -22,6 +22,7 @@ namespace OSCR::Strings::Symbol
   constexpr char const PROGMEM MenuSelection[]      = " > ";
   constexpr char const PROGMEM Arrow[]              = " -> ";
   constexpr char const PROGMEM NotEqual[]           = " != ";
+  constexpr char const PROGMEM Colon[]              = ":";
   constexpr char const PROGMEM LabelEnd[]           = ": ";
   constexpr char const PROGMEM FullStop[]           = ".";
   constexpr char const PROGMEM Ellipsis[]           = "...";

@@ -186,6 +186,7 @@ namespace OSCR
       extern char const PROGMEM MenuSelection[];
       extern char const PROGMEM Arrow[];
       extern char const PROGMEM NotEqual[];
+      extern char const PROGMEM Colon[];
       extern char const PROGMEM LabelEnd[];
       extern char const PROGMEM FullStop[];
       extern char const PROGMEM Ellipsis[];

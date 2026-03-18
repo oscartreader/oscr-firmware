@@ -24,7 +24,7 @@ namespace OSCR::Databases
 
     void debug()
     {
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
       OSCR::Serial::printLine(F(" ===== ROM DEBUG INFO ===== "));
 
       OSCR::Serial::print(FS(OSCR::Strings::Labels::NAME));
@@ -46,7 +46,7 @@ namespace OSCR::Databases
       OSCR::Serial::printLine(_data.banks);
 
       OSCR::Serial::printLine(F(" ========================== "));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
     }
   };
 
@@ -70,12 +70,12 @@ namespace OSCR::Databases
       constexpr uint8_t const offset = 4;
       clearError();
 
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
       OSCR::Serial::printLine(F("<CRDB> Searching..."));
       OSCR::Serial::print(F("<CRDB> Checksum Search: "));
       OSCR::Serial::printHex(chksumSearch);
       OSCR::Serial::printLine();
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
 
       for (uint_fast32_t i = startingRecord; gotoRecordIndex(i) && file.seekCur(offset); ++i)
       {
@@ -88,18 +88,18 @@ namespace OSCR::Databases
         {
           loadRecordIndex(i);
 
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
           OSCR::Serial::print(F("<CRDB> "));
           OSCR::Serial::printLine(FS(OSCR::Strings::Common::OK));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
 
           return true;
         }
       }
 
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
       OSCR::Serial::printLine(F("<CRDB> NOT FOUND"));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
 
       gotoRecordIndex(0);
       return false;

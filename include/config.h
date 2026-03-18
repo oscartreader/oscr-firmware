@@ -66,39 +66,66 @@
 
 /****/
 
-#pragma Doxygen
-
-#if !defined(DOXYGEN)
+// Are we running Doxygen?
+#if (!defined(DOXYGEN) && defined(IS_DOXYGEN))
+# error Are you Doxygen or not???
+#elif (defined(DOXYGEN) && !defined(IS_DOXYGEN))
+# define IS_DOXYGEN true
+#elif (!defined(DOXYGEN) && !defined(IS_DOXYGEN))
 # define IS_DOXYGEN false
 #endif
 
-#pragma region Cores
-
 /*==== PREPROCESSOR ===============================================*/
 
+#pragma region Version
+
+//
+// !! Firmware Version
+//
 #define MAJOR_VERSION 20
 #define MINOR_VERSION 0
-#define PATCH_VERSION 0
+#define PATCH_VERSION 1
+//
+//
+//
 
+
+#pragma region PIO Flags
+
+// [Cores] Support using lower-case auto/true/false in platformio.ini
 #define CORE_ENABLE_auto  2
 #define CORE_ENABLE_true  1
 #define CORE_ENABLE_false 0
 
+// [Cores] Support using upper-case auto/true/false in platformio.ini
 #define CORE_ENABLE_AUTO  2
 #define CORE_ENABLE_TRUE  1
 #define CORE_ENABLE_FALSE 0
 
+// [Feature] Do we want power saving?
 #if (defined(WANT_POWERSAVING) && (WANT_POWERSAVING == true))
 #   define ENABLE_POWERSAVING
 #endif
 
+// [Feature] Do we want updater support?
 #if (defined(WANT_UPDATER) && (WANT_UPDATER == true))
 #   define ENABLE_UPDATER
 #endif
 
+// [Feature] Do we want NeoPixel support?
 #if (defined(WANT_NEOPIXEL) && (WANT_NEOPIXEL == true))
 #   define ENABLE_NEOPIXEL
 #endif
+
+// [Feature] Do we want debugging support?
+#if (defined(WANT_DEBUGGING) && (WANT_DEBUGGING == true))
+# define ENABLE_DEBUG
+# define ENABLE_CRDB_DEBUG
+#endif
+
+/* [ PIO Core Flags ----------------------------------------------- ]
+ *  Turn the `CORE_*` flags into `ENABLE_*` flags if enabled.
+ */
 
 #if (CORE_ARC == CORE_ENABLE_TRUE) || ((CORE_ARC == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
 # define ENABLE_ARC
@@ -204,6 +231,10 @@
 # define ENABLE_WONDERSWAN
 #endif
 
+/* [ PIO Core Flags ----------------------------------------------- ]
+ *  Turn the `WANT_*` flags into `ENABLE_*` flags if enabled.
+ */
+
 # if (WANT_VSELECT == true)
 #   define ENABLE_VSELECT
 #endif
@@ -228,6 +259,7 @@
 #   define ENABLE_ONBOARD_ATMEGA
 # endif
 
+// Create the version string
 #define VERSION_STRING NUM2STR(MAJOR_VERSION) "." NUM2STR(MINOR_VERSION) "." NUM2STR(PATCH_VERSION)
 
 #pragma region Dependencies
@@ -253,14 +285,16 @@
 //    but the user didn't neccessarily explicitly ask for it to be
 //    enabled. If only `NEEDS` is defined, the core will not appear
 //    on menus.
-// * `HAS_` should be set and and can be used when there isn't a
-//    difference between the `ENABLE` and `NEEDS` flags.
+// * `HAS_` is set when either of the above are, and should be used
+//    when there isn't a difference between the flags. i.e. at the
+//    top-level of a core you'd check the `HAS_` flag, and for the
+//    menu you'd check the `ENABLE_` flag.
 //
 // TLDR:
-//  When a core can be required by other cores, make sure `HAS_` is
-//  defined below when either `ENABLE_` and/or `NEEDS_` is defined
-//  and then within the core's source, check `ENABLE_*` for menus,
-//  etc., and check `HAS_` for everything else.
+//  When adding a new core, make sure `HAS_` is defined below when
+//  either `ENABLE_` and/or `NEEDS_` is defined and then within the
+//  core's source, check `HAS_` for the entire file and `ENABLE_`
+//  for menus, etc.
 //
 
 /****/
@@ -316,6 +350,13 @@
 /****/
 
 /*==== FINAL PROCESSING & PRESETS =================================*/
+
+/* Firmware updater only works with HW3 and HW5 */
+# if !(HW_VERSION == 5 || HW_VERSION == 3)
+#   undef ENABLE_UPDATER
+# endif
+
+/****/
 
 #pragma region HAS Flags
 
@@ -687,6 +728,7 @@
 #   define HAS_CLOCKGEN_CALIBRATED 0
 # endif
 
+
 /* [ Util: Flags -------------------------------------------------- ]
  */
 
@@ -974,6 +1016,30 @@
 
 # endif /* ENABLE_LCD || ENABLE_OLED*/
 
+/****/
+
+# if (defined(ENABLE_SERIAL_OUTPUT) || defined(ENABLE_UPDATER)) && (OPTION_SERIAL_OUTPUT == SERIAL_ASCII)
+#   define HAS_SERIAL_OUT true
+# else
+#   define HAS_SERIAL_OUT false
+# endif
+
+/****/
+
+# if defined(ENABLE_DEBUG) && (HAS_SERIAL_OUT)
+#   define SERIAL_DEBUGGING true
+# else
+#   define SERIAL_DEBUGGING false
+# endif
+
+# if defined(ENABLE_CRDB_DEBUG) && (HAS_SERIAL_OUT)
+#   define CRDB_DEBUGGING true
+# else
+#   define CRDB_DEBUGGING false
+# endif
+
+/****/
+
 /**
  * [Bankset] Minimum supported banks
  * The minimum that all targets must support. For the board-specific
@@ -1110,13 +1176,6 @@
 #   endif /* OPTION_NEOPIXEL_ORDER */
 
 # endif /* ENABLE_NEOPIXEL */
-
-/****/
-
-/* Firmware updater only works with HW3 and HW5 */
-# if !(HW_VERSION == 5 || HW_VERSION == 3)
-#   undef ENABLE_UPDATER
-# endif
 
 /****/
 

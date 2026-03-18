@@ -609,20 +609,18 @@ namespace OSCR
     {
 #if defined(ENABLE_VSELECT)
       // Nothing
-#elif defined(HW5)
+#elif (HW_VERSION == 5)
       // 3mm LED on D38, front of PCB
       PORTD ^= (1 << 7);
-#elif defined(ENABLE_OLED)
+#elif (HARDWARE_OUTPUT_TYPE == OUTPUT_SSD1306)
       // 5mm LED on D10, above SD slot
       PORTB ^= (1 << 4);
-#elif (HARDWARE_OUTPUT_TYPE == OUTPUT_OS12864)  // HW4
+#elif (HW_VERSION == 4)
       // TX LED on D1, build-in
       PORTE ^= (1 << 1);
-#elif defined(ENABLE_SERIAL)
+#elif (HW_VERSION == 3)
       // 5mm LED on D10, above SD slot (HW3)
       PORTB ^= (1 << 4);  //HW4/HW5 LCD RST connects there now too
-      // 3mm LED on D38, front of PCB (HW5)
-      PORTB ^= (1 << 7);
 #endif
     }
 

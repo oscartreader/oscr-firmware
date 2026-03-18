@@ -6,7 +6,13 @@
 #include "ui.h"
 #include "api/Time.h"
 #include "api/Storage.h"
+#include "apps/Logger.h"
 #include "hardware/outputs/Serial.h"
+
+namespace
+{
+  constexpr char const PROGMEM ThisFilename[] = __FILE_NAME__;
+}
 
 namespace OSCR
 {
@@ -74,14 +80,6 @@ namespace OSCR
       updatedFolderIncrement();
     }
 
-    void __setArrayNull(char target[], size_t length)
-    {
-      for (size_t i = 0; i < length; i++)
-      {
-        target[i] = '\0';
-      }
-    }
-
     bool __allowedSymbol(uint8_t src)
     {
       return (strchr_P(AllowedSymbols, src) != NULL);
@@ -97,7 +95,7 @@ namespace OSCR
       uint8_t const srcLen = strnlen(src, srcMaxLen);
       uint8_t destLen = 0;
 
-      __setArrayNull(dest, destMaxLen);
+      OSCR::Util::setNulls(dest, destMaxLen);
 
       // Scan the string and copy characters as needed
       for (uint8_t i = 0; (i < srcLen) && (destLen < destMaxLen); i++)
@@ -122,7 +120,7 @@ namespace OSCR
       uint8_t const srcLen = strlen_P(src);
       uint8_t destLen = 0;
 
-      __setArrayNull(dest, destMaxLen);
+      OSCR::Util::setNulls(dest, destMaxLen);
 
       // Scan the string and copy characters as needed
       for (uint8_t i = 0; (i < srcLen) && (destLen < destMaxLen); i++)
@@ -422,7 +420,11 @@ namespace OSCR
       // Close the file first to avoid corruption
       file.close();
 
-      if (!hasBuffer()) OSCR::UI::fatalErrorNoBuffer();
+      if (!hasBuffer())
+      {
+        OSCR::UI::fatalErrorNoBuffer();
+      }
+
       OSCR::UI::fatalErrorBufferOverflow();
     }
 
@@ -989,36 +991,70 @@ namespace OSCR
       {
         char fileSfx[8];
 
-        if (!OSCR::Util::copyStrLwr(BUFFN(fileSfx), fileSuffix)) OSCR::UI::fatalErrorBufferOverflow();
+        OSCR::Util::setNulls(BUFFN(fileSfx));
+        OSCR::Util::setNulls(BUFFN(sharedFileName));
+
+        if (!OSCR::Util::copyStrLwr(BUFFN(fileSfx), fileSuffix))
+        {
+          OSCR::debugLine(ThisFilename, __LINE__, OSCR::Strings::Errors::NameOverflow);
+          OSCR::UI::fatalErrorNameOverflow();
+        }
 
         int32_t bufferWritten = snprintf_P(BUFFN(sharedFileName), FilenameTemplate, gameName, fileSfx);
 
-        if ((bufferWritten < 0) || (bufferWritten > sizeof(sharedFileName))) OSCR::UI::fatalErrorBufferOverflow();
+        if ((bufferWritten < 0) || (bufferWritten > kFileNameLength))
+        {
+          OSCR::debugLine(ThisFilename, __LINE__, OSCR::Strings::Errors::NameOverflow);
+          OSCR::UI::fatalErrorNameOverflow();
+        }
       }
 
       void updateName(char const * gameName, __StringHelper const * fileSuffix)
       {
         char fileSfx[8];
 
-        if (!OSCR::Util::copyStrLwr_P(BUFFN(fileSfx), fileSuffix)) OSCR::UI::fatalErrorBufferOverflow();
+        OSCR::Util::setNulls(BUFFN(fileSfx));
+        OSCR::Util::setNulls(BUFFN(sharedFileName));
+
+        if (!OSCR::Util::copyStrLwr_P(BUFFN(fileSfx), fileSuffix))
+        {
+          OSCR::debugLine(ThisFilename, __LINE__, OSCR::Strings::Errors::NameOverflow);
+          OSCR::UI::fatalErrorNameOverflow();
+        }
 
         int32_t bufferWritten = snprintf_P(BUFFN(sharedFileName), FilenameTemplate, gameName, fileSfx);
 
-        if ((bufferWritten < 0) || (bufferWritten > sizeof(sharedFileName))) OSCR::UI::fatalErrorBufferOverflow();
+        if ((bufferWritten < 0) || (bufferWritten > kFileNameLength))
+        {
+          OSCR::debugLine(ThisFilename, __LINE__, OSCR::Strings::Errors::NameOverflow);
+          OSCR::UI::fatalErrorNameOverflow();
+        }
       }
 
       void updateName(char const * gameName, uint16_t fileSuffix)
       {
+        OSCR::Util::setNulls(BUFFN(sharedFileName));
+
         int32_t bufferWritten = snprintf_P(BUFFN(sharedFileName), PSTR("%s.%03" PRIu16), gameName, fileSuffix);
 
-        if ((bufferWritten < 0) || (bufferWritten > sizeof(sharedFileName))) OSCR::UI::fatalErrorBufferOverflow();
+        if ((bufferWritten < 0) || (bufferWritten > kFileNameLength))
+        {
+          OSCR::debugLine(ThisFilename, __LINE__, OSCR::Strings::Errors::NameOverflow);
+          OSCR::UI::fatalErrorNameOverflow();
+        }
       }
 
       void createFolder(char const * system, char const * subfolder, char const * gameName)
       {
         char systemUpr[kMaxNameLength];
 
-        if (!OSCR::Util::copyStrUpr(BUFFN(systemUpr), system)) OSCR::UI::fatalErrorBufferOverflow();
+        OSCR::Util::setNulls(BUFFN(systemUpr));
+
+        if (!OSCR::Util::copyStrUpr(BUFFN(systemUpr), system))
+        {
+          OSCR::debugLine(ThisFilename, __LINE__, OSCR::Strings::Errors::NameOverflow);
+          OSCR::UI::fatalErrorNameOverflow();
+        }
 
         sharedFilePath.cd();
         sharedFilePath.cd(systemUpr);
@@ -1032,7 +1068,13 @@ namespace OSCR
       {
         char systemUpr[kMaxNameLength];
 
-        if (!OSCR::Util::copyStrUpr_P(BUFFN(systemUpr), system)) OSCR::UI::fatalErrorBufferOverflow();
+        OSCR::Util::setNulls(BUFFN(systemUpr));
+
+        if (!OSCR::Util::copyStrUpr_P(BUFFN(systemUpr), system))
+        {
+          OSCR::debugLine(ThisFilename, __LINE__, OSCR::Strings::Errors::NameOverflow);
+          OSCR::UI::fatalErrorNameOverflow();
+        }
 
         sharedFilePath.cd();
         sharedFilePath.cd(systemUpr);
@@ -1057,7 +1099,7 @@ namespace OSCR
 
         createFolder(system, subfolder, gameName);
 
-        updateName(gameName, fileSuffix);
+        updateName(gameName, (fileSuffix == nullptr) ? system : fileSuffix);
 
         openRWC();
       }
@@ -1068,7 +1110,7 @@ namespace OSCR
 
         createFolder(system, subfolder, gameName);
 
-        updateName(gameName, fileSuffix);
+        updateName(gameName, (fileSuffix == nullptr) ? system : fileSuffix);
 
         openRWC();
       }

@@ -129,7 +129,7 @@ void setup()
    * Set LED Pin PD7 to Output
    */
   DDRD |= (1 << 7);
-#else  /* !defined(HW5) && !defined(ENABLE_VSELECT) */
+#else  /* !HW5 && !defined(ENABLE_VSELECT) */
   /**
    * HW1-3 have button connected to PD7
    * Set pin PD7 to input for button

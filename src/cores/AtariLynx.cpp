@@ -148,7 +148,7 @@ namespace OSCR::Cores::AtariLynx
 
   static bool detectCart()
   {
-    OSCR::UI::print(FS(OSCR::Strings::Status::Checking));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Checking));
 
     lynxUseAudin = false;
     lynxBlockSize = 0;

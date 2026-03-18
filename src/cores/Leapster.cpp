@@ -673,15 +673,15 @@ namespace OSCR::Cores::Leapster
 
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::Leapster), FS(OSCR::Strings::Directory::Save), fileName, FS(OSCR::Strings::FileType::SaveFlash));
 
-    OSCR::UI::printLine(FS(OSCR::Strings::Status::Reading));
+    OSCR::UI::ProgressBar::init(0x80000, 1);
+
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
     cartOn();
 
     CE_HIGH;
     OE_LOW;
     FL_CE_LOW;
-
-    OSCR::UI::ProgressBar::init(0x80000);
 
     for (uint32_t address = 0x0; address < 0x80000; address += 512) // 512K
     {
@@ -710,6 +710,8 @@ namespace OSCR::Cores::Leapster
 
     OSCR::Storage::Shared::close();
 
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
+
     OSCR::UI::ProgressBar::finish();
   }
 
@@ -719,7 +721,9 @@ namespace OSCR::Cores::Leapster
 
     printHeader();
 
-    OSCR::UI::printLine(FS(OSCR::Strings::Status::Writing));
+    OSCR::UI::ProgressBar::init(0x80000, 1);
+
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Writing));
 
     cartOn();
 
@@ -731,8 +735,6 @@ namespace OSCR::Cores::Leapster
     statusFLASH();
 
     delay(100); // WORKS ~75 OK
-
-    OSCR::UI::ProgressBar::init(0x80000);
 
     for (uint32_t address = 0x0; address < 0x80000; address += 512) // 512K
     {
@@ -751,6 +753,8 @@ namespace OSCR::Cores::Leapster
     dataIn();
 
     cartOff();
+
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
 
     OSCR::UI::ProgressBar::finish();
 
@@ -1034,13 +1038,13 @@ namespace OSCR::Cores::Leapster
 
     printHeader();
 
-    OSCR::UI::printLine(FS(OSCR::Strings::Status::Writing));
+    OSCR::UI::ProgressBar::init(2048, 1);
+
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Writing));
 
     cartOn();
 
     WP_LOW;
-
-    OSCR::UI::ProgressBar::init(2048);
 
     for (uint16_t currByte = 0; currByte < 2048; currByte += 256)
     {
@@ -1059,9 +1063,11 @@ namespace OSCR::Cores::Leapster
 
     cartOff();
 
-    OSCR::UI::ProgressBar::finish();
-
     OSCR::Storage::Shared::close();
+
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
+
+    OSCR::UI::ProgressBar::finish();
   }
 
   //******************************************

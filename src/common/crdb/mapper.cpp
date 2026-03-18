@@ -148,7 +148,7 @@ namespace OSCR::Databases::Basic
 
   void MapperRecord::debug() const
   {
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
     OSCR::Serial::printLine(FS(OSCR::Strings::Headings::CRDBDebugMapper));
     OSCR::Serial::print(FS(OSCR::Strings::Labels::ID));
     OSCR::Serial::printLine(_data.id);
@@ -163,7 +163,7 @@ namespace OSCR::Databases::Basic
     OSCR::Serial::print(F("Meta2: "));
     OSCR::Serial::printLine(_data.meta2);
     OSCR::Serial::printLine(FS(OSCR::Strings::Headings::CRDBDebugEnd));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
   }
 
   void CRMapperDatabase::nextRecord()

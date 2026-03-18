@@ -4,6 +4,7 @@
  */
 #include "apps/Logger.h"
 #include "common/Configuration.h"
+#include "hardware/outputs/Serial.h"
 
 namespace OSCR
 {
@@ -113,4 +114,31 @@ namespace OSCR
     log(message);
     logLine();
   }
+
+#if (SERIAL_DEBUGGING)
+  void debugLine(char const * const fileName, uint16_t lineNumber)
+  {
+    OSCR::Serial::print(FS(fileName));
+    OSCR::Serial::print(FS(OSCR::Strings::Symbol::Colon));
+    OSCR::Serial::printLineSync(lineNumber);
+  }
+
+  void debugLine(char const * const fileName, uint16_t lineNumber, char const * const message)
+  {
+    OSCR::Serial::print(FS(fileName));
+    OSCR::Serial::print(FS(OSCR::Strings::Symbol::Colon));
+    OSCR::Serial::print(lineNumber);
+    OSCR::Serial::print(FS(OSCR::Strings::Symbol::LabelEnd));
+    OSCR::Serial::printLineSync(FS(message));
+  }
+
+  void debugLine(char const * const fileName, uint16_t lineNumber, __FlashStringHelper const * const message)
+  {
+    OSCR::Serial::print(FS(fileName));
+    OSCR::Serial::print(FS(OSCR::Strings::Symbol::Colon));
+    OSCR::Serial::print(lineNumber);
+    OSCR::Serial::print(FS(OSCR::Strings::Symbol::LabelEnd));
+    OSCR::Serial::printLineSync(message);
+  }
+#endif
 }

@@ -246,8 +246,6 @@ namespace OSCR::Cores::MegaDrive
           OSCR::UI::fatalError(FS(OSCR::Strings::Errors::UnknownType));
         }
 
-        OSCR::UI::printLineSync(FS(OSCR::Strings::Status::Erasing));
-
         eraseFlash();
         resetFlash();
         blankCheck();
@@ -264,8 +262,6 @@ namespace OSCR::Cores::MegaDrive
         resetFlash();
 
         delay(1000);
-
-        OSCR::UI::printLine(FS(OSCR::Strings::Status::Verifying));
 
         verifyFlash();
 
@@ -2193,6 +2189,8 @@ namespace OSCR::Cores::MegaDrive
 
   void eraseFlash()
   {
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Erasing));
+
     // Set data pins to output
     dataOut();
 
@@ -2208,10 +2206,14 @@ namespace OSCR::Cores::MegaDrive
     dataIn();
 
     busyCheck();
+
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
   }
 
   void blankCheck()
   {
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Verifying));
+
     blank = 1;
     for (uint32_t currByte = 0; currByte < flashSize / 2; currByte++)
     {
@@ -2227,6 +2229,8 @@ namespace OSCR::Cores::MegaDrive
       OSCR::UI::error(FS(OSCR::Strings::Common::NotBlank));
       return;
     }
+
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::OK));
   }
 
   void verifyFlash()
@@ -2241,6 +2245,8 @@ namespace OSCR::Cores::MegaDrive
     {
       OSCR::UI::fatalError(FS(OSCR::Strings::Errors::NotLargeEnough));
     }
+
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Verifying));
 
     blank = 0;
 
@@ -2259,13 +2265,16 @@ namespace OSCR::Cores::MegaDrive
       }
     }
 
+    OSCR::Storage::Shared::close();
+
     if (blank != 0)
     {
+      OSCR::UI::printLine(FS(OSCR::Strings::Common::FAIL));
       OSCR::Lang::printErrorVerifyBytes(blank);
+      return;
     }
 
-    // Close the file:
-    OSCR::Storage::Shared::close();
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::OK));
   }
 
   // Delay between write operations based on status register

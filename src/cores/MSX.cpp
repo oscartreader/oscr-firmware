@@ -660,7 +660,8 @@ namespace OSCR::Cores::MSX
   {
     OSCR::UI::print(FS(OSCR::Strings::Common::RAM));
     OSCR::UI::print(FS(OSCR::Strings::Symbol::Space));
-    OSCR::UI::print(FS(OSCR::Strings::Status::Checking));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Checking));
+
     // Test carts to identify SRAM Enable Bits (Bit 5/6/7)
     // Bit 5 Test
     srambit5 = testRAM(0x20, 0xB0);
@@ -682,6 +683,8 @@ namespace OSCR::Cores::MSX
         }
       }
     }
+
+    OSCR::UI::printLineSync(FS(OSCR::Strings::Common::OK));
 
     return true;
   }

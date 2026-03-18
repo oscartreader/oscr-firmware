@@ -19,7 +19,7 @@ namespace OSCR::Databases
   public:
     void debug() const
     {
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
       OSCR::Serial::printLine(F(" ===== ROM DEBUG INFO ===== "));
 
       OSCR::Serial::print(FS(OSCR::Strings::Labels::NAME));
@@ -41,7 +41,7 @@ namespace OSCR::Databases
       OSCR::Serial::printLine(_data.gsize);
 
       OSCR::Serial::printLine(F(" ========================== "));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
     }
   };
 

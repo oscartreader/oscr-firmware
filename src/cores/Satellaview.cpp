@@ -428,12 +428,8 @@ namespace OSCR::Cores::Satellaview
 
     cartOn();
 
-    // Jump ahead
-    OSCR::UI::setLineRel(4);
     // Create the progress bar...
-    OSCR::UI::ProgressBar::init((uint32_t)(0x300000));
-    // Go back
-    OSCR::UI::setLineRel(-4);
+    OSCR::UI::ProgressBar::init((uint32_t)(0x300000), 4);
 
     //Disable 8M memory pack write protection
     writeBank(0x0C, 0x5000, 0x80);  //Modify write enable register
@@ -447,7 +443,7 @@ namespace OSCR::Cores::Satellaview
 
     // Blank check
 
-    OSCR::UI::print(FS(OSCR::Strings::Status::Checking));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Checking));
 
     for (int currBank = 0xC0; currBank < 0xD0; currBank++)
     {

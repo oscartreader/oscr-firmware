@@ -1193,7 +1193,7 @@ namespace OSCR::Cores
 
       OSCR::UI::ProgressBar::init(((uint32_t)romBanks)*16384, 1);
 
-      OSCR::UI::print(FS(OSCR::Strings::Status::Reading));
+      OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
       // M161 banks are double size and start with 0
       if (romType == 0x104)
@@ -1325,7 +1325,7 @@ namespace OSCR::Cores
 
       OSCR::UI::setLineRel(-1);
       OSCR::UI::clearLine();
-      OSCR::UI::print(FS(OSCR::Strings::Status::Checksum));
+      OSCR::UI::printSync(FS(OSCR::Strings::Status::Checksum));
 
       OSCR::Storage::Shared::rewind();
 
@@ -1420,8 +1420,7 @@ namespace OSCR::Cores
 
       OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::GameBoy), FS(OSCR::Strings::Directory::Save), fileName, FS(OSCR::Strings::FileType::Save));
 
-      OSCR::UI::print(FS(OSCR::Strings::Status::Reading));
-      OSCR::UI::update();
+      OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
       cartOn();
 
@@ -1673,7 +1672,7 @@ namespace OSCR::Cores
 
       OSCR::UI::ProgressBar::init(0x108000, 1);
 
-      OSCR::UI::print(FS(OSCR::Strings::Status::Checking));
+      OSCR::UI::printSync(FS(OSCR::Strings::Status::Checking));
 
       cartOn();
 
@@ -1789,7 +1788,7 @@ namespace OSCR::Cores
 
       OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::GameBoy), FS(OSCR::Strings::Directory::Save), fileName, FS(OSCR::Strings::FileType::Save));
 
-      OSCR::UI::print(FS(OSCR::Strings::Status::Reading));
+      OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
       cartOn();
 

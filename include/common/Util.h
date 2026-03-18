@@ -58,6 +58,22 @@ namespace OSCR
     }
 
     /**
+     * Set an array of characters (`char`) to all null.
+     *
+     * @param buffer  The array/buffer.
+     * @param length  Length of the array or amount of nulls to set.
+     */
+    extern void setNulls(char buffer[], size_t length);
+
+    /**
+     * Set an array of bytes (`uint8_t`) to null.
+     *
+     * @param buffer  The array/buffer.
+     * @param length  Length of the array or amount of nulls to set.
+     */
+    extern void setNulls(uint8_t buffer[], size_t length);
+
+    /**
      * Convert a string representation to an integer.
      *
      * @param buffer  The array of characters (string).

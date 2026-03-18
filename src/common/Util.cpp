@@ -97,6 +97,22 @@ namespace OSCR
       return (1 << (4 * n)); // Bit shift for powers of 16.
     }
 
+    void setNulls(char target[], size_t length)
+    {
+      for (size_t i = 0; i < length; i++)
+      {
+        target[i] = '\0';
+      }
+    }
+
+    void setNulls(uint8_t target[], size_t length)
+    {
+      for (size_t i = 0; i < length; i++)
+      {
+        target[i] = 0;
+      }
+    }
+
     uint8_t __getBase(char const buffer[], uint8_t & offset)
     {
       if (buffer[offset] == kAsciiZero)

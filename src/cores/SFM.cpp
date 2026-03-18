@@ -806,7 +806,7 @@ namespace OSCR::Cores::SFM
 
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::SFM), FS(OSCR::Strings::FileType::SFM_NP), fileName, FS(OSCR::Strings::FileType::SNES));
 
-    OSCR::UI::print(FS(OSCR::Strings::Status::Reading));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
     for (uint16_t currBank = startBank; currBank < banks; currBank++)
     {
@@ -823,6 +823,8 @@ namespace OSCR::Cores::SFM
     }
 
     OSCR::Storage::Shared::close();
+
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
   }
 
   /******************************************

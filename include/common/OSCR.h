@@ -87,6 +87,10 @@ namespace OSCR
 # endif
   ;
 
+  __constinit extern uint8_t const kFirmwareVersionMajor;
+  __constinit extern uint8_t const kFirmwareVersionMinor;
+  __constinit extern uint8_t const kFirmwareVersionPatch;
+
   /**
    * @brief String constants
    */

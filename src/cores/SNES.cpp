@@ -470,7 +470,7 @@ namespace OSCR::Cores::SNES
 
         writeSRAM(1);
 
-        OSCR::UI::print(FS(OSCR::Strings::Status::Verifying));
+        OSCR::UI::printSync(FS(OSCR::Strings::Status::Verifying));
 
         writeErrors = verifySRAM();
 
@@ -501,7 +501,7 @@ namespace OSCR::Cores::SNES
 
         writeSRAM(0);
 
-        OSCR::UI::print(FS(OSCR::Strings::Status::Verifying));
+        OSCR::UI::printSync(FS(OSCR::Strings::Status::Verifying));
 
         writeErrors = verifySRAM();
 
@@ -1135,10 +1135,10 @@ namespace OSCR::Cores::SNES
   void checkAltConf(uint16_t chksumSearch, crc32_t & crc32search)
   {
     printHeader();
-    OSCR::UI::printLine(FS(OSCR::Strings::Status::SearchingDatabase));
     OSCR::UI::print(FS(OSCR::Strings::Labels::CHECKSUM));
     OSCR::UI::printHexLine(checksum);
-    OSCR::UI::update();
+
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::SearchingDatabase));
 
     // Iterate over results
     while (snesCRDB->searchRecordNext(chksumSearch))
@@ -1158,7 +1158,6 @@ namespace OSCR::Cores::SNES
       // Some games have the same checksum, so compare CRC32 of header area with database too
       if (crc32search == romDetail->id32)
       {
-        //OSCR::UI::printLine();
         OSCR::UI::printLineSync(FS(OSCR::Strings::Common::OK));
 
         // Game found, check if ROM sizes differ but only change ROM size if non- standard size found in database, else trust the header to be right and the database to be wrong
@@ -1184,16 +1183,12 @@ namespace OSCR::Cores::SNES
         return;
       }
 
-      OSCR::UI::setLineRel(-1);
-      OSCR::UI::clearLine();
+      OSCR::UI::printLine(FS(OSCR::Strings::Common::FAIL));
       OSCR::UI::print(crc32search);
       OSCR::UI::print(FS(OSCR::Strings::Symbol::NotEqual));
       OSCR::UI::printLineSync(romDetail->id32);
 
       delay(1000);
-
-      OSCR::UI::setLineRel(-1);
-      OSCR::UI::clearLine();
     }
   }
 

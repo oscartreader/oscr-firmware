@@ -487,9 +487,9 @@ namespace OSCR::Cores::VirtualBoy
 
     cartOn();
 
-    OSCR::UI::printLine(FS(OSCR::Strings::Status::Reading));
+    OSCR::UI::ProgressBar::init((uint32_t)(cartSize), 1);
 
-    OSCR::UI::ProgressBar::init((uint32_t)(cartSize));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
     // HYPER FIGHTING FIX
     // VIRTUAL BOY ADDRESSING IS TOP DOWN
@@ -519,14 +519,9 @@ namespace OSCR::Cores::VirtualBoy
 
     OSCR::Storage::Shared::close();
 
-    OSCR::UI::ProgressBar::finish();
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
 
-    OSCR::UI::setLineRel(-2);
-    OSCR::UI::clearLine();
-    OSCR::UI::print(FS(OSCR::Strings::Status::Reading));
-    OSCR::UI::print(FS(OSCR::Strings::Common::OK));
-    OSCR::UI::setLineRel(2);
-    OSCR::UI::update();
+    OSCR::UI::ProgressBar::finish();
 
     OSCR::Databases::Basic::matchCRC();
   }
@@ -543,7 +538,7 @@ namespace OSCR::Cores::VirtualBoy
 
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Status::Writing));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Writing));
 
     for (uint32_t addr = 0; addr < sramSize; addr += 512)
     {

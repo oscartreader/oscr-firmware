@@ -630,7 +630,7 @@ namespace OSCR::Cores::CasioLoopy
   {
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Status::Erasing));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Erasing));
 
     dataIn();
     digitalWrite(LOOPY_ROMCE, HIGH);

@@ -110,7 +110,7 @@ namespace OSCR::Cores::SelfTest
     OSCR::UI::printLine(F("Remove all Cartridges"));
     OSCR::UI::printLine(F(" before continuing!"));
 
-#if (defined(HW3) || defined(HW2))
+#if ((HW_VERSION == 3) || (HW_VERSION == 2))
     OSCR::UI::printLine(F("And turn the EEP switch on."));
 #endif
     OSCR::UI::waitButton();

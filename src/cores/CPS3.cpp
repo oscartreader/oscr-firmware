@@ -220,7 +220,7 @@ namespace OSCR::Cores::CPS3
         resetFlash8();
 
         printHeader();
-        OSCR::UI::printLine(FS(OSCR::Strings::Status::Checking));
+        OSCR::UI::printLineSync(FS(OSCR::Strings::Status::Checking));
 
         switch (flashromType)
         {
@@ -879,10 +879,9 @@ namespace OSCR::Cores::CPS3
 
   void blankcheckSIMM2x8()
   {
-    //Initialize progress bar
-    OSCR::UI::ProgressBar::init((uint32_t)(flashSize));
+    OSCR::UI::ProgressBar::init((uint32_t)(flashSize), 1);
 
-    OSCR::UI::printLine(FS(OSCR::Strings::Status::Checking));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Checking));
 
     blank = 1;
 
@@ -911,9 +910,9 @@ namespace OSCR::Cores::CPS3
       OSCR::UI::ProgressBar::advance(512);
     }
 
-    OSCR::UI::ProgressBar::finish();
-
     OSCR::UI::printLine(FS((blank) ? OSCR::Strings::Common::Blank : OSCR::Strings::Common::NotBlank));
+
+    OSCR::UI::ProgressBar::finish();
   }
 
   // From readFlash

@@ -1966,10 +1966,10 @@ namespace OSCR::Cores::Flash
   void blankcheck()
   {
     printHeader();
-    OSCR::UI::printLine(FS(OSCR::Strings::Status::Verifying));
 
-    //Initialize progress bar
-    OSCR::UI::ProgressBar::init((uint32_t)(flashSize));
+    OSCR::UI::ProgressBar::init((uint32_t)(flashSize), 1);
+
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Verifying));
 
     blank = true;
 
@@ -2002,8 +2002,6 @@ namespace OSCR::Cores::Flash
 
     OSCR::UI::ProgressBar::finish();
 
-    printHeader();
-    OSCR::UI::print(FS(OSCR::Strings::Status::Verifying));
     OSCR::UI::printLine(FS((blank) ? OSCR::Strings::Common::OK : OSCR::Strings::Common::FAIL));
   }
 
@@ -2205,7 +2203,7 @@ namespace OSCR::Cores::Flash
   {
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Status::Erasing));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Erasing));
 
     resetFlash16();
 
@@ -2268,7 +2266,7 @@ namespace OSCR::Cores::Flash
 
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::Flash), NULL, "FL", FS(OSCR::Strings::FileType::Raw));
 
-    OSCR::UI::print(FS(OSCR::Strings::Status::Reading));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
     resetFlash16();
 

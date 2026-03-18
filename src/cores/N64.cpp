@@ -1624,7 +1624,7 @@ namespace OSCR::Cores::N64
 
     OSCR::Storage::Shared::rewind();
 
-    OSCR::UI::print(FS(OSCR::Strings::Status::Checking));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Checking));
 
     // Read first 256 byte which contains the header including checksum and reverse checksum and three copies of it
     OSCR::Storage::Shared::sharedFile.read(BUFFN(buf));
@@ -1920,12 +1920,12 @@ namespace OSCR::Cores::N64
     // Loop through file
     if (OSCR::Databases::Extended::matchCRC(&crc1, 4))
     {
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
       OSCR::Serial::print(F("Found ROM: "));
       OSCR::Serial::printLine(romDetail->name);
 
       romRecord->debug();
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
 
       cartSize = romDetail->size;
       saveType = romDetail->mapper;
@@ -2414,7 +2414,7 @@ namespace OSCR::Cores::N64
 
     OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
 
-    OSCR::UI::print(FS(OSCR::Strings::Status::Verifying));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Verifying));
 
     writeErrors = 0;
 

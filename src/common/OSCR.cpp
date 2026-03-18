@@ -47,6 +47,9 @@ uint8_t fakeDDR = 0xFF;
 
 namespace OSCR
 {
+  constexpr uint8_t const kFirmwareVersionMajor = MAJOR_VERSION;
+  constexpr uint8_t const kFirmwareVersionMinor = MINOR_VERSION;
+  constexpr uint8_t const kFirmwareVersionPatch = PATCH_VERSION;
 
 #pragma region Strings
 
@@ -179,15 +182,13 @@ namespace OSCR
     OSCR::UI::print(F("SdFat V"));
     OSCR::UI::printLine(F(SD_FAT_VERSION_STR));
 
-    OSCR::UI::printLine(FS(OSCR::Strings::Status::PressButton));
-    OSCR::UI::update();
+    OSCR::UI::printLineSync(FS(OSCR::Strings::Status::PressButton));
 
     // if the confirm button is held
     if (OSCR::UI::waitInput() == OSCR::UI::UserInput::kUserInputConfirmLong)
     {
       OSCR::UI::clear();
-      OSCR::UI::printLine(F("Resetting folder..."));
-      OSCR::UI::update();
+      OSCR::UI::printLineSync(F("Resetting folder..."));
 
       delay(2000);
 

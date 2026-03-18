@@ -324,12 +324,12 @@ namespace OSCR::Cores::NES
 
     setOutName(BUFFN(romDetail->name));
 
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
     OSCR::Serial::print(FS(OSCR::Strings::Labels::Selected));
     OSCR::Serial::printLine(romDetail->name);
 
     romRecord->debug();
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
   }
 
 # if HAS_FLASH
@@ -511,19 +511,19 @@ namespace OSCR::Cores::NES
 
           OSCR::UI::printLine(romDetail->name);
 
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
           OSCR::Serial::print(F("Found ROM: "));
           OSCR::Serial::printLine(romDetail->name);
 
           romRecord->debug();
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
         }
         else
         {
           // File searched until end but nothing found
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
           OSCR::Serial::printLine(FS(OSCR::Strings::Errors::NotFoundDB));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
           OSCR::UI::printLine(FS(OSCR::Strings::Errors::NotFoundDB));
 
           useDefaultName();
@@ -531,9 +531,9 @@ namespace OSCR::Cores::NES
       }
       else
       {
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
         OSCR::Serial::printLine(FS(OSCR::Strings::Errors::NotFoundDB));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
       }
     }
 

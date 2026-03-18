@@ -18,7 +18,7 @@ namespace OSCR::Databases::Basic
 
   void BasicRecord::debug()
   {
-#   if defined(ENABLE_CRDB_DEBUG)
+#   if CRDB_DEBUGGING
     OSCR::Serial::printLine(F(" ===== ROM DEBUG INFO ===== "));
 
     OSCR::Serial::print(FS(OSCR::Strings::Labels::NAME));
@@ -28,7 +28,7 @@ namespace OSCR::Databases::Basic
     OSCR::Serial::printLine(_data.crc32);
 
     OSCR::Serial::printLine(F(" ========================== "));
-#   endif /* ENABLE_CRDB_DEBUG */
+#   endif /* CRDB_DEBUGGING */
   }
 
   void CRDatabase::nextRecord()

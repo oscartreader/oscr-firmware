@@ -504,10 +504,7 @@ namespace OSCR
     {
       OSCR::Power::disableCartridge();
 
-      OSCR::UI::printLine();
-      OSCR::UI::printLine(FS(OSCR::Strings::Status::PressButton));
-
-      OSCR::UI::wait();
+      waitButton();
 
       resetArduino();
     }
@@ -541,7 +538,7 @@ namespace OSCR
 
     void waitButton()
     {
-      OSCR::UI::printLine(FS(OSCR::Strings::Status::PressButton));
+      OSCR::UI::printLineSync(FS(OSCR::Strings::Status::PressButton));
       wait();
     }
 

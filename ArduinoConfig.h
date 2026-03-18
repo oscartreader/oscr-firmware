@@ -598,6 +598,14 @@
 
 /****/
 
+/* [ Debugging ---------------------------------------------------- ]
+ *  Enable via serial. Cannot be used with ANSI serial.
+ */
+
+//#define ENABLE_DEBUG
+
+/****/
+
 /* [ CRDB Debugging ----------------------------------------------- ]
  *  Enable debugging the CRDB format. This will output additional
  *  information via %Serial.
@@ -659,8 +667,7 @@
  *  Decide the behavior of the color of the LCD's rotary knob.
  *
  *  Options:
- *    0: Original behavior [default]
- *    1: Use notif/error colors, otherwise BG color.
+ *    1: Use notif/error colors, otherwise BG color. [default]
  *    2: Always BG color
  */
 
@@ -674,10 +681,10 @@
  *  Options:
  *    LCD_MKS:      MKS MINI 12864 [default]
  *    LCD_BTT:      BTT MINI 12864
- *    LCD_SSRETRO:  StarshadeRETRO OSCR 12864
+ *    LCD_SSRETRO:  StarshadeRETRO OSCR 12864 (internally the same as LCD_BTT)
  */
 
-#define OPTION_LCD_TYPE LCD_MKS
+#define OPTION_LCD_TYPE LCD_SSRETRO
 
 /****/
 
@@ -804,16 +811,19 @@
  */
 
 // == SMS Adapters
-// -  0     Show all SMS adapters [default]
-// -  1     Raphnet
-// -  2     Retrode
-// -  3     Retron3in1
+// - SMSOPT_SMS_ADAPTER_ALL     : Show all SMS adapters [default for HW <= 3]
+// - SMSOPT_SMS_ADAPTER_RAPHNET : Reaphnet adapter [default for HW >= 4]
+// - SMSOPT_SMS_ADAPTER_HW5     : OSCR six-slot top-PCB. Internally the same as RAPHNET.
+// - SMSOPT_SMS_ADAPTER_RETRODE : Retrode adapter
+// - SMSOPT_SMS_ADAPTER_RETRON  : Retron3in1 adapter
 //#define OPTION_SMS_ADAPTER SMSOPT_SMS_ADAPTER_ALL
 
 // == GG Adapters
-// -  0     Show all GG adapters [default]
-// -  1     Retrode
-// -  2     Retron3in1
+// - SMSOPT_GG_ADAPTER_ALL        : Show all GG adapters [default for HW < 5]
+// - SMSOPT_GG_ADAPTER_RETRODE    : Retrode adapter
+// - SMSOPT_GG_ADAPTER_RETRON     : Retron3in1 adapter [default for HW 5]
+// - SMSOPT_GG_ADAPTER_HW5        : OSCR seven-slot top-PCB. Internally the same as RETRON.
+// - SMSOPT_GG_ADAPTER_STARSHADE  : StarshadeRETRO SMS-to-GG adapter. Internally the same as RETRON.
 //#define OPTION_GG_ADAPTER SMSOPT_GG_ADAPTER_ALL
 
 // == SG-1000 Adapters
@@ -858,7 +868,7 @@
 //
 //
 
-#define UPD_BAUD 5600
+#define UPD_BAUD 9600
 
 #if (HW_VERSION == 5)
 
