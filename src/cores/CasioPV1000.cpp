@@ -274,8 +274,7 @@ namespace OSCR::Cores::CasioPV1000
 
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(PV1000[romSize] * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, PV1000[romSize] * 1024);
   }
 
   //******************************************

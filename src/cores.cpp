@@ -168,9 +168,9 @@ namespace OSCR::Menus
     },
 # endif
 
-# if defined(ENABLE_SUPRACAN)
+# if defined(ENABLE_SUPERACAN)
     {
-      .id = CoreID::SUPRACAN,
+      .id = CoreID::SUPERACAN,
       .title = OSCR::Strings::Cores::SuperAcan,
       .menu = &OSCR::Cores::SuperAcan::menu,
     },

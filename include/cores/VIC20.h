@@ -11,7 +11,7 @@
 /**
  * @brief System core for the Commodore VIC-20
  */
-namespace VIC20
+namespace OSCR::Cores::VIC20
 {
   void menu();
 

@@ -303,8 +303,8 @@ namespace OSCR::Cores::Vectrex
     romSize = OSCR::UI::menu(FS(OSCR::Strings::Headings::SelectCartSize), FS(OSCR::Strings::Templates::SizeKB), romSizes, sizeofarray(romSizes));
 
     printHeader();
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(romSizes[romSize] * 1024);
+
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, romSizes[romSize] * 1024);
   }
 
   //******************************************

@@ -80,7 +80,7 @@ namespace OSCR
     ODY2,
     ARC,
     FAIRCHILD,
-    SUPRACAN,
+    SUPERACAN,
     MSX,
     POKE,
     LOOPY,

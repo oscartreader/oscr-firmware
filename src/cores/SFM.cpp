@@ -647,32 +647,20 @@ namespace OSCR::Cores::SFM
       OSCR::UI::waitButton();
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-    OSCR::UI::printLine(fileName);
-    OSCR::UI::printLine();
+    OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
 
-    OSCR::UI::print(F("Version: 1."));
-    OSCR::UI::printLine(romVersion);
+    OSCR::UI::printValue(OSCR::Strings::Common::Revision, romVersion);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::CHECKSUM));
+    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
     OSCR::UI::printHexLine(checksum);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-    OSCR::Lang::printBytesLine(romSize * 1024 * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, romSize * 1024 * 1024);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::TYPE));
-    if (romType == 1)
-      OSCR::UI::printLine(F("HiROM"));
-    else if (romType == 0)
-      OSCR::UI::printLine(F("LoROM"));
-    else
-      OSCR::UI::printLine(romType);
+    OSCR::UI::printType_P(OSCR::Strings::Common::Cart, romType ? OSCR::Strings::SNES::HiROM : OSCR::Strings::SNES::LoROM);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::BANKS));
-    OSCR::UI::printLine(numBanks);
+    OSCR::UI::printValue(OSCR::Strings::Common::Banks, numBanks);
 
-    OSCR::UI::print(F("Sram: "));
-    OSCR::Lang::printBytesLine(sramSize * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::RAM, sramSize * 1024);
 
     OSCR::UI::waitButton();
   }
@@ -864,7 +852,7 @@ namespace OSCR::Cores::SFM
     {
       cartOff();
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+      OSCR::UI::printLabel(OSCR::Strings::Common::ID);
       OSCR::UI::printHexLine(flashid);
 
       OSCR::UI::error(FS(OSCR::Strings::Errors::InvalidType));

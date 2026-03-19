@@ -132,6 +132,155 @@ namespace OSCR
       return bufferStr;
     }
 
+    char const * formatLabel(char const * label)
+    {
+      snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::LabelP, label);
+
+      return bufferStr;
+    }
+
+
+    char const * formatLabel(char const * label, char const * value)
+    {
+      snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::LabelPValue, label, value);
+
+      return bufferStr;
+    }
+
+    char const * formatLabel_P(char const * label, char const * value)
+    {
+      snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::LabelPValueP, label, value);
+
+      return bufferStr;
+    }
+
+    char const * formatType(char const * label)
+    {
+      snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::TypePValue, label, OSCR::Strings::Symbol::Empty);
+
+      return bufferStr;
+    }
+
+    char const * formatType(char const * label, char const * value)
+    {
+      snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::TypePValue, label, value);
+
+      return bufferStr;
+    }
+
+    char const * formatType_P(char const * label, char const * value)
+    {
+      snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::TypePValueP, label, value);
+
+      return bufferStr;
+    }
+
+    // flash pointer + SRAM number
+    template <typename T,
+              OSCR::Util::enable_if_t<OSCR::Util::is_integer<T>::value, bool> Enable>
+    char const * formatType(char const * label, T number)
+    {
+      if __if_constexpr (OSCR::Util::is_unsigned_v<T>)
+      {
+        snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::TypePValueU32, label, (uint32_t)number);
+      }
+      else
+      {
+        snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::TypePValueD32, label, (int32_t)number);
+      }
+
+      return bufferStr;
+    }
+
+    char const * formatSize_P(char const * label, char const * value)
+    {
+      snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::SizePValueP, label, value);
+
+      return bufferStr;
+    }
+
+    // flash pointer + SRAM number
+    template <typename T,
+              OSCR::Util::enable_if_t<OSCR::Util::is_integer<T>::value, bool> Enable>
+    char const * formatLabel(char const * label, T number)
+    {
+      if __if_constexpr (OSCR::Util::is_unsigned_v<T>)
+      {
+        snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::LabelPValueU32, label, (uint32_t)number);
+      }
+      else
+      {
+        snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::LabelPValueD32, label, (int32_t)number);
+      }
+
+      return bufferStr;
+    }
+
+    // flash pointer + SRAM number + SRAM number
+    template <typename T,
+              OSCR::Util::enable_if_t<OSCR::Util::is_integer<T>::value, bool> Enable>
+    char const * formatLabel(char const * label, T number, T total)
+    {
+      if __if_constexpr (OSCR::Util::is_unsigned_v<T>)
+      {
+        snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::LabelPValuesU32, label, (uint32_t)number, (uint32_t)total);
+      }
+      else
+      {
+        snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::LabelPValuesD32, label, (int32_t)number, (int32_t)total);
+      }
+
+      return bufferStr;
+    }
+
+    char const * formatLabelSize(char const * label, uint32_t size, bool isBytes)
+    {
+      uint8_t const offset = (label == nullptr) ? 3 : 0;
+      DataSize myLabel = {
+        size: size,
+        isBytes: isBytes,
+      };
+
+      updateDataSize(myLabel);
+
+      snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::SizeLabelFormat + offset, label, myLabel.formatSize, myLabel.unit);
+
+      return bufferStr;
+    }
+
+    //__AVR__NEVER_INLINE__
+    void updateDataSize(DataSize & dataSize)
+    {
+      if ((dataSize.size >= sizeGiga) && ((dataSize.size % sizeGiga) == 0)) // G (lol)
+      {
+        dataSize.unit = DataSizeUnit::Giga;
+        dataSize.format = ((dataSize.isBytes) ? OSCR::Strings::Templates::SizeGB : OSCR::Strings::Templates::SizeG);
+        dataSize.formatSize = dataSize.size / sizeGiga;
+        dataSize.formatUnit = ((dataSize.isBytes) ? OSCR::Strings::Units::GB : OSCR::Strings::Units::G);
+      }
+      else if ((dataSize.size >= sizeMega) && ((dataSize.size % sizeMega) == 0)) // M
+      {
+        dataSize.unit = DataSizeUnit::Mega;
+        dataSize.format = ((dataSize.isBytes) ? OSCR::Strings::Templates::SizeMB : OSCR::Strings::Templates::SizeM);
+        dataSize.formatSize = dataSize.size / sizeMega;
+        dataSize.formatUnit = ((dataSize.isBytes) ? OSCR::Strings::Units::MB : OSCR::Strings::Units::M);
+      }
+      else if ((dataSize.size >= sizeKilo) && ((dataSize.size % sizeKilo) == 0)) // K
+      {
+        dataSize.unit = DataSizeUnit::Kilo;
+        dataSize.format = ((dataSize.isBytes) ? OSCR::Strings::Templates::SizeKB : OSCR::Strings::Templates::SizeK);
+        dataSize.formatSize = dataSize.size / sizeKilo;
+        dataSize.formatUnit = ((dataSize.isBytes) ? OSCR::Strings::Units::KB : OSCR::Strings::Units::K);
+      }
+      else
+      {
+        dataSize.unit = DataSizeUnit::Base;
+        dataSize.format = ((dataSize.isBytes) ? OSCR::Strings::Templates::SizeBytes : OSCR::Strings::Templates::SizeBits);
+        dataSize.formatSize = dataSize.size;
+        dataSize.formatUnit = ((dataSize.isBytes) ? OSCR::Strings::Units::B : OSCR::Strings::Units::b);
+      }
+    }
+
     void printUpper(char const * str)
     {
       OSCR::Util::copyStrUpr(bufferStr, sizeof(bufferStr), str);
@@ -189,29 +338,14 @@ namespace OSCR
 
     void __printBitsBytes(uint32_t bitsBytes, bool isBytes)
     {
-      char const * flashTemplate;
+      DataSize dataSize = {
+        size: bitsBytes,
+        isBytes: isBytes,
+      };
 
-      if ((bitsBytes >= sizeGiga) && ((bitsBytes % sizeGiga) == 0)) // G (lol)
-      {
-        bitsBytes = bitsBytes / sizeGiga;
-        flashTemplate = ((isBytes) ? OSCR::Strings::Templates::SizeGB : OSCR::Strings::Templates::SizeG);
-      }
-      else if ((bitsBytes >= sizeMega) && ((bitsBytes % sizeMega) == 0)) // M
-      {
-        bitsBytes = bitsBytes / sizeMega;
-        flashTemplate = ((isBytes) ? OSCR::Strings::Templates::SizeMB : OSCR::Strings::Templates::SizeM);
-      }
-      else if ((bitsBytes >= sizeKilo) && ((bitsBytes % sizeKilo) == 0)) // K
-      {
-        bitsBytes = bitsBytes / sizeKilo;
-        flashTemplate = ((isBytes) ? OSCR::Strings::Templates::SizeKB : OSCR::Strings::Templates::SizeK);
-      }
-      else
-      {
-        flashTemplate = ((isBytes) ? OSCR::Strings::Templates::SizeBytes : OSCR::Strings::Templates::SizeBits);
-      }
+      updateDataSize(dataSize);
 
-      applyTemplate_P(bufferStr, flashBufferStrSize, flashTemplate, bitsBytes);
+      applyTemplate_P(bufferStr, flashBufferStrSize, dataSize.format, dataSize.formatSize);
 
       OSCR::UI::print(bufferStr);
     }
@@ -246,3 +380,24 @@ namespace OSCR
     }
   }
 }
+
+template char const * OSCR::Lang::formatLabel(char const * label, int8_t number);
+template char const * OSCR::Lang::formatLabel(char const * label, uint8_t number);
+template char const * OSCR::Lang::formatLabel(char const * label, int16_t number);
+template char const * OSCR::Lang::formatLabel(char const * label, uint16_t number);
+template char const * OSCR::Lang::formatLabel(char const * label, int32_t number);
+template char const * OSCR::Lang::formatLabel(char const * label, uint32_t number);
+
+template char const * OSCR::Lang::formatLabel(char const * label, int8_t number, int8_t total);
+template char const * OSCR::Lang::formatLabel(char const * label, uint8_t number, uint8_t total);
+template char const * OSCR::Lang::formatLabel(char const * label, int16_t number, int16_t total);
+template char const * OSCR::Lang::formatLabel(char const * label, uint16_t number, uint16_t total);
+template char const * OSCR::Lang::formatLabel(char const * label, int32_t number, int32_t total);
+template char const * OSCR::Lang::formatLabel(char const * label, uint32_t number, uint32_t total);
+
+template char const * OSCR::Lang::formatType(char const * label, int8_t number);
+template char const * OSCR::Lang::formatType(char const * label, uint8_t number);
+template char const * OSCR::Lang::formatType(char const * label, int16_t number);
+template char const * OSCR::Lang::formatType(char const * label, uint16_t number);
+template char const * OSCR::Lang::formatType(char const * label, int32_t number);
+template char const * OSCR::Lang::formatType(char const * label, uint32_t number);

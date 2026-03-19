@@ -6,6 +6,7 @@
 #if HAS_GBX
 # include "cores/include.h"
 # include "cores/GameBoyMem.h"
+# include "cores/Flash.h"
 
 namespace OSCR::Cores::GameBoyMem
 {
@@ -447,7 +448,7 @@ namespace OSCR::Cores::GameBoyMem
     flashid = readByte(0) << 8;
     flashid |= readByte(1);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+    OSCR::UI::printLabel(OSCR::Strings::Common::ID);
     OSCR::UI::printHexLine(flashid);
 
     resetFlash();

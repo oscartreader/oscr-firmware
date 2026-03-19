@@ -460,16 +460,13 @@ namespace OSCR::Cores::VirtualBoy
   {
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-    OSCR::UI::printLine(fileName);
+    OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-    OSCR::Lang::printBytesLine(cartSize * 8);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, cartSize * 8);
 
     if (sramSize)
     {
-      OSCR::UI::print(FS(OSCR::Strings::Labels::SAVE_SIZE));
-      OSCR::Lang::printBytesLine(sramSize * 8);
+      OSCR::UI::printSize(OSCR::Strings::Common::Save, sramSize * 8);
     }
 
     OSCR::UI::waitButton();

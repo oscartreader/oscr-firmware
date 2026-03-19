@@ -2559,7 +2559,7 @@ PREDEFINED             = DOXYGEN=1 \
                          ENABLE_ODY2 \
                          ENABLE_ARC \
                          ENABLE_FAIRCHILD \
-                         ENABLE_SUPRACAN \
+                         ENABLE_SUPERACAN \
                          ENABLE_MSX \
                          ENABLE_POKE \
                          ENABLE_LOOPY \

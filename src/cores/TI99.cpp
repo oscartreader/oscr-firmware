@@ -647,15 +647,12 @@ namespace OSCR::Cores::TI99
   {
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::MAPPER));
-    OSCR::UI::printLine(mapperDetail->name);
+    OSCR::UI::printValue(OSCR::Strings::Common::Mapper, mapperDetail->name);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(romSizes[romSize] * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, romSizes[romSize] * 1024);
 
     OSCR::UI::print(F("G"));
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(gromSizes[gromSize] * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, gromSizes[gromSize] * 1024);
 
     for (uint8_t i = 3; i < 8; i++)
     {

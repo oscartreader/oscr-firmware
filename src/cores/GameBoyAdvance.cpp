@@ -5,6 +5,7 @@
 
 #if HAS_GBX
 # include "cores/include.h"
+# include "cores/GameBoy.h"
 # include "cores/GameBoyAdvance.h"
 # include "cores/Flash.h"
 
@@ -177,23 +178,23 @@ namespace OSCR::Cores::GameBoyAdvance
 
           if (flashid == 0x1F3D)
           {
-            printFlashTypeAndWait(F("Atmel AT29LV512"));
+            printFlashTypeAndWait(PSTR("Atmel AT29LV512"));
           }
           else if (flashid == 0xBFD4)
           {
-            printFlashTypeAndWait(F("SST 39VF512"));
+            printFlashTypeAndWait(PSTR("SST 39VF512"));
           }
           else if (flashid == 0xC21C)
           {
-            printFlashTypeAndWait(F("Macronix MX29L512"));
+            printFlashTypeAndWait(PSTR("Macronix MX29L512"));
           }
           else if (flashid == 0x321B)
           {
-            printFlashTypeAndWait(F("Panasonic MN63F805MNP"));
+            printFlashTypeAndWait(PSTR("Panasonic MN63F805MNP"));
           }
           else
           {
-            printFlashTypeAndWait(FS(OSCR::Strings::Common::Unknown));
+            printFlashTypeAndWait(OSCR::Strings::Common::Unknown);
           }
 
           if (flashid == 0x1F3D) // Atmel
@@ -222,15 +223,15 @@ namespace OSCR::Cores::GameBoyAdvance
 
           if (flashid == 0xC209)
           {
-            printFlashTypeAndWait(F("Macronix MX29L010"));
+            printFlashTypeAndWait(PSTR("Macronix MX29L010"));
           }
           else if (flashid == 0x6213)
           {
-            printFlashTypeAndWait(F("SANYO LE26FV10N1TS"));
+            printFlashTypeAndWait(PSTR("SANYO LE26FV10N1TS"));
           }
           else
           {
-            printFlashTypeAndWait(FS(OSCR::Strings::Common::Unknown));
+            printFlashTypeAndWait(OSCR::Strings::Common::Unknown);
           }
 
           eraseFlash();
@@ -403,56 +404,47 @@ namespace OSCR::Cores::GameBoyAdvance
   {
     // Print start page
     printHeader();
-    OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-    OSCR::UI::printLine(fileName);
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
-    OSCR::UI::printLine(cartID);
-    OSCR::UI::print(FS(OSCR::Strings::Labels::REVISION));
-    OSCR::UI::printLine(romVersion);
+    OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
+    OSCR::UI::printValue(OSCR::Strings::Common::ID, cartID);
+    OSCR::UI::printValue(OSCR::Strings::Common::Revision, romVersion);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-
-    if (cartSize == 0)
+    if (cartSize != 0)
     {
-      OSCR::UI::printLine(FS(OSCR::Strings::Common::Unknown));
-    }
-    else
-    {
-      OSCR::Lang::printBytesLine(cartSize * 1024 * 1024);
+      OSCR::UI::printSize(OSCR::Strings::Common::ROM, cartSize * 1024 * 1024);
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Common::Save));
-    OSCR::UI::print(FS(OSCR::Strings::Symbol::Space));
-    OSCR::UI::print(FS(OSCR::Strings::Labels::TYPE));
+    char const * saveTypeFSTR;
 
     switch (saveType)
     {
-    case 0:
-      OSCR::UI::printLine(FS(OSCR::Strings::Common::None));
-      break;
-
     case 1:
-      OSCR::UI::printLine(FS(GBASaveItem1));
+      saveTypeFSTR = GBASaveItem1;
       break;
 
     case 2:
-      OSCR::UI::printLine(FS(GBASaveItem2));
+      saveTypeFSTR = GBASaveItem2;
       break;
 
     case 3:
-      OSCR::UI::printLine(FS(GBASaveItem3));
+      saveTypeFSTR = GBASaveItem3;
       break;
 
     case 4:
-      OSCR::UI::printLine(FS(GBASaveItem4));
+      saveTypeFSTR = GBASaveItem4;
       break;
 
     case 5:
-      OSCR::UI::printLine(FS(GBASaveItem5));
+      saveTypeFSTR = GBASaveItem5;
+      break;
+
+    default:
+      saveTypeFSTR = OSCR::Strings::Common::None;
       break;
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::CHK));
+    OSCR::UI::printType_P(OSCR::Strings::Common::Save, saveTypeFSTR);
+
+    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
     OSCR::UI::printHexLine(checksum);
 
     OSCR::UI::waitButton();
@@ -484,14 +476,12 @@ namespace OSCR::Cores::GameBoyAdvance
     return saveType;
   }
 
-  void printFlashTypeAndWait(__FlashStringHelper const * caption)
+  void printFlashTypeAndWait(char const * caption)
   {
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+    OSCR::UI::printLabel(OSCR::Strings::Common::ID);
     OSCR::UI::printHexLine(flashid);
-    OSCR::UI::printLine();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::TYPE));
-    OSCR::UI::printLine(caption);
+    OSCR::UI::printType_P(OSCR::Strings::Common::Flash, caption);
 
     OSCR::UI::waitButton();
   }
@@ -836,14 +826,11 @@ namespace OSCR::Cores::GameBoyAdvance
       // Print current database entry
       OSCR::UI::printLine(romDetail->name);
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
-      OSCR::UI::printLine(romDetail->serial);
+      OSCR::UI::printValue(OSCR::Strings::Common::ID, romDetail->serial);
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-      OSCR::Lang::printBytesLine(((uint32_t)romDetail->size) * 1024 * 1024);
+      OSCR::UI::printSize(OSCR::Strings::Common::ROM, ((uint32_t)romDetail->size) * 1024 * 1024);
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::SAVE_TYPE));
-      OSCR::UI::printLine(romDetail->saveType);
+      OSCR::UI::printType(OSCR::Strings::Common::Save, romDetail->saveType);
 
       switch (OSCR::UI::waitInput())
       {
@@ -884,7 +871,7 @@ namespace OSCR::Cores::GameBoyAdvance
     {
       printHeader();
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::CHECKSUM));
+      OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
       OSCR::UI::printHexLine(checksum);
       OSCR::UI::error(FS(OSCR::Strings::Errors::IncorrectChecksum));
     }
@@ -996,18 +983,17 @@ namespace OSCR::Cores::GameBoyAdvance
   // Calculate the checksum of the dumped rom
   bool compare_checksum()
   {
-    OSCR::UI::printSync(FS(OSCR::Strings::Labels::CHECKSUM));
+    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
 
-    // If file exists
     OSCR::Storage::Shared::openRO();
 
-    // Read rom header
     OSCR::Storage::Shared::readBuffer();
 
     OSCR::Storage::Shared::close();
 
     // Calculate Checksum
     uint8_t calcChecksum = checksumHeader(OSCR::Storage::Shared::buffer);
+
     OSCR::UI::printHex(calcChecksum);
 
     if (calcChecksum == checksum)
@@ -2176,7 +2162,7 @@ namespace OSCR::Cores::GameBoyAdvance
       {
         OSCR::UI::printFatalErrorHeader(FS(OSCR::Strings::Headings::CartridgeError));
 
-        OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+        OSCR::UI::printLabel(OSCR::Strings::Common::ID);
         OSCR::UI::printHexLine(flashid);
 
         OSCR::UI::fatalError(FS(OSCR::Strings::Errors::UnknownType));
@@ -2633,14 +2619,11 @@ namespace OSCR::Cores::GameBoyAdvance
 
     if (option)
     {
-      OSCR::UI::print(F("Block Number: "));
-      OSCR::UI::printLineSync(blockNumber);
+      OSCR::UI::printValue(OSCR::Strings::Common::Block, blockNumber);
     }
     else
     {
-      OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::UI::print(blockNumber);
-      OSCR::UI::printLineSync(FS(OSCR::Strings::Units::MB));
+      OSCR::UI::printSize(OSCR::Strings::Common::Block, blockNumber * 1024 * 1024);
     }
 
     delay(200);
@@ -2859,11 +2842,10 @@ namespace OSCR::Cores::GameBoyAdvance
     {
       uint8_t blockNum = 0;
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+      OSCR::UI::printLabel(OSCR::Strings::Common::ID);
       OSCR::UI::printHexLine(flashid);
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::Lang::printBytesLine(cartSize);
+      OSCR::UI::printSize(OSCR::Strings::Common::Flash, cartSize);
 
       // MX29GL128E or MSP55LV128(N)
       if (flashid == 0x227E)
@@ -2887,7 +2869,7 @@ namespace OSCR::Cores::GameBoyAdvance
         }
         else
         {
-          OSCR::UI::print(FS(OSCR::Strings::Labels::TYPE));
+          OSCR::UI::printType(OSCR::Strings::Common::Flash);
           OSCR::UI::printHexLine(romType);
           OSCR::UI::fatalError(FS(OSCR::Strings::Errors::UnknownType));
         }
@@ -2914,9 +2896,7 @@ namespace OSCR::Cores::GameBoyAdvance
       // Get rom size from file
       fileSize = OSCR::Storage::Shared::getSize();
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::Lang::printBytesLine(fileSize);
-
+      OSCR::UI::printSize(OSCR::Strings::Common::ROM, fileSize);
 
       // Erase needed sectors
       if (flashid == 0x8802)
@@ -3040,7 +3020,7 @@ namespace OSCR::Cores::GameBoyAdvance
     }
     else
     {
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+      OSCR::UI::print(OSCR::Strings::Common::ID);
       OSCR::UI::printHexLine(flashid);
 
       OSCR::UI::fatalError(FS(OSCR::Strings::Errors::UnknownType));

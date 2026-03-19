@@ -5,6 +5,89 @@ namespace OSCR
 {
   namespace UI
   {
+    // flash pointer
+    void printLabel(char const * label)
+    {
+      OSCR::UI::print<true>(OSCR::Lang::formatLabel(label));
+    }
+
+    // printValue / printValue_P
+    // - Left side is always a flash pointer (PSTR).
+    // - Right side strings can be a pointer to flash (printValue_P) or SRAM (printValue)
+    // - Right side numbers must be in SRAM (printValue)
+
+    // flash pointer + SRAM pointer
+    void printValue(char const * label, char const * value)
+    {
+      OSCR::UI::printLine<true>(OSCR::Lang::formatLabel(label, value));
+    }
+
+    // flash pointer + flash pointer
+    void printValue_P(char const * label, char const * value)
+    {
+      OSCR::UI::printLine<true>(OSCR::Lang::formatLabel_P(label, value));
+    }
+
+    // flash pointer + SRAM number
+    template <typename T,
+              OSCR::Util::enable_if_t<OSCR::Util::is_integer<T>::value, bool> Enable>
+    void printValue(char const * label, T number)
+    {
+      OSCR::UI::printLine<true>(OSCR::Lang::formatLabel(label, number));
+    }
+
+    // flash pointer + SRAM number + SRAM number
+    template <typename T,
+              OSCR::Util::enable_if_t<OSCR::Util::is_integer<T>::value, bool> Enable>
+    void printValue(char const * label, T number, T total)
+    {
+      OSCR::UI::printLine<true>(OSCR::Lang::formatLabel(label, number, total));
+    }
+
+    // flash pointer
+    void printType(char const * label)
+    {
+      OSCR::UI::printLine<true>(OSCR::Lang::formatType(label));
+    }
+
+    // flash pointer + SRAM pointer
+    void printType(char const * label, char const * value)
+    {
+      OSCR::UI::printLine<true>(OSCR::Lang::formatType(label, value));
+    }
+
+    // flash pointer + flash pointer
+    void printType_P(char const * label, char const * value)
+    {
+      OSCR::UI::printLine<true>(OSCR::Lang::formatType_P(label, value));
+    }
+
+    // flash pointer + SRAM number
+    template <typename T,
+              OSCR::Util::enable_if_t<OSCR::Util::is_integer<T>::value, bool> Enable>
+    void printType(char const * label, T number)
+    {
+      OSCR::UI::printLine<true>(OSCR::Lang::formatType(label, number));
+    }
+
+    // flash pointer + SRAM number + bool
+    void printSize(char const * label, uint32_t size, bool isBytes)
+    {
+      OSCR::UI::printLine<true>(OSCR::Lang::formatLabelSize(label, size, isBytes));
+    }
+
+    // flash pointer + SRAM number
+    void printSize(char const * label, uint32_t size)
+    {
+      OSCR::UI::printLine<true>(OSCR::Lang::formatLabelSize(label, size, false));
+    }
+
+    // flash pointer + flash pointer
+    void printSize_P(char const * label, char const * size)
+    {
+      OSCR::UI::printLine<true>(OSCR::Lang::formatLabel_P(label, size));
+    }
+
     void notification(void)
     {
       OSCR::UI::_notificationFormat();
@@ -612,9 +695,6 @@ namespace OSCR
 #elif (HW_VERSION == 5)
       // 3mm LED on D38, front of PCB
       PORTD ^= (1 << 7);
-#elif (HARDWARE_OUTPUT_TYPE == OUTPUT_SSD1306)
-      // 5mm LED on D10, above SD slot
-      PORTB ^= (1 << 4);
 #elif (HW_VERSION == 4)
       // TX LED on D1, build-in
       PORTE ^= (1 << 1);
@@ -633,6 +713,28 @@ namespace OSCR
 }
 
 //! @cond
+
+template void OSCR::UI::printValue(char const * label, int8_t number);
+template void OSCR::UI::printValue(char const * label, uint8_t number);
+template void OSCR::UI::printValue(char const * label, int16_t number);
+template void OSCR::UI::printValue(char const * label, uint16_t number);
+template void OSCR::UI::printValue(char const * label, int32_t number);
+template void OSCR::UI::printValue(char const * label, uint32_t number);
+
+template void OSCR::UI::printValue(char const * label, int8_t number, int8_t total);
+template void OSCR::UI::printValue(char const * label, uint8_t number, uint8_t total);
+template void OSCR::UI::printValue(char const * label, int16_t number, int16_t total);
+template void OSCR::UI::printValue(char const * label, uint16_t number, uint16_t total);
+template void OSCR::UI::printValue(char const * label, int32_t number, int32_t total);
+template void OSCR::UI::printValue(char const * label, uint32_t number, uint32_t total);
+
+template void OSCR::UI::printType(char const * label, int8_t number);
+template void OSCR::UI::printType(char const * label, uint8_t number);
+template void OSCR::UI::printType(char const * label, int16_t number);
+template void OSCR::UI::printType(char const * label, uint16_t number);
+template void OSCR::UI::printType(char const * label, int32_t number);
+template void OSCR::UI::printType(char const * label, uint32_t number);
+
 template void OSCR::UI::notification<__FlashStringHelper const *>(__FlashStringHelper const *);
 template void OSCR::UI::notification<String const &>(String const &);
 template void OSCR::UI::notification<char const[]>(char const[]);

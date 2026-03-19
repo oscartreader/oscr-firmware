@@ -241,8 +241,9 @@ namespace OSCR::Cores::MegaDrive
         }
         else
         {
-          OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
-          OSCR::UI::printHex(flashid);
+          OSCR::UI::printLabel(OSCR::Strings::Common::ID);
+          OSCR::UI::printHexLine(flashid);
+
           OSCR::UI::fatalError(FS(OSCR::Strings::Errors::UnknownType));
         }
 
@@ -1374,25 +1375,20 @@ namespace OSCR::Cores::MegaDrive
     printHeader();
     OSCR::UI::printLine(FS(OSCR::Strings::MenuOptions::CartInfo));
     OSCR::UI::printLine();
-    OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-    OSCR::UI::printLine(fileName);
+    OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
 
     if (bramCheck != 0x00FF)
     {
       OSCR::UI::print(FS(OSCR::Strings::Common::RAM));
-      OSCR::UI::print(FS(OSCR::Strings::Labels::CHECKSUM));
       OSCR::UI::printHexLine(bramCheck);
     }
 
     if (bramSize > 0)
     {
-      OSCR::UI::print(FS(OSCR::Strings::Common::RAM));
-      OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::Lang::printBytesLine((bramSize >> 10) * 1024);
+      OSCR::UI::printSize(OSCR::Strings::Common::RAM, (bramSize >> 10) * 1024);
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-    OSCR::Lang::printBytes(cartSize * 8);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, cartSize * 8);
 
     switch (SnKmode)
     {
@@ -1412,7 +1408,7 @@ namespace OSCR::Cores::MegaDrive
     }
     OSCR::UI::printLine();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::CHECKSUM));
+    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
     OSCR::UI::printHex(chksum);
 
     switch (SnKmode)
@@ -1434,18 +1430,17 @@ namespace OSCR::Cores::MegaDrive
 
     OSCR::UI::printLine();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SAVE));
     if (saveType == 4)
     {
-      OSCR::Lang::printBytesLine(eepSize * 8);
+      OSCR::UI::printSize(OSCR::Strings::Common::Save, eepSize * 8);
     }
     else if (sramSize > 0)
     {
-      OSCR::Lang::printBytesLine(sramSize * 8);
+      OSCR::UI::printSize(OSCR::Strings::Common::Save, sramSize * 8);
     }
     else
     {
-      OSCR::UI::printLine(FS(OSCR::Strings::Common::None));
+      OSCR::UI::printSize_P(OSCR::Strings::Common::Save, OSCR::Strings::Common::None);
     }
 
     OSCR::UI::waitButton();
@@ -1743,7 +1738,7 @@ namespace OSCR::Cores::MegaDrive
     }
 
     // Calculate internal checksum
-    OSCR::UI::print(FS(OSCR::Strings::Labels::CHK));
+    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
     OSCR::UI::printHex(chksum);
 
     if (chksum != calcCKS)
@@ -1761,7 +1756,7 @@ namespace OSCR::Cores::MegaDrive
     if (SnKmode >= 2)
     {
       OSCR::UI::print(F("Lock-on "));
-      OSCR::UI::print(FS(OSCR::Strings::Labels::CHK));
+      OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
 
       if (chksumLockon != calcCKSLockon)
       {
@@ -1778,7 +1773,7 @@ namespace OSCR::Cores::MegaDrive
     if (SnKmode == 3)
     {
       OSCR::UI::print(FS(OSCR::Strings::Symbol::Plus));
-      OSCR::UI::print(FS(OSCR::Strings::Labels::CHK));
+      OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
 
       if (chksumSonic2 != calcCKSSonic2)
       {

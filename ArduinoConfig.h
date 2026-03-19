@@ -467,7 +467,7 @@
 /* [ Super A'can -------------------------------------------------- ]
  */
 
-//#define ENABLE_SUPRACAN
+//#define ENABLE_SUPERACAN
 
 /****/
 

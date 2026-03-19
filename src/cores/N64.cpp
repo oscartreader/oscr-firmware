@@ -1676,13 +1676,8 @@ namespace OSCR::Cores::N64
 
     OSCR::UI::printLine(FS(failed ? OSCR::Strings::Common::FAIL : OSCR::Strings::Common::OK));
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::CHECKSUM));
-    OSCR::UI::print(4 - headerErrors);
-    OSCR::UI::printLine(F("/4"));
-
-    OSCR::UI::print(F("ToC: "));
-    OSCR::UI::print(2 - writeErrors);
-    OSCR::UI::printLine(F("/2"));
+    OSCR::UI::printValue(OSCR::Strings::Common::Checksum, 4 - headerErrors, 4);
+    OSCR::UI::printValue(PSTR("ToC"), (uint32_t)(2 - writeErrors), (uint32_t)(2));
 
     return true;
   }
@@ -1817,13 +1812,11 @@ namespace OSCR::Cores::N64
         // Display error
         OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CartridgeError));
 
-        OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-        OSCR::UI::printLine(fileName);
+        OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
 
-        OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
-        OSCR::UI::printLine(cartID);
+        OSCR::UI::printValue(OSCR::Strings::Common::ID, cartID);
 
-        OSCR::UI::print(FS(OSCR::Strings::Labels::CRCSum));
+        OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
         OSCR::UI::printLine(crc1);
 
         switch (OSCR::Prompts::abortRetryContinue())
@@ -1845,20 +1838,11 @@ namespace OSCR::Cores::N64
       printHeader();
 
       OSCR::UI::printLine(romDetail->name);
-
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
-      OSCR::UI::print(cartID);
-      OSCR::UI::print(FS(OSCR::Strings::Symbol::MenuSpaces));
-      OSCR::UI::print(FS(OSCR::Strings::Labels::REVISION));
-      OSCR::UI::printLine(romVersion);
-
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-      OSCR::Lang::printBytesLine(cartSize * 1024 * 1024);
-
+      OSCR::UI::printValue(OSCR::Strings::Common::ID, cartID);
+      OSCR::UI::printValue(OSCR::Strings::Common::Revision, romVersion);
+      OSCR::UI::printSize(OSCR::Strings::Common::ROM, cartSize * 1024 * 1024);
 
       char const * type;
-
-      OSCR::UI::print(FS(OSCR::Strings::Labels::SAVE));
 
       eepPages = 0;
 
@@ -1891,11 +1875,14 @@ namespace OSCR::Cores::N64
         break;
       }
 
-      if (eepPages > 0) OSCR::Lang::printBytes(eepPages / 16);
+      OSCR::UI::printType_P(OSCR::Strings::Common::Save, type);
 
-      OSCR::UI::printLine(FS(type));
+      if (eepPages > 0)
+      {
+        OSCR::UI::printSize(OSCR::Strings::Common::Save, eepPages / 16);
+      }
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::CRCSum));
+      OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
       OSCR::UI::printLine(crc1);
 
       return true;
@@ -2690,8 +2677,7 @@ namespace OSCR::Cores::N64
       return 0;
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::TYPE));
-    OSCR::UI::printLineSync(FS(name));
+    OSCR::UI::printType(OSCR::Strings::Common::Flash, name);
 
     // Pull ale_H(PC1) high
     PORTC |= (1 << 1);
@@ -2808,10 +2794,10 @@ namespace OSCR::Cores::N64
         OSCR::UI::printLine(F("Intel 512M29EW"));
 
       // Print info
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+      OSCR::UI::printLabel(OSCR::Strings::Common::ID);
       OSCR::UI::printHex(flashid);
-      OSCR::UI::print(F(" Size: "));
-      OSCR::Lang::printBytesLine(cartSize * 1024 * 1024);
+
+      OSCR::UI::printSize(OSCR::Strings::Common::Flash, cartSize * 1024 * 1024);
 
       OSCR::UI::waitButton();
 
@@ -2823,17 +2809,14 @@ namespace OSCR::Cores::N64
     }
     else
     {
-      OSCR::UI::printLine(F("Unknown flashrom"));
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
-      OSCR::UI::print(vendorID);
-      OSCR::UI::print(FS(OSCR::Strings::Symbol::Space));
-      OSCR::UI::printHex(flashid);
-      OSCR::UI::print(FS(OSCR::Strings::Symbol::Space));
-      OSCR::UI::printLine(cartID);
-      OSCR::UI::printLine();
+      OSCR::UI::printLine(FS(OSCR::Strings::Common::Unknown));
+      OSCR::UI::printValue(OSCR::Strings::Common::Vendor, vendorID);
 
-      OSCR::UI::printLine(F("Press button for"));
-      OSCR::UI::printLine(F("manual config"));
+      OSCR::UI::printLabel(OSCR::Strings::Common::ID);
+      OSCR::UI::printHex(flashid);
+
+      OSCR::UI::printLabel(OSCR::Strings::MenuOptions::Cartridge);
+      OSCR::UI::printLine(cartID);
 
       OSCR::UI::wait();
 
@@ -2874,9 +2857,7 @@ namespace OSCR::Cores::N64
     // Get rom size from file
     fileSize = OSCR::Storage::Shared::getSize();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-    OSCR::Lang::printBytesLine(fileSize);
-    OSCR::UI::update();
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, fileSize);
 
     // Compare file size to flashrom size
     if ((fileSize / 1048576) > cartSize)
@@ -3777,9 +3758,8 @@ namespace OSCR::Cores::N64
       fileSize = OSCR::Storage::Shared::getSize();
 
       printHeader();
-      OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::Lang::printBytesLine(fileSize);
-      OSCR::UI::update();
+
+      OSCR::UI::printSize(OSCR::Strings::Common::Flash, fileSize);
 
       // Compare file size to flashrom size for 1 Mbit eeproms
       if (fileSize > 262144 && (flashid == 0x0808 || flashid == 0x3535 || flashid == 0x0707))
@@ -4137,9 +4117,7 @@ namespace OSCR::Cores::N64
       // Get rom size from file
       fileSize = OSCR::Storage::Shared::getSize();
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::Lang::printBytesLine(fileSize);
-      OSCR::UI::update();
+      OSCR::UI::printSize(OSCR::Strings::Common::Flash, fileSize);
 
       // Compare file size to flashrom size
       if (fileSize > 262144)

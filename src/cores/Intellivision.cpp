@@ -5,6 +5,7 @@
 
 #if HAS_INTV
 # include "cores/include.h"
+# include "cores/Intellivision.h"
 
 namespace OSCR::Cores::Intellivision
 {
@@ -575,11 +576,8 @@ namespace OSCR::Cores::Intellivision
 
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::MAPPER));
-    OSCR::UI::printLine(mapperDetail->id);
-
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(romSizes[romSize] * 1024);
+    OSCR::UI::printValue(OSCR::Strings::Common::Mapper, mapperDetail->id);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, romSizes[romSize] * 1024);
   }
 
   //******************************************

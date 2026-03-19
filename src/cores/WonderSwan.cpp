@@ -453,47 +453,46 @@ namespace OSCR::Cores::WonderSwan
 
     OSCR::UI::printLine(fileName);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-
     if (cartSize == 0)
     {
       OSCR::UI::printHexLine(romSize);
     }
     else
     {
-      OSCR::Lang::printBytesLine(cartSize);
+      OSCR::UI::printSize(OSCR::Strings::Common::ROM, cartSize);
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SAVE_TYPE));
+    char const * saveTypePSTR = OSCR::Strings::Common::Unknown;
+
     switch (saveType)
     {
     case 0:
-      OSCR::UI::printLine(FS(OSCR::Strings::Common::None));
+      saveTypePSTR = OSCR::Strings::Common::None;
       break;
 
     case 1:
-      OSCR::UI::printLine(FS(OSCR::Strings::Common::SRAM));
+      saveTypePSTR = OSCR::Strings::Common::SRAM;
       break;
 
     case 2:
-      OSCR::UI::printLine(FS(OSCR::Strings::Common::EEPROM));
+      saveTypePSTR = OSCR::Strings::Common::EEPROM;
       break;
 
     default:
-      OSCR::UI::printLine(FS(OSCR::Strings::Common::Unknown));
       break;
     }
 
+    OSCR::UI::printType_P(OSCR::Strings::Common::Save, saveTypePSTR);
+
     if (saveType > 0)
     {
-      OSCR::UI::print(FS(OSCR::Strings::Labels::SAVE_SIZE));
-      OSCR::Lang::printBytesLine(sramSize * 1024);
+      OSCR::UI::printSize(OSCR::Strings::Common::Save, sramSize * 1024);
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::REVISION));
+    OSCR::UI::printLabel(OSCR::Strings::Common::Revision);
     OSCR::UI::printHexLine(romVersion);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::CHECKSUM));
+    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
     OSCR::UI::printHexLine(checksum);
 
     return hasWitchOS;
@@ -563,7 +562,7 @@ namespace OSCR::Cores::WonderSwan
       writeBytePort(0xCD, 0x00);
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::CHECKSUM));
+    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
     OSCR::UI::printHex(checksum);
 
     if (calcChecksum == checksum)

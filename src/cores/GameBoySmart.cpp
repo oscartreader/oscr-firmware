@@ -6,6 +6,7 @@
 
 #if ((HAS_GBX) && (HAS_FLASH))
 # include "cores/include.h"
+# include "cores/GameBoy.h"
 # include "cores/GameBoySmart.h"
 
 # define GB_SMART_GAMES_PER_PAGE 6

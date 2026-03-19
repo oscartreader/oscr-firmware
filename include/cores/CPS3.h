@@ -7,6 +7,7 @@
 # if HAS_CPS3
 #   include "syslibinc.h"
 #   include "common/Types.h"
+#   include "common/crc32.h"
 
 /**
  * @brief System core for the CP System III

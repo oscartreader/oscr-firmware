@@ -86,10 +86,9 @@ namespace OSCR::Cores::GameBoyAdvance
   void getCartInfo();
 
   uint8_t getSaveType();
-  void printFlashTypeAndWait(__FlashStringHelper const * caption);
+  void printFlashTypeAndWait(char const * caption);
 
 # if HAS_FLASH
-  void setupRepro();
   void reproMenu();
   void repro369in1Menu();
 

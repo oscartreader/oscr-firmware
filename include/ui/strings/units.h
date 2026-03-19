@@ -57,12 +57,15 @@ namespace OSCR::Strings
     constexpr char const PROGMEM Size64MB[]   = OSCR_UNIT_STRING("64", MEGABYTE);
     constexpr char const PROGMEM Size128MB[]  = OSCR_UNIT_STRING("128", MEGABYTE);
 
-    constexpr char const PROGMEM B[]  = OSCR_UNIT_BYTE;
+    constexpr char const PROGMEM b[]  = OSCR_UNIT_BIT;
     constexpr char const PROGMEM K[]  = OSCR_UNIT_KILO;
     constexpr char const PROGMEM M[]  = OSCR_UNIT_MEGA;
+    constexpr char const PROGMEM G[]  = OSCR_UNIT_GIGA;
 
+    constexpr char const PROGMEM B[]  = OSCR_UNIT_BYTE;
     constexpr char const PROGMEM KB[] = OSCR_UNIT_KILOBYTE;
     constexpr char const PROGMEM MB[] = OSCR_UNIT_MEGABYTE;
+    constexpr char const PROGMEM GB[] = OSCR_UNIT_GIGABYTE;
   } /* namespace Units */
 
   // (Unit) Templates

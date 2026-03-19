@@ -637,8 +637,7 @@ namespace OSCR::Cores::SMS
         romNameBuf[8] = '\0';
 
         // Debug info:
-        // OSCR::UI::print(FS(OSCR::Strings::Labels::BANK));
-        // OSCR::UI::printLine(bank);
+        // OSCR::UI::printValue(OSCR::Strings::Common::Bank, bank);
         // OSCR::UI::print(F("Parsed ROM name: "));
         // OSCR::UI::printLine(romNameBuf);
         // OSCR::UI::printLine();
@@ -692,11 +691,8 @@ namespace OSCR::Cores::SMS
 
     OSCR::UI::printLine();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-    OSCR::UI::printLine(fileName);
-
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(cartSize);
+    OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, cartSize);
 
     OSCR::UI::waitButton();
   }
@@ -777,8 +773,7 @@ namespace OSCR::Cores::SMS
     manRomSizeSelected = true; // This ensures manually selected value is used upon read from the menu
 
     // Display info
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-    OSCR::Lang::printBytesLine(cartSize);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, cartSize);
   }
 
   //******************************************
@@ -935,8 +930,7 @@ namespace OSCR::Cores::SMS
     // Get SRAM size from file, with a maximum of 32KB
     uint32_t const sramSize = OSCR::Util::minOf<uint32_t>(OSCR::Storage::Shared::getSize(), 32768U);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SAVE_SIZE));
-    OSCR::Lang::printBytesLine(sramSize);
+    OSCR::UI::printSize(OSCR::Strings::Common::Save, sramSize);
 
     OSCR::UI::update();
 

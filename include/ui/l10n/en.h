@@ -7,6 +7,8 @@
 
 # if OSCR_LANGUAGE == LANG_EN
 
+#include "ui/l10n.h"
+
 namespace OSCR::Strings
 {
   // Common words/phrases
@@ -36,6 +38,27 @@ namespace OSCR::Strings
 
     constexpr char const PROGMEM Finished[]         = "Finished";
     constexpr char const PROGMEM Done[]             = "Done";
+
+    constexpr char const PROGMEM ID[]               = "ID";
+    constexpr char const PROGMEM Name[]             = "Name";
+    constexpr char const PROGMEM Revision[]         = "Revision";
+    constexpr char const PROGMEM Submapper[]        = "Submapper";
+    constexpr char const PROGMEM Bank[]             = "Bank";
+    constexpr char const PROGMEM Banks[]            = "Banks";
+    constexpr char const PROGMEM Block[]            = "Block";
+    constexpr char const PROGMEM Checksum[]         = "Checksum";
+    constexpr char const PROGMEM CRCSum[]           = "CRC32";
+    constexpr char const PROGMEM Address[]          = "Address";
+    constexpr char const PROGMEM Mapper[]           = "Mapper";
+    constexpr char const PROGMEM Cart[]             = "Cart";
+    constexpr char const PROGMEM Size[]             = "Size";
+    constexpr char const PROGMEM Vendor[]           = "Vendor";
+    constexpr char const PROGMEM Chips[]            = "Chips";
+
+    constexpr char const PROGMEM Selected[]         = "Selected";
+
+    constexpr char const PROGMEM Mono[]             = "Mono";
+    constexpr char const PROGMEM Color[]            = "Color";
 
     constexpr char const PROGMEM OK[]               = "OK";
     constexpr char const PROGMEM FAIL[]             = "FAIL";
@@ -172,40 +195,6 @@ namespace OSCR::Strings
     constexpr char const PROGMEM PressButton[]        = "Press Button... ";
   }
 
-  // Labels
-  namespace Labels
-  {
-    constexpr char const PROGMEM CHK[]        = "CHK: ";
-    constexpr char const PROGMEM CHECKSUM[]   = "Checksum: ";
-    constexpr char const PROGMEM ERROR[]      = "Error: ";
-    constexpr char const PROGMEM FILE_SIZE[]  = "File Size: ";
-    constexpr char const PROGMEM MAPPER[]     = "Mapper: ";
-    constexpr char const PROGMEM SUBMAPPER[]  = "Submapper: ";
-    constexpr char const PROGMEM NUMBER[]     = "Number: ";
-    constexpr char const PROGMEM NAME[]       = "Name: ";
-    constexpr char const PROGMEM TYPE[]       = "Type: ";
-    constexpr char const PROGMEM BANK[]       = "Bank: ";
-    constexpr char const PROGMEM BANKS[]      = "Banks: ";
-    constexpr char const PROGMEM SAVE[]       = "Save: ";
-    constexpr char const PROGMEM SAVE_SIZE[]  = "Save Size: ";
-    constexpr char const PROGMEM SAVE_TYPE[]  = "Save Type: ";
-    constexpr char const PROGMEM REVISION[]   = "Revision: ";
-    constexpr char const PROGMEM RAM[]        = "RAM: ";
-    constexpr char const PROGMEM RAM_SIZE[]   = "RAM Size: ";
-    constexpr char const PROGMEM ROM[]        = "ROM: ";
-    constexpr char const PROGMEM ROM_SIZE[]   = "ROM Size: ";
-    constexpr char const PROGMEM SIZE[]       = "Size: ";
-    constexpr char const PROGMEM Address[]    = "Address: ";
-
-    constexpr char const PROGMEM ID[]         = "ID: ";
-    constexpr char const PROGMEM CRCSum[]     = "CRC: ";
-    constexpr char const PROGMEM Selected[]   = "Selected: ";
-    constexpr char const PROGMEM SizeLow[]    = "Size Low: ";
-    constexpr char const PROGMEM SizeHigh[]   = "Size High: ";
-
-    constexpr char const PROGMEM File[]       = "File:";
-  }
-
   // Templates
   namespace Templates
   {
@@ -217,6 +206,31 @@ namespace OSCR::Strings
 
     constexpr char const PROGMEM FileMustBe[]         = "File must be %s";
     constexpr char const PROGMEM FileMustBeU32[]      = "File must be %" PRIu32;
+
+    constexpr char const PROGMEM WordsPPPPP[]         = "%S %S %S %S %S";
+    constexpr char const * const WordsPPPP            = WordsPPPPP + 3;
+    constexpr char const * const WordsPPP             = WordsPPPP + 3;
+    constexpr char const * const WordsPP              = WordsPPP + 3;
+
+    constexpr char const PROGMEM TypeP[]              = "%S Type";
+    constexpr char const PROGMEM TypePValue[]         = "%S Type: %s";
+    constexpr char const PROGMEM TypePValueP[]        = "%S Type: %S";
+    constexpr char const PROGMEM TypePValueU32[]      = "%S Type: %" PRIu32;
+    constexpr char const PROGMEM TypePValueD32[]      = "%S Type: %" PRId32;
+
+    constexpr char const PROGMEM SizeP[]              = "%S Size";
+    constexpr char const PROGMEM SizePValueP[]        = "%S Size: %S";
+    constexpr char const PROGMEM SizeLabelFormat[]    = "%S Size: %" PRIu32 " %S";
+
+    constexpr char const PROGMEM Label[]              = "%s: ";
+    constexpr char const PROGMEM LabelP[]             = "%S: ";
+
+    constexpr char const PROGMEM LabelPValue[]        = "%S: %s";
+    constexpr char const PROGMEM LabelPValueP[]       = "%S: %S";
+    constexpr char const PROGMEM LabelPValueU32[]     = "%S: %" PRIu32;
+    constexpr char const PROGMEM LabelPValueD32[]     = "%S: %" PRId32;
+    constexpr char const PROGMEM LabelPValuesU32[]    = "%S: %" PRIu32 "/%" PRIu32;
+    constexpr char const PROGMEM LabelPValuesD32[]    = "%S: %" PRId32 "/%" PRId32;
 
 #   if defined(ENABLE_SERIAL_ANSI)
     constexpr char const PROGMEM OSCRHeaderPrefix[]   = "OSCR - %s";

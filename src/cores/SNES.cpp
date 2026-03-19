@@ -7,6 +7,10 @@
 # include "cores/include.h"
 # include "cores/SNES.h"
 # include "cores/Flash.h"
+# include "cores/GPC.h"
+# include "cores/ST.h"
+# include "cores/Satellaview.h"
+# include "cores/SFM.h"
 
 namespace OSCR::Strings::SNES
 {
@@ -25,9 +29,9 @@ namespace OSCR::Strings::SNES
   constexpr char const PROGMEM RTClock[]  = "RTC";
   constexpr char const PROGMEM SA1[]      = "SA1";
 
-  constexpr char const PROGMEM ICTemplate3[] = "%S %S %S";
-  constexpr char const * const PROGMEM ICTemplate2 = ICTemplate3 + 3;
-  constexpr char const * const PROGMEM ICTemplate1 = ICTemplate2 + 3;
+  constexpr char const * const ICTemplate3 = OSCR::Strings::Templates::WordsPPPPP + 6;
+  constexpr char const * const ICTemplate2 = ICTemplate3 + 3;
+  constexpr char const * const ICTemplate1 = ICTemplate2 + 3;
   //constexpr char const PROGMEM ICTemplate2[] = "%S %S";
   //constexpr char const PROGMEM ICTemplate1[] = "%S";
 }
@@ -983,144 +987,138 @@ namespace OSCR::Cores::SNES
 
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-    OSCR::UI::printLine(fileName);
+    OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::REVISION));
-    OSCR::UI::printLine(romVersion);
+    OSCR::UI::printValue(OSCR::Strings::Common::Revision, romVersion);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::TYPE));
+    char const * romTypePSTR = OSCR::Strings::Common::Unknown;
+    char const * romSpeedPSTR = OSCR::Strings::Common::Unknown;
 
     if (romType == HI)
-      OSCR::UI::print(FS(OSCR::Strings::SNES::HiROM));
+      romTypePSTR = OSCR::Strings::SNES::HiROM;
     else if (romType == LO)
-      OSCR::UI::print(FS(OSCR::Strings::SNES::LoROM));
+      romTypePSTR = OSCR::Strings::SNES::LoROM;
     else if (romType == EX)
-      OSCR::UI::print(FS(OSCR::Strings::SNES::ExHiRom));
-    else
-      OSCR::UI::print(romType);
+      romTypePSTR = OSCR::Strings::SNES::ExHiRom;
 
-    OSCR::UI::print(FS(OSCR::Strings::Symbol::Space));
+    char buffer[30];
 
     if (romSpeed == 0)
-      OSCR::UI::printLine(FS(OSCR::Strings::SNES::SlowROM));
+      romSpeedPSTR = OSCR::Strings::SNES::SlowROM;
     else if (romSpeed == 2)
-      OSCR::UI::printLine(FS(OSCR::Strings::SNES::SlowROM));
+      romSpeedPSTR = OSCR::Strings::SNES::SlowROM;
     else if (romSpeed == 3)
-      OSCR::UI::printLine(FS(OSCR::Strings::SNES::FastROM));
-    else
-      OSCR::UI::printLine(romSpeed);
+      romSpeedPSTR = OSCR::Strings::SNES::FastROM;
 
-    OSCR::UI::print(F("ICs: ROM "));
+    snprintf_P(buffer, sizeof(buffer), OSCR::Strings::Templates::WordsPP, romTypePSTR, romSpeedPSTR);
 
-    char icType[20];
+    OSCR::UI::printType(OSCR::Strings::Common::Cart, buffer);
 
     switch (romChips)
     {
     case   0:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate1, PSTR("ONLY"));
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate1, PSTR("ONLY"));
       break;
 
     case   1:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate1, OSCR::Strings::Common::RAM);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate1, OSCR::Strings::Common::RAM);
       break;
 
     case   2:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate1, OSCR::Strings::Common::Save);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate1, OSCR::Strings::Common::Save);
       break;
 
     case   3:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate1, OSCR::Strings::SNES::DSP1);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate1, OSCR::Strings::SNES::DSP1);
       break;
 
     case   4:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate2, OSCR::Strings::SNES::DSP1, OSCR::Strings::Common::RAM);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate2, OSCR::Strings::SNES::DSP1, OSCR::Strings::Common::RAM);
       break;
 
     case   5:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate2, OSCR::Strings::SNES::DSP1, OSCR::Strings::Common::Save);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate2, OSCR::Strings::SNES::DSP1, OSCR::Strings::Common::Save);
       break;
 
     case  67:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate1, OSCR::Strings::SNES::SDD1);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate1, OSCR::Strings::SNES::SDD1);
       break;
 
     case  69:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate2, OSCR::Strings::SNES::SDD1, OSCR::Strings::SNES::BATT);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate2, OSCR::Strings::SNES::SDD1, OSCR::Strings::SNES::BATT);
       break;
 
     case  85:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate3, OSCR::Strings::SNES::SDD1, OSCR::Strings::Common::RAM, OSCR::Strings::SNES::BATT);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate3, OSCR::Strings::SNES::SDD1, OSCR::Strings::Common::RAM, OSCR::Strings::SNES::BATT);
       break;
 
     case 227:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate2, OSCR::Strings::Common::RAM, PSTR("GBoy"));
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate2, OSCR::Strings::Common::RAM, PSTR("GBoy"));
       break;
 
     case 243:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate1, PSTR("CX4"));
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate1, PSTR("CX4"));
       break;
 
     case 246:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate1, OSCR::Strings::SNES::DSP2);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate1, OSCR::Strings::SNES::DSP2);
       break;
 
     case 245:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate3, OSCR::Strings::SNES::SPC, OSCR::Strings::Common::RAM, OSCR::Strings::SNES::BATT);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate3, OSCR::Strings::SNES::SPC, OSCR::Strings::Common::RAM, OSCR::Strings::SNES::BATT);
       break;
 
     case 249:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate3, OSCR::Strings::SNES::SPC, OSCR::Strings::Common::RAM, OSCR::Strings::SNES::RTClock);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate3, OSCR::Strings::SNES::SPC, OSCR::Strings::Common::RAM, OSCR::Strings::SNES::RTClock);
       break;
 
     case  19:
     case  20:
     case  21:
     case  26:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate1, PSTR("SuperFX"));
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate1, PSTR("SuperFX"));
       break;
 
     case  52:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate2, OSCR::Strings::SNES::SA1, OSCR::Strings::Common::RAM);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate2, OSCR::Strings::SNES::SA1, OSCR::Strings::Common::RAM);
       romType = SA;
       break;
 
     case  53:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate3, OSCR::Strings::SNES::SA1, OSCR::Strings::Common::RAM, OSCR::Strings::SNES::BATT);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate3, OSCR::Strings::SNES::SA1, OSCR::Strings::Common::RAM, OSCR::Strings::SNES::BATT);
       romType = SA;
       break;
 
     default:
-      snprintf_P(icType, sizeof(icType), OSCR::Strings::SNES::ICTemplate1, OSCR::Strings::Symbol::Space);
+      snprintf_P(buffer, sizeof(buffer), OSCR::Strings::SNES::ICTemplate1, OSCR::Strings::Symbol::Space);
       break;
     }
 
-    OSCR::UI::printLine(icType);
+    uint32_t displaySize = 0;
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
+    OSCR::UI::printValue(OSCR::Strings::Common::Chips, buffer);
+
     if ((romSize >> 3) < 1)
     {
-      OSCR::Lang::printBytes((romSize * 1024) >> 3);
+      displaySize = (romSize * 1024) >> 3;
     }
     else
     {
-      OSCR::Lang::printBytes((romSize >> 3) * 1024 * 1024);
+      displaySize = (romSize >> 3) * 1024 * 1024;
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Symbol::MenuSpaces));
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, displaySize);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::BANKS));
-    OSCR::UI::printLine(numBanks);
+    OSCR::UI::printValue(OSCR::Strings::Common::Banks, numBanks);
 
     //OSCR::UI::print(F("Chips: "));
     //OSCR::UI::printLine(romChips);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SAVE));
-    OSCR::Lang::printBytes((sramSize >> 3) * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::Save, (sramSize >> 3) * 1024);
 
     OSCR::UI::print(FS(OSCR::Strings::Symbol::MenuSpaces));
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::CHK));
+    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
     OSCR::UI::printHex(checksum);
 
     OSCR::UI::waitButton();
@@ -1135,7 +1133,8 @@ namespace OSCR::Cores::SNES
   void checkAltConf(uint16_t chksumSearch, crc32_t & crc32search)
   {
     printHeader();
-    OSCR::UI::print(FS(OSCR::Strings::Labels::CHECKSUM));
+
+    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
     OSCR::UI::printHexLine(checksum);
 
     OSCR::UI::printSync(FS(OSCR::Strings::Status::SearchingDatabase));
@@ -1146,7 +1145,7 @@ namespace OSCR::Cores::SNES
       romRecord = snesCRDB->record();
       romDetail = romRecord->data();
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::CRCSum));
+      OSCR::UI::printLabel(OSCR::Strings::Common::CRCSum);
       OSCR::UI::printLineSync(crc32search);
 
       // Read file size
@@ -1164,12 +1163,12 @@ namespace OSCR::Cores::SNES
         if (((romSize != romSize2) || (numBanks != numBanks2)) && ((romSize2 == 10) || (romSize2 == 12) || (romSize2 == 20) || (romSize2 == 24) || (romSize2 == 40) || (romSize2 == 48)))
         {
           // Correct size
-          OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
+          OSCR::UI::printLabel(OSCR::Strings::Common::Size);
           OSCR::UI::print(romSize);
           OSCR::UI::print(FS(OSCR::Strings::Symbol::Arrow));
           OSCR::Lang::printBytesLine(romDetail->size);
 
-          OSCR::UI::print(FS(OSCR::Strings::Labels::BANKS));
+          OSCR::UI::printLabel(OSCR::Strings::Common::Banks);
           OSCR::UI::print(numBanks);
           OSCR::UI::print(FS(OSCR::Strings::Symbol::Arrow));
           OSCR::UI::printLineSync(numBanks2);

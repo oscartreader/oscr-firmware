@@ -138,26 +138,22 @@ namespace OSCR::Cores::CasioLoopy
 
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-
     if (fromCRDB)
     {
-      OSCR::UI::printLine(fileName);
+      OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
     }
     else
     {
       useDefaultName();
-      OSCR::UI::printLine(FS(OSCR::Strings::Common::Unknown));
+      OSCR::UI::printValue_P(OSCR::Strings::Common::Name, OSCR::Strings::Common::Unknown);
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::CHECKSUM));
+    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
     OSCR::UI::printLine(crc32sum);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(cartSize * 8);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, cartSize * 8);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::RAM_SIZE));
-    OSCR::Lang::printBytesLine(sramSize * 8);
+    OSCR::UI::printSize(OSCR::Strings::Common::RAM, sramSize * 8);
   }
 
   void menu()
@@ -217,7 +213,7 @@ namespace OSCR::Cores::CasioLoopy
     // Set Address Pins to Output
     // PK1-PK7, PA1-PA7, PC0-PC3, PL0-PL3
     // Take whole port and unset the exceptions later
-    DDRK = DDRA = DDRC = DDRL = 0xFF;
+    //DDRK = DDRA = DDRC = DDRL = 0xFF; // disableCartridge() already did this
 
     // Control pins, all active low
     pinMode(LOOPY_ROMCE, OUTPUT);
@@ -546,7 +542,7 @@ namespace OSCR::Cores::CasioLoopy
     digitalWrite(LOOPY_ROMCE, HIGH);
 
     // Instead of the CRC32, check the internal integrity based on the header checksum
-    OSCR::UI::print(FS(OSCR::Strings::Labels::CHECKSUM));
+    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
     OSCR::UI::printHex(sum);
 
     if (sum == loopyChecksum)

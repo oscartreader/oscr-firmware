@@ -387,17 +387,13 @@ namespace OSCR::Cores::AtariJaguar
     // Check for Memory Track NVRAM Cart
 
     printHeader();
-    OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-    OSCR::UI::printLine(fileName);
+    OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-    OSCR::Lang::printBytesLine(cartSize);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, cartSize);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SAVE_TYPE));
-    OSCR::UI::printLine(FS((saveType == 0) ? OSCR::Strings::Common::EEPROM : OSCR::Strings::Common::Flash));
+    OSCR::UI::printType_P(OSCR::Strings::Common::Save, (saveType == 0) ? OSCR::Strings::Common::EEPROM : OSCR::Strings::Common::Flash);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SAVE_SIZE));
-    OSCR::Lang::printBytesLine((saveType == 0) ? (OSCR::Util::power<2>(eepSize) * 128) : flaSize);  // 128/256/512/1024/2048 BYTES
+    OSCR::UI::printSize(OSCR::Strings::Common::Save, (saveType == 0) ? (OSCR::Util::power<2>(eepSize) * 128) : flaSize);  // 128/256/512/1024/2048 BYTES
   }
 
   //******************************************************************************

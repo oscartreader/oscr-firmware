@@ -4,9 +4,10 @@
 //******************************************
 #include "config.h"
 
-#if HAS_SUPRACAN
+#if HAS_SUPERACAN
 # include "cores/include.h"
 # include "cores/SuperAcan.h"
+# include "cores/MegaDrive.h"
 
 namespace OSCR::Cores::SuperAcan
 {
@@ -274,7 +275,7 @@ namespace OSCR::Cores::SuperAcan
 
     OSCR::UI::ProgressBar::finish();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::CRCSum));
+    OSCR::UI::printLabel(OSCR::Strings::Common::CRCSum);
     OSCR::UI::printLine(OSCR::Storage::Shared::getCRC32());
   }
 
@@ -662,4 +663,4 @@ namespace OSCR::Cores::SuperAcan
   }
 } /* namespace OSCR::Cores::SuperAcan */
 
-#endif /* HAS_SUPRACAN */
+#endif /* HAS_SUPERACAN */

@@ -487,25 +487,7 @@ namespace OSCR::Cores::Flash
 
   /******************************************
      Flash ID
-  *****************************************/
-  void printFlashSize(int index)
-  {
-    OSCR::UI::clear();
-    OSCR::UI::print(FS(OSCR::Strings::Common::Flash));
-    OSCR::UI::print(FS(OSCR::Strings::Symbol::Space));
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-    OSCR::Lang::printBytesLine(index * 1024 * 1024);
-  }
-
-  void printFlashType(int index)
-  {
-    OSCR::UI::clear();
-    OSCR::UI::print(FS(OSCR::Strings::Common::Flash));
-    OSCR::UI::print(FS(OSCR::Strings::Symbol::Space));
-    OSCR::UI::print(FS(OSCR::Strings::Labels::TYPE));
-    OSCR::UI::printLine(index);
-  }
-
+  *****************************************/\
   uint8_t selectFlashtype(bool option)
   {
     uint8_t selectionByte;
@@ -515,18 +497,11 @@ namespace OSCR::Cores::Flash
 
     if (option)
     {
-      OSCR::UI::print(FS(OSCR::Strings::Common::Flash));
-      OSCR::UI::print(FS(OSCR::Strings::Symbol::Space));
-      OSCR::UI::print(FS(OSCR::Strings::Labels::TYPE));
-      OSCR::UI::printLineSync(selectionByte);
+      OSCR::UI::printType(OSCR::Strings::Common::Flash, selectionByte);
     }
     else
     {
-      OSCR::UI::print(FS(OSCR::Strings::Common::Flash));
-      OSCR::UI::print(FS(OSCR::Strings::Symbol::Space));
-      OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::UI::print(selectionByte);
-      OSCR::UI::printLineSync(FS(OSCR::Strings::Units::MB));
+      OSCR::UI::printSize(OSCR::Strings::Common::Flash, selectionByte * 1024 * 1024);
     }
 
     delay(200);
@@ -569,13 +544,13 @@ namespace OSCR::Cores::Flash
       if (lastId != flashid)
       {
         // ID: 12345... X
-        OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+        OSCR::UI::printLabel(OSCR::Strings::Common::ID);
         OSCR::UI::printHex(lastId);
         OSCR::UI::print(FS(OSCR::Strings::Symbol::Ellipsis));
         OSCR::UI::printLine(FS(OSCR::Strings::Symbol::PaddedX));
       }
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+      OSCR::UI::printLabel(OSCR::Strings::Common::ID);
       OSCR::UI::printHex(flashid);
       OSCR::UI::printLineSync(FS(OSCR::Strings::Symbol::Ellipsis));
 
@@ -584,8 +559,7 @@ namespace OSCR::Cores::Flash
         resetFlash8();
 
         printHeader();
-        OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-        OSCR::UI::printLine(mapperDetail->name);
+        OSCR::UI::printValue(OSCR::Strings::Common::Name, mapperDetail->name);
         OSCR::UI::waitButton();
 
         return;
@@ -598,7 +572,7 @@ namespace OSCR::Cores::Flash
     OSCR::UI::setLineRel(-1);
     OSCR::UI::clearLine();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+    OSCR::UI::printLabel(OSCR::Strings::Common::ID);
     OSCR::UI::printHexLine(flashid);
 
     OSCR::UI::waitButton();
@@ -632,8 +606,7 @@ namespace OSCR::Cores::Flash
     }
 
     printHeader();
-    OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-    OSCR::UI::printLine(mapperDetail->name);
+    OSCR::UI::printValue(OSCR::Strings::Common::Name, mapperDetail->name);
     OSCR::UI::waitButton();
   }
 # endif
@@ -2291,30 +2264,19 @@ namespace OSCR::Cores::Flash
 
   void printFlash16(int numBytes)
   {
-    /*
-      right_byte = short_val & 0xFF;
-      left_byte = ( short_val >> 8 ) & 0xFF
-      short_val = ( ( left_byte & 0xFF ) << 8 ) | ( right_byte & 0xFF );
-    */
-
-    char buf[3];
-
     for (int currByte = 0; currByte < numBytes / 2; currByte += 5)
     {
       // 5 words per line
       for (int c = 0; c < 5; c++)
       {
-        uint16_t currWord = readWord(currByte + c);
+        uint16_t const currWord = readWord(currByte + c);
 
         // Split word into two bytes
-        uint8_t left_byte = currWord & 0xFF;
-        uint8_t right_byte = (currWord >> 8) & 0xFF;
+        uint8_t const left_byte = currWord & 0xFF;
+        uint8_t const right_byte = (currWord >> 8) & 0xFF;
 
-        // Now print the significant bits
         OSCR::UI::printHex(left_byte);
-
-        // Now print the significant bits
-        OSCR::UI::print(right_byte);
+        OSCR::UI::printHex<false>(right_byte);
       }
 
       OSCR::UI::printLine();
@@ -2596,24 +2558,19 @@ namespace OSCR::Cores::Flash
 
   void print_Eprom(int numBytes)
   {
-    char buf[3];
-
     for (int currByte = 0; currByte < numBytes / 2; currByte += 5)
     {
       // 5 words per line
       for (int c = 0; c < 5; c++)
       {
-        uint16_t currWord = readWord_Eprom(currByte + c);
+        uint16_t const currWord = readWord_Eprom(currByte + c);
 
         // Split word into two bytes
-        uint8_t left_byte = currWord & 0xFF;
-        uint8_t right_byte = (currWord >> 8) & 0xFF;
+        uint8_t const left_byte = currWord & 0xFF;
+        uint8_t const right_byte = (currWord >> 8) & 0xFF;
 
-        // Now print the significant bits
         OSCR::UI::printHex(left_byte);
-
-        // Now print the significant bits
-        OSCR::UI::print(right_byte);
+        OSCR::UI::printHex<false>(right_byte);
       }
 
       OSCR::UI::printLine();

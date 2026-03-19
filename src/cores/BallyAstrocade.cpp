@@ -275,8 +275,7 @@ namespace OSCR::Cores::BallyAstrocade
 
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(BALLY[romSize] * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, BALLY[romSize] * 1024);
 
     OSCR::UI::waitButton();
   }

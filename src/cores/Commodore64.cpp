@@ -655,13 +655,11 @@ namespace OSCR::Cores::Commodore64
   {
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::MAPPER));
-    OSCR::UI::printLine(mapperDetail->id);
+    OSCR::UI::printValue(OSCR::Strings::Common::ID, mapperDetail->id);
 
-    OSCR::UI::printLine(mapperDetail->name);
+    OSCR::UI::printValue(OSCR::Strings::Common::Mapper, mapperDetail->name);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(romSizes[romSize] * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, romSizes[romSize] * 1024);
   }
 
   //******************************************

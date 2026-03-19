@@ -10,6 +10,7 @@
 # include "cores/include.h"
 # include "cores/NES.h"
 # include "common/crdb/nes.h"
+# include "cores/Flash.h"
 
 namespace OSCR::Cores::NES
 {
@@ -36,35 +37,33 @@ namespace OSCR::Cores::NES
   {
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::MAPPER));
-    OSCR::UI::printLine(NES_MAPPER);
+    OSCR::UI::printValue(OSCR::Strings::Common::Mapper, NES_MAPPER);
+    OSCR::UI::printSize(OSCR::Strings::Common::PRG, NES_PRG * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::CHR, NES_CHR * 1024);
 
-    OSCR::UI::print(F("PRG SIZE: "));
-    OSCR::Lang::printBytesLine(NES_PRG * 1024);
+    uint32_t _ramSize = 0;
 
-    OSCR::UI::print(F("CHR SIZE: "));
-    OSCR::Lang::printBytesLine(NES_CHR * 1024);
-
-    OSCR::UI::print(FS(OSCR::Strings::Labels::RAM_SIZE));
     if (NES_MAPPER == 0)
     {
-      OSCR::Lang::printBytesLine(NES_RAM * 256);
+      _ramSize = NES_RAM * 256;
     }
     else if ((NES_MAPPER == 16) || (NES_MAPPER == 80) || (NES_MAPPER == 159))
     {
       if (NES_MAPPER == 16)
-        OSCR::Lang::printBytesLine(NES_RAM * 32);
+        _ramSize = NES_RAM * 32;
       else
-        OSCR::Lang::printBytesLine(NES_RAM * 16);
+        _ramSize = NES_RAM * 16;
     }
     else if ((NES_MAPPER == 19) && (NES_RAMSIZE == 2))
     {
-      OSCR::Lang::printBytesLine(128);
+      _ramSize = 128;
     }
     else
     {
-      OSCR::Lang::printBytesLine(NES_RAM * 1024);
+      _ramSize = NES_RAM * 1024;
     }
+
+    OSCR::UI::printSize(OSCR::Strings::Common::RAM, _ramSize);
   }
 
   /******************************************
@@ -486,7 +485,7 @@ namespace OSCR::Cores::NES
     }
     else
     {
-      OSCR::UI::printLine(FS(OSCR::Strings::Labels::CRCSum));
+      OSCR::UI::printLabel(OSCR::Strings::Common::CRCSum);
       OSCR::UI::print(oldcrc32);
 
       if (oldcrc32 != oldcrc32MMC3)
@@ -4233,7 +4232,7 @@ namespace OSCR::Cores::NES
 
         OSCR::Storage::Shared::close();
 
-        OSCR::UI::print(FS(OSCR::Strings::Labels::CRCSum));
+        OSCR::UI::printLabel(OSCR::Strings::Common::CRCSum);
         OSCR::UI::printLineSync(OSCR::CRC32::current);
       }
     }
@@ -4834,7 +4833,7 @@ namespace OSCR::Cores::NES
     uint16_t base = 0x8000;
     uint8_t bytecheck;
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+    OSCR::UI::printLabel(OSCR::Strings::Common::ID);
     OSCR::UI::printHexLine(flashid);
     OSCR::UI::printLine();
     OSCR::UI::printLine(F("NESmaker Flash Found"));
@@ -5055,16 +5054,20 @@ namespace OSCR::Cores::NES
     if (!flashfound)
     {
       OSCR::UI::printErrorHeader(FS(headerA29040B));
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+
+      OSCR::UI::printLabel(OSCR::Strings::Common::ID);
       OSCR::UI::printHexLine(flashid);
+
       OSCR::UI::error(FS(OSCR::Strings::Errors::UnknownType));
       return;
     }
 
     printHeaderA29040B();
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+
+    OSCR::UI::printLabel(OSCR::Strings::Common::ID);
+
     OSCR::UI::printHexLine(flashid);
-      OSCR::UI::printLineSync();
+    OSCR::UI::printLineSync();
 
     delay(3000);
 
@@ -5082,13 +5085,8 @@ namespace OSCR::Cores::NES
     // Output the sizes for verification
     printHeaderA29040B();
 
-    OSCR::UI::printLine(F("PRG Size:"));
-    OSCR::Lang::printBytesLine(prgSize);
-
-    OSCR::UI::printLine(F("CHR Size:"));
-    OSCR::Lang::printBytesLine(chrSize);
-
-    OSCR::UI::update();
+    OSCR::UI::printSize(OSCR::Strings::Common::PRG, prgSize);
+    OSCR::UI::printSize(OSCR::Strings::Common::CHR, chrSize);
 
     delay(3000);
 
@@ -5154,7 +5152,7 @@ namespace OSCR::Cores::NES
           OSCR::UI::print(FS(OSCR::Strings::Symbol::NotEqual));
           OSCR::UI::printHexLine(OSCR::Storage::Shared::buffer[i]);
 
-          OSCR::UI::print(FS(OSCR::Strings::Labels::Address));
+          OSCR::UI::printLabel(OSCR::Strings::Common::Address);
           OSCR::UI::printHexLine(prgAddress - 1);
           break;
         }
@@ -5216,7 +5214,7 @@ namespace OSCR::Cores::NES
           OSCR::UI::print(FS(OSCR::Strings::Symbol::NotEqual));
           OSCR::UI::printHexLine(OSCR::Storage::Shared::buffer[i]);
 
-          OSCR::UI::print(FS(OSCR::Strings::Labels::Address));
+          OSCR::UI::printLabel(OSCR::Strings::Common::Address);
           OSCR::UI::printHexLine(chrAddress - 1);
           break;
         }

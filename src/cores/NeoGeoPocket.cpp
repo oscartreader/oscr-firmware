@@ -200,31 +200,33 @@ namespace OSCR::Cores::NeoGeoPocket
   {
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-    OSCR::UI::printLine(fileName);
+    OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
-    OSCR::UI::printLine(appID);
+    OSCR::UI::printLabel(OSCR::Strings::Common::ID);
+    OSCR::UI::printHexLine(appID);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::REVISION));
-    OSCR::UI::printLine(ngpRomVersion);
+    OSCR::UI::printValue(OSCR::Strings::Common::Revision, ngpRomVersion);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::TYPE));
+    char const * cartType = OSCR::Strings::Common::Unknown;
+
     if (romType == 0x0)
-      OSCR::UI::printLine(F("Mono"));
+    {
+      cartType = OSCR::Strings::Common::Mono;
+    }
     else if (romType == 0x10)
-      OSCR::UI::printLine(F("Color"));
-    else
-      OSCR::UI::printLine(FS(OSCR::Strings::Common::Unknown));
+    {
+      cartType = OSCR::Strings::Common::Color;
+    }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
+    OSCR::UI::printType_P(OSCR::Strings::Common::Cart, cartType);
+
     if (cartSize == 0)
     {
-      OSCR::UI::printLine(FS(OSCR::Strings::Common::Unknown));
+      OSCR::UI::printSize_P(OSCR::Strings::Common::ROM, OSCR::Strings::Common::Unknown);
     }
     else
     {
-      OSCR::Lang::printBytesLine((cartSize >> 17) * 1024 * 1024);
+      OSCR::UI::printSize(OSCR::Strings::Common::ROM, (cartSize >> 17) * 1024 * 1024);
     }
 
     OSCR::UI::waitButton();

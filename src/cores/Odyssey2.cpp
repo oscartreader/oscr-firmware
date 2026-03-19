@@ -323,11 +323,8 @@ namespace OSCR::Cores::Odyssey2
 
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::MAPPER));
-    OSCR::UI::printLine(ody2mapper);
-
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(romSizes[ody2size] * 1024);
+    OSCR::UI::printValue(OSCR::Strings::Common::Mapper, ody2mapper);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, romSizes[ody2size] * 1024);
   }
 
   //******************************************

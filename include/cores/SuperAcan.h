@@ -4,7 +4,7 @@
 
 # include "config.h"
 
-# if HAS_SUPRACAN
+# if HAS_SUPERACAN
 #   include "syslibinc.h"
 #   include "common/Types.h"
 
@@ -52,5 +52,5 @@ namespace OSCR::Cores::SuperAcan
   uint32_t getFlashChipSize(uint16_t chip_id);
 } /* namespace OSCR::Cores::SuperAcan */
 
-# endif /* HAS_SUPRACAN */
+# endif /* HAS_SUPERACAN */
 #endif /* OSCR_CORE_SUPERACAN_H_ */

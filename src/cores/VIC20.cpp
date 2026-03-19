@@ -354,12 +354,8 @@ namespace OSCR::Cores::VIC20
 
     romSize = OSCR::UI::menu(FS(OSCR::Strings::Headings::SelectCartSize), FS(OSCR::Strings::Templates::SizeKB), VIC20SIZE, sizeofarray(VIC20SIZE));
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(((VIC20SIZE[romSize] & 0xF0) >> 4) * 1024);
-
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine((VIC20SIZE[romSize] & 0x0F) * 1024);
-
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, ((VIC20SIZE[romSize] & 0xF0) >> 4) * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, (VIC20SIZE[romSize] & 0x0F) * 1024);
     OSCR::UI::update();
 
     delay(1000);
@@ -379,14 +375,11 @@ namespace OSCR::Cores::VIC20
 
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::MAPPER));
+    OSCR::UI::printLabel(OSCR::Strings::Common::Mapper);
     OSCR::UI::printHexLine(VIC20MAP[vic20map]);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(((VIC20SIZE[romSize] & 0xF0) >> 4) * 1024);
-
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine((VIC20SIZE[romSize] & 0x0F) * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, ((VIC20SIZE[romSize] & 0xF0) >> 4) * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, (VIC20SIZE[romSize] & 0x0F) * 1024);
   }
 
   //******************************************

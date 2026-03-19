@@ -253,8 +253,7 @@ namespace OSCR::Cores::Colecovision
 
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(COL[romSize] * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, COL[romSize] * 1024);
   }
 
   //******************************************

@@ -129,7 +129,7 @@ namespace OSCR::Databases::Basic
   void printMapperNotFound(uint16_t mapperId)
   {
     OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CRDB));
-    OSCR::UI::print(FS(OSCR::Strings::Labels::MAPPER));
+    OSCR::UI::printLabel(OSCR::Strings::Common::Mapper);
     OSCR::UI::printHexLine(mapperId);
     OSCR::UI::error(FS(OSCR::Strings::Errors::NotFoundDB));
   }

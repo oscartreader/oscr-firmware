@@ -775,7 +775,7 @@ namespace OSCR::Cores::CPS3
     if (!OSCR::Databases::Extended::searchDatabase(&crc32))
     {
       OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CRDB));
-      OSCR::UI::print(FS(OSCR::Strings::Labels::CRCSum));
+      OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
       OSCR::UI::printLine(crc32);
       OSCR::UI::error(FS(OSCR::Strings::Errors::NotFoundDB));
       return cartCD;
@@ -819,7 +819,7 @@ namespace OSCR::Cores::CPS3
 
     // Print start screen
     OSCR::UI::printHeader(FS(OSCR::Strings::CPS3::SIMMWriter));
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+    OSCR::UI::printLabel(OSCR::Strings::Common::ID);
     OSCR::UI::printHexLine(flashid);
 
     if (flashid == 0x04AD)
@@ -850,10 +850,7 @@ namespace OSCR::Cores::CPS3
 
       OSCR::UI::printHeader(FS(OSCR::Strings::CPS3::SIMMWriter));
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
-      OSCR::UI::print(vendorID);
-
-      OSCR::UI::print(FS(OSCR::Strings::Symbol::MenuSpaces));
+      OSCR::UI::printLabel(OSCR::Strings::Common::ID);
       OSCR::UI::printHexLine(flashid);
 
       OSCR::UI::printLine(FS(OSCR::Strings::Common::Unknown));
@@ -1108,11 +1105,8 @@ namespace OSCR::Cores::CPS3
       // ID not found
       OSCR::UI::printLine(FS(OSCR::Strings::Common::FAIL));
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
-      OSCR::UI::printLine(vendorID);
-
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
-      OSCR::UI::printLine(flashid);
+      OSCR::UI::printLabel(OSCR::Strings::Common::ID);
+      OSCR::UI::printHexLine(flashid);
 
       OSCR::UI::waitButton();
 
@@ -1134,8 +1128,7 @@ namespace OSCR::Cores::CPS3
       OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CartridgeError));
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-    OSCR::UI::printLineSync(mapperDetail->name);
+    OSCR::UI::printValue(OSCR::Strings::Common::Name, mapperDetail->name);
 
     if (okFlash != 4)
     {

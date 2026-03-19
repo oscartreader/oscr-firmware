@@ -8,6 +8,7 @@
 # include "cores/GameBoy.h"
 # include "cores/GameBoyAdvance.h"
 # include "cores/GameBoyMem.h"
+# include "cores/GameBoySmart.h"
 # include "cores/Flash.h"
 
 namespace OSCR::Cores
@@ -532,17 +533,14 @@ namespace OSCR::Cores
 
       if (checksum != 0)
       {
-        OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-        OSCR::UI::printLine(fileName);
+        OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
 
         if (cartID[0] != 0)
         {
-          OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
-          OSCR::UI::printLine(cartID);
+          OSCR::UI::printValue(OSCR::Strings::Common::ID, cartID);
         }
 
-        OSCR::UI::print(FS(OSCR::Strings::Labels::REVISION));
-        OSCR::UI::printLine(romVersion);
+        OSCR::UI::printValue(OSCR::Strings::Common::Revision, romVersion);
 
         char const * romTypeName = nullptr;
         uint8_t mbc = 0;
@@ -640,7 +638,8 @@ namespace OSCR::Cores
 
         if (romTypeName != nullptr)
         {
-          OSCR::UI::print(FS(OSCR::Strings::Labels::MAPPER));
+          OSCR::UI::printLabel(OSCR::Strings::Common::Mapper);
+
           if (romTypeName == OSCR::Cores::GameBoyX::TemplateMBC)
           {
             char buff[5];
@@ -655,66 +654,68 @@ namespace OSCR::Cores
           }
         }
 
-        OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
+        OSCR::UI::printSize(OSCR::Strings::Common::ROM, (uint32_t)((1UL << (5UL + romSize)) * 1024UL));
 
-        OSCR::Lang::printBytesLine((uint32_t)((1UL << (5UL + romSize)) * 1024UL));
+        uint32_t sramSizeBytes = 0;
 
-        //OSCR::UI::print(FS(OSCR::Strings::Labels::BANKS));
-        //OSCR::UI::printLine(romBanks);
-
-        OSCR::UI::print(FS(OSCR::Strings::Labels::SAVE_SIZE));
         switch (sramSize)
         {
-          case 0:
-            if (romType == 6)
-            {
-              OSCR::Lang::printBytes(512UL);
-            }
-            else if (romType == 0x22)
-            {
-              OSCR::Lang::printBytes(lastByteAddress);
-            }
-            else if (romType == 0xFD)
-            {
-              OSCR::Lang::printBytes(32UL);
-            }
-            else
-            {
-              OSCR::UI::print(FS(OSCR::Strings::Common::None));
-            }
-            break;
+        case 0:
+          if (romType == 6)
+          {
+            sramSizeBytes = 512;
+          }
+          else if (romType == 0x22)
+          {
+            sramSizeBytes = lastByteAddress;
+          }
+          else if (romType == 0xFD)
+          {
+            sramSizeBytes = 32;
+          }
+          else
+          {
+            sramSizeBytes = 0;
+          }
+          break;
 
-          case 1:
-            OSCR::Lang::printBytes(2UL * 1024UL);
-            break;
+        case 1:
+          sramSizeBytes = 2UL * 1024UL;
+          break;
 
-          case 2:
-            OSCR::Lang::printBytes(8UL * 1024UL);
-            break;
+        case 2:
+          sramSizeBytes = 8UL * 1024UL;
+          break;
 
-          case 3:
-            if (romType == 0x20)
-            {
-              OSCR::UI::print(F("1.03"));
-              OSCR::UI::print(FS(OSCR::Strings::Units::MB));
-            }
-            else
-            {
-              OSCR::Lang::printBytes(32UL * 1024UL);
-            }
-            break;
+        case 3:
+          if (romType == 0x20)
+          {
+            sramSizeBytes = 1079296;
+            //OSCR::UI::print(F("1.03"));
+            //OSCR::UI::print(FS(OSCR::Strings::Units::MB));
+          }
+          else
+          {
+            sramSizeBytes = 32UL * 1024UL;
+          }
+          break;
 
-          case 4:
-            OSCR::Lang::printBytes(128UL * 1024UL);
-            break;
+        case 4:
+          sramSizeBytes = 128UL * 1024UL;
+          break;
 
-          case 5:
-            OSCR::Lang::printBytes(64UL * 1024UL);
-            break;
+        case 5:
+          sramSizeBytes = 64UL * 1024UL;
+          break;
 
-          default:
-            OSCR::UI::print(FS(OSCR::Strings::Common::None));
-            break;
+        default:
+          sramSizeBytes = 0;
+          break;
+        }
+
+        if (sramSizeBytes > 0)
+        {
+          OSCR::UI::printSize(OSCR::Strings::Common::Save, sramSizeBytes, true);
         }
 
         OSCR::UI::waitButton();
@@ -1350,7 +1351,7 @@ namespace OSCR::Cores
       calcChecksum -= eepbit[7];
 
       OSCR::UI::clearLine();
-      OSCR::UI::print(FS(OSCR::Strings::Labels::CHECKSUM));
+      OSCR::UI::print(FS(OSCR::Strings::Common::Checksum));
       OSCR::UI::printHex(calcChecksum);
 
       if (calcChecksum != checksum)
@@ -2017,12 +2018,11 @@ namespace OSCR::Cores
         statusReg = readByte(address);
         /* Debug
         count++;
-        if (count > 250) {
+        if (count > 250)
+        {
           OSCR::UI::printLine();
-          OSCR::UI::print(FS(OSCR::Strings::Labels::BANK));
-          OSCR::UI::print(currBank);
-          OSCR::UI::print(F(" Addr: "));
-          OSCR::UI::printLine(currAddr + currByte);
+          OSCR::UI::printValue(OSCR::Strings::Common::Bank, currBank);
+          OSCR::UI::printValue(OSCR::Strings::Common::Address, currAddr + currByte);
           OSCR::UI::wait();
         }
         */
@@ -2079,15 +2079,13 @@ namespace OSCR::Cores
       if (OSCR::Cores::Flash::getFlashDetail())
       {
         OSCR::UI::printLine(OSCR::Databases::Basic::mapperDetail->name);
-        OSCR::UI::print(FS(OSCR::Strings::Labels::BANKS));
-        OSCR::UI::print(romBanks);
-        OSCR::UI::print(FS(OSCR::Strings::Symbol::Slash));
-        OSCR::UI::printLineSync(OSCR::Cores::Flash::flashSize / 0x4000);
+        OSCR::UI::printValue(OSCR::Strings::Common::Banks, (uint32_t)romBanks, (uint32_t)(OSCR::Cores::Flash::flashSize / 0x4000));
       }
       else
       {
-        OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
-        OSCR::UI::printHex(flashid);
+        OSCR::UI::printLabel(OSCR::Strings::Common::ID);
+        OSCR::UI::printHexLine(flashid);
+
         OSCR::UI::error(FS(OSCR::Strings::Errors::UnknownType));
         return;
       }
@@ -2455,10 +2453,7 @@ namespace OSCR::Cores
         return false;
       }
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::BANKS));
-      OSCR::UI::print(romBanks);
-      OSCR::UI::print(FS(OSCR::Strings::Symbol::Slash));
-      OSCR::UI::printLineSync(flashBanks);
+      OSCR::UI::printValue(OSCR::Strings::Common::Banks, (uint32_t)romBanks, (uint32_t)flashBanks);
 
       cartOn();
 
@@ -2727,8 +2722,8 @@ namespace OSCR::Cores
 
         if (flashid != 0xBF04)
         {
-          OSCR::UI::printLine(FS(OSCR::Strings::Labels::ID));
-          OSCR::UI::printLine(flashid);
+          OSCR::UI::printLabel(OSCR::Strings::Common::ID);
+          OSCR::UI::printHexLine(flashid);
           OSCR::UI::error(FS(OSCR::Strings::Errors::UnknownType));
           return;
         }
@@ -2749,15 +2744,10 @@ namespace OSCR::Cores
         OSCR::UI::printLine(F("SST 28LF040"));
       }
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::BANKS));
-      OSCR::UI::print(romBanks);
-      OSCR::UI::print(FS(OSCR::Strings::Symbol::Slash));
-      OSCR::UI::printLine(64);
+      OSCR::UI::printValue(OSCR::Strings::Common::Banks, romBanks, (uint16_t)64);
 
-      OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-      OSCR::Lang::printBytesLine(romSize);
+      OSCR::UI::printSize(OSCR::Strings::Common::ROM, romSize, true);
 
-      // Initialize progress bar
       OSCR::UI::ProgressBar::init((uint32_t)(romBanks)*8192);
 
       for (size_t workBank = 0; workBank < romBanks; workBank++) // Loop over banks
@@ -2858,8 +2848,8 @@ namespace OSCR::Cores
         delay(100);
         if (flashid != 0xBF04)
         {
-          OSCR::UI::printLine(FS(OSCR::Strings::Labels::ID));
-          OSCR::UI::printLine(flashid);
+          OSCR::UI::printLabel(OSCR::Strings::Common::ID);
+          OSCR::UI::printHexLine(flashid);
           OSCR::UI::error(FS(OSCR::Strings::Errors::UnknownType));
           return;
         }
@@ -3167,8 +3157,8 @@ namespace OSCR::Cores
 
       if (flashid != 0xBF04)
       {
-        OSCR::UI::printLine(FS(OSCR::Strings::Labels::ID));
-        OSCR::UI::printLine(flashid);
+        OSCR::UI::printLabel(OSCR::Strings::Common::ID);
+        OSCR::UI::printHexLine(flashid);
         OSCR::UI::error(FS(OSCR::Strings::Errors::UnknownType));
         return;
       }
@@ -3399,15 +3389,14 @@ namespace OSCR::Cores
       {
         OSCR::UI::clear();
         OSCR::UI::printLine(F("SST 39SF010"));
-        OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-        OSCR::Lang::printBytesLine(128UL * 1024UL);
+        OSCR::UI::printSize(OSCR::Strings::Common::ROM, 128UL * 1024UL, true);
         OSCR::UI::update();
       }
       else
       {
         cartOff();
-        OSCR::UI::printLine(FS(OSCR::Strings::Labels::ID));
-        OSCR::UI::printLine(flashid);
+        OSCR::UI::printLabel(OSCR::Strings::Common::ID);
+        OSCR::UI::printHexLine(flashid);
         OSCR::UI::error(FS(OSCR::Strings::Errors::UnknownType));
         return;
       }
@@ -3476,8 +3465,8 @@ namespace OSCR::Cores
 
       if (flashid != 0xBFB5)
       {
-        OSCR::UI::printLine(FS(OSCR::Strings::Labels::ID));
-        OSCR::UI::printLine(flashid);
+        OSCR::UI::printLabel(OSCR::Strings::Common::ID);
+        OSCR::UI::printHexLine(flashid);
         OSCR::UI::error(FS(OSCR::Strings::Errors::UnknownType));
         return;
       }

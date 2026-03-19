@@ -330,8 +330,7 @@ namespace OSCR::Cores::AtariLynx
     //OSCR::UI::print(F(" BLOCK="));
     //OSCR::UI::printLine(lynxBlockSize);
 
-    //OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    //OSCR::Lang::printBytesLine(romSize);
+    //OSCR::UI::printSize(OSCR::Strings::Common::ROM, romSize);
 
     // Ensure valid block size, file size, and file fits in flash
     uint32_t expectedSize = (uint32_t)LYNX_BLOCKCOUNT * lynxBlockSize;

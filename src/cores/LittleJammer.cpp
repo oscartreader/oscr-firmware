@@ -314,12 +314,10 @@ namespace OSCR::Cores::LittleJammer
 
     if (fromCRDB)
     {
-      OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-      OSCR::UI::printLine(romDetail->name);
+      OSCR::UI::printValue(OSCR::Strings::Common::Name, romDetail->name);
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(LJ[romSize] * 1024 * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, LJ[romSize] * 1024 * 1024);
 
     OSCR::UI::wait();
   }

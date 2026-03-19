@@ -458,8 +458,7 @@ namespace OSCR::Cores::Atari8
     OSCR::UI::print(F("SLOT: "));
     OSCR::UI::printLine((atari8right) ? F("RIGHT") : F("LEFT"));
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(romSizes[romSize] * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, romSizes[romSize] * 1024);
 
     OSCR::UI::wait();
   }

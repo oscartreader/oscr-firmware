@@ -644,15 +644,12 @@ namespace OSCR::Cores::Atari2600
     printHeader();
     if (fromCRDB)
     {
-      OSCR::UI::print(FS(OSCR::Strings::Labels::NAME));
-      OSCR::UI::printLine(romDetail->name);
+      OSCR::UI::printValue(OSCR::Strings::Common::Name, romDetail->name);
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::MAPPER));
-    OSCR::UI::printLine(mapperDetail->name);
+    OSCR::UI::printValue(OSCR::Strings::Common::Mapper, mapperDetail->name);
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-    OSCR::Lang::printBytesLine(mapperDetail->sizeLow * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, mapperDetail->sizeLow * 1024);
   }
 
   //******************************************

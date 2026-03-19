@@ -676,12 +676,12 @@ namespace OSCR
         current += steps;
 
         // Progress bar with unknown target
-        if (!total)
+        if (total < 1)
         {
-          return render();
+          if (current > kSteps) current = 0;
+          render();
+          return;
         }
-
-        uint8_t progress = floor(current / total);
 
         if (current >= nextUpdate) render();
       }

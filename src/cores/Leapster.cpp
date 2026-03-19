@@ -581,8 +581,7 @@ namespace OSCR::Cores::Leapster
 
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ROM_SIZE));
-    OSCR::Lang::printBytesLine(LEAPSTER[leapsize] * 1024 * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, LEAPSTER[leapsize] * 1024 * 1024);
   }
 
   //******************************************
@@ -629,7 +628,7 @@ namespace OSCR::Cores::Leapster
 
     dataIn();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+    OSCR::UI::printLabel(OSCR::Strings::Common::ID);
     OSCR::UI::printHexLine(flashid);
 
     OSCR::UI::update();

@@ -12,6 +12,31 @@
 #   define snesCRDB ((OSCR::Databases::SNES *)cartCRDB)
 
 /**
+ * @brief Strings for the %SNES core
+ */
+namespace OSCR::Strings::SNES
+{
+  extern char const PROGMEM SlowROM[];
+  extern char const PROGMEM FastROM[];
+  extern char const PROGMEM HiROM[];
+  extern char const PROGMEM LoROM[];
+  extern char const PROGMEM ExHiRom[];
+
+  extern char const PROGMEM DSP1[];
+  extern char const PROGMEM DSP2[];
+  extern char const PROGMEM SDD1[];
+  extern char const PROGMEM SRTC[];
+  extern char const PROGMEM BATT[];
+  extern char const PROGMEM SPC[];
+  extern char const PROGMEM RTClock[];
+  extern char const PROGMEM SA1[];
+
+  extern char const * const ICTemplate3;
+  extern char const * const ICTemplate2;
+  extern char const * const ICTemplate1;
+}
+
+/**
  * @brief System core for the %SNES
  */
 namespace OSCR::Cores::SNES

@@ -350,7 +350,7 @@ namespace OSCR::Cores::LittleJammerPro
     CS1_HIGH;
 
     // Flash ID
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+    OSCR::UI::printLabel(OSCR::Strings::Common::ID);
     flash1size = deviceID(id1, id2);
   }
 
@@ -371,7 +371,7 @@ namespace OSCR::Cores::LittleJammerPro
     CS2_HIGH;
 
     // Flash ID
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+    OSCR::UI::printLabel(OSCR::Strings::Common::ID);
     flash2size = deviceID(id1, id2);
   }
 
@@ -491,7 +491,7 @@ namespace OSCR::Cores::LittleJammerPro
     CS1_HIGH; // U1 HIGH
 
     // Flash ID
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+    OSCR::UI::printLabel(OSCR::Strings::Common::ID);
     flash1size = deviceID(id1, id2);
   }
 
@@ -518,7 +518,7 @@ namespace OSCR::Cores::LittleJammerPro
     CS2_HIGH; // U2 HIGH
 
     // Flash ID
-    OSCR::UI::print(FS(OSCR::Strings::Labels::ID));
+    OSCR::UI::printLabel(OSCR::Strings::Common::ID);
     flash1size = deviceID(id1, id2);
 
     OSCR::UI::update();

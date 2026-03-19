@@ -689,8 +689,7 @@ namespace OSCR::Cores::PCEngine
   {
     printHeader();
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SAVE_SIZE));
-    OSCR::UI::printLine(FS(OSCR::Strings::Units::Size2KB));
+    OSCR::UI::printValue_P(OSCR::Strings::Common::Save, OSCR::Strings::Units::Size2KB);
 
     // Get name, add extension and convert to char array for sd lib
     snprintf_P(fileName, kFileNameMax, PSTR("BANKRAM%d"), bank_index + 1);
@@ -883,11 +882,8 @@ namespace OSCR::Cores::PCEngine
       detect_rom_size();
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-
-    OSCR::Lang::printBytes(romSize * 1024);
-
-    OSCR::UI::printLine(FS(forcedSize ? OSCR::Strings::Symbol::Asterisk : OSCR::Strings::Symbol::Empty));
+    OSCR::UI::print(FS(forcedSize ? OSCR::Strings::Symbol::Asterisk : OSCR::Strings::Symbol::Empty));
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, romSize * 1024);
 
     pin_read_write();
 
@@ -1022,14 +1018,13 @@ namespace OSCR::Cores::PCEngine
 
     if (flashSize == 0)
     {
-      OSCR::UI::print(F("UNKNOWN "));
+      OSCR::UI::print(FS(OSCR::Strings::Common::Unknown));
       OSCR::UI::printLine(deviceId);
       OSCR::UI::waitButton();
       return;
     }
 
-    OSCR::UI::print(FS(OSCR::Strings::Labels::SIZE));
-    OSCR::Lang::printBytesLine(flashSize);
+    OSCR::UI::printSize(OSCR::Strings::Common::Flash, flashSize);
 
     OSCR::UI::waitButton();
 
