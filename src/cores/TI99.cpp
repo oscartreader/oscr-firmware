@@ -543,7 +543,7 @@ namespace OSCR::Cores::TI99
 
         OSCR::Storage::Shared::close();
 
-        OSCR::Databases::Standard::matchCRC();
+        ti99CRDB->matchCRC();
       }
     }
   }
@@ -636,7 +636,7 @@ namespace OSCR::Cores::TI99
 
     OSCR::Storage::Shared::close();
 
-    OSCR::Databases::Standard::matchCRC();
+    ti99CRDB->matchCRC();
   }
 
   //******************************************

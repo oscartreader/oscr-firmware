@@ -236,7 +236,8 @@ namespace OSCR::Cores::Commodore64
 
   void openCRDB()
   {
-    OSCR::Databases::Extended::setup(FS(OSCR::Strings::FileType::Commodore64));
+    OSCR::Databases::Standard::setup(FS(OSCR::Strings::FileType::Commodore64));
+    OSCR::Databases::Basic::setupMapper(F("c64-mappers"));
   }
 
   void closeCRDB()
@@ -668,7 +669,7 @@ namespace OSCR::Cores::Commodore64
 
   void setCart()
   {
-    OSCR::Databases::Extended::browseDatabase();
+    OSCR::Databases::Standard::browseDatabase();
 
     if (!OSCR::Databases::Basic::matchMapper(romDetail->mapper))
     {

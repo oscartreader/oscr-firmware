@@ -56,10 +56,10 @@ namespace OSCR::Cores::VIC20
   // /BLK3(PH5) - SNES /WR  - [$6000-$7FFF]
   // /BLK5(PH6) - SNES /RD  - [$A000-$BFFF]
 
-  using OSCR::Databases::Extended::crdbRecord;
-  using OSCR::Databases::Extended::crdb;
-  using OSCR::Databases::Extended::romDetail;
-  using OSCR::Databases::Extended::romRecord;
+  using OSCR::Databases::Standard::crdbRecord;
+  using OSCR::Databases::Standard::crdb;
+  using OSCR::Databases::Standard::romDetail;
+  using OSCR::Databases::Standard::romRecord;
 
   //******************************************
   // VARIABLES
@@ -198,7 +198,7 @@ namespace OSCR::Cores::VIC20
 
   void openCRDB()
   {
-    OSCR::Databases::Extended::setup(F("vic20"));
+    OSCR::Databases::Standard::setup(FS(OSCR::Strings::FileType::VIC20));
   }
 
   void closeCRDB()
@@ -334,7 +334,7 @@ namespace OSCR::Cores::VIC20
       OSCR::UI::print(FS(OSCR::Strings::Symbol::Space));
 
       // Compare CRC32 to database and rename ROM if found
-      OSCR::Databases::Extended::matchCRC();
+      OSCR::Databases::Standard::matchCRC();
     }
 
     cartOff();
@@ -398,7 +398,7 @@ namespace OSCR::Cores::VIC20
 
   void setCart()
   {
-    OSCR::Databases::Extended::browseDatabase();
+    OSCR::Databases::Standard::browseDatabase();
 
     romSize = romDetail->size;
     vic20map = romDetail->mapper;

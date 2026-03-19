@@ -19,6 +19,7 @@ namespace OSCR
         crc32_t id32;
         uint32_t mapper;
         uint32_t size;
+        uint32_t save;
         char name[101];
       };
 

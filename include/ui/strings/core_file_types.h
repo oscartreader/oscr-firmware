@@ -17,13 +17,16 @@ namespace OSCR::Strings::FileType
   constexpr char const PROGMEM SaveBackup[]         = "brm";
   constexpr char const PROGMEM Raw[]                = "bin";
   constexpr char const PROGMEM Map[]                = "map";
-  constexpr char const PROGMEM CRCX[]               = "crc";
   constexpr char const PROGMEM U2[]                 = "u2";
 
-  constexpr char const PROGMEM DefaultName[]        = "CART";
+  // Have to name it CRCX because CRC is the name of a macro on the Arduino Mbed (-sigh-)
+  constexpr char const PROGMEM CRCX[]               = "crc"; //<! CRC file extension
+
+  constexpr char const PROGMEM DefaultName[]        = "CART"; //<! File name used when a cartridge is unknown.
 
   // Because these are also used for the core subfolders, generic definitions go above.
-  // Try to keep the below ones unique.
+  // Keep the below unique as they are used for CRDB names as well.
+  // If a system doesn't have an extension then use a shortened name [limit to 6 characters].
 
   constexpr char const PROGMEM GameBoy[]            = "gb";
   constexpr char const PROGMEM GBMemoryModule[]     = "gbm";
@@ -51,7 +54,7 @@ namespace OSCR::Strings::FileType
   constexpr char const PROGMEM Intellivision[]      = "int";
   constexpr char const PROGMEM Colecovision[]       = "col";
   constexpr char const PROGMEM VirtualBoy[]         = "vb";
-  constexpr char const PROGMEM Supervision[]        = "wsv";
+  constexpr char const PROGMEM Supervision[]        = "sv";
   constexpr char const PROGMEM PocketChallengeW[]   = "pcw";
   constexpr char const PROGMEM Atari2600[]          = "a26";
   constexpr char const PROGMEM Atari5200[]          = "a52";
@@ -61,7 +64,7 @@ namespace OSCR::Strings::FileType
   constexpr char const PROGMEM ChannelF[]           = "chf";
   constexpr char const PROGMEM SuperAcan[]          = "acan";
   constexpr char const PROGMEM MSX[]                = "msx";
-  constexpr char const PROGMEM PokemonMini[]        = "";
+  constexpr char const PROGMEM PokemonMini[]        = "pkmn";
   constexpr char const PROGMEM CasioLoopy[]         = "loopy";
   constexpr char const PROGMEM Commodore64[]        = "c64";
   constexpr char const PROGMEM AtariJaguar[]        = "j64";
@@ -72,13 +75,13 @@ namespace OSCR::Strings::FileType
   constexpr char const PROGMEM LittleJammer[]       = "lj";
   constexpr char const PROGMEM LittleJammerPro[]    = "ljpro";
   constexpr char const PROGMEM CasioPV1000[]        = "pv1k";
-  constexpr char const PROGMEM VIC20[]              = "";
-  constexpr char const PROGMEM Leapster[]           = "";
-  constexpr char const PROGMEM RCAStudio2[]         = "";
-  constexpr char const PROGMEM TI99[]               = "";
-  constexpr char const PROGMEM TomyPyuuta[]         = "";
+  constexpr char const PROGMEM VIC20[]              = "vic20";
+  constexpr char const PROGMEM Leapster[]           = "leap";
+  constexpr char const PROGMEM RCAStudio2[]         = "rca2";
+  constexpr char const PROGMEM TI99[]               = "ti99";
+  constexpr char const PROGMEM TomyPyuuta[]         = "pyuuta";
   constexpr char const PROGMEM TRS80[]              = "trs";
-  constexpr char const PROGMEM VSmile[]             = "";
+  constexpr char const PROGMEM VSmile[]             = "vsmile";
   constexpr char const PROGMEM CPS3[]               = "cps3";
 
   constexpr char const PROGMEM Flash[]              = "flash";

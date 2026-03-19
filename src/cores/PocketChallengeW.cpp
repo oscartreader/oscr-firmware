@@ -196,7 +196,7 @@ namespace OSCR::Cores::PocketChallengeW
 
   void openCRDB()
   {
-    OSCR::Databases::Basic::setup(F("pcw"));
+    OSCR::Databases::Basic::setup(FS(OSCR::Strings::FileType::PocketChallengeW));
   }
 
   void closeCRDB()

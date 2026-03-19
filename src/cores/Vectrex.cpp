@@ -182,7 +182,7 @@ namespace OSCR::Cores::Vectrex
 
   void openCRDB()
   {
-    OSCR::Databases::Standard::setup(FS(OSCR::Strings::FileType::TRS80));
+    OSCR::Databases::Standard::setup(FS(OSCR::Strings::FileType::Vectrex));
   }
 
   void closeCRDB()

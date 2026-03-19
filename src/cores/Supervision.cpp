@@ -155,7 +155,7 @@ namespace OSCR::Cores::Supervision
 
   void openCRDB()
   {
-    OSCR::Databases::Standard::setup(FS(OSCR::Strings::FileType::VSmile));
+    OSCR::Databases::Standard::setup(FS(OSCR::Strings::FileType::Supervision));
   }
 
   void closeCRDB()
