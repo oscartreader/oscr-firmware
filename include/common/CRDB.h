@@ -111,7 +111,7 @@ namespace OSCR
       uint8_t readNum32(uint32_t * dest);
       uint8_t readNum32(crc32_t & dest);
 
-      uint32_t numRecords() const;
+      uint_fast16_t numRecords() const;
 
       bool loadRecordIndex(uint16_t index);
       bool gotoRecordIndex(uint16_t index);

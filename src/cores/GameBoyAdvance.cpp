@@ -728,10 +728,6 @@ namespace OSCR::Cores::GameBoyAdvance
     }
     while (true);
 
-    // cart not in list
-    cartSize = 0;
-    saveType = 0;
-
     // Get cart ID
     cartID[0] = char(OSCR::Storage::Shared::buffer[0xAC]);
     cartID[1] = char(OSCR::Storage::Shared::buffer[0xAD]);
@@ -741,9 +737,11 @@ namespace OSCR::Cores::GameBoyAdvance
     bool searching = true;
     bool found = false;
     bool reverse = false;
-    int_fast32_t firstFound = -1;
-    int_fast32_t lastFound = -1;
-    uint_fast16_t recordIndex = 0;
+
+    uint_fast16_t const indexMax = gbaCRDB->numRecords() - 1;
+    uint_fast16_t firstIndex = 0; // The first index that was found
+    uint_fast16_t previousIndex = 0; // The previous index that was found
+    uint_fast16_t currentIndex = 0; // The current index
 
     // Loop through file
     while (searching)
@@ -751,26 +749,21 @@ namespace OSCR::Cores::GameBoyAdvance
       printHeader();
       OSCR::UI::printSync(FS(OSCR::Strings::Status::SearchingDatabase));
 
-      if (!gbaCRDB->searchRecord(cartID, recordIndex, reverse))
+      if (!gbaCRDB->searchRecord(cartID, currentIndex, reverse))
       {
-        if (firstFound < 0) // Never found anything
+        if ((!found) || (currentIndex == previousIndex))
         {
-          searching = false;
-          break;
+          configureCart();
+          return;
         }
 
-        // Check for error / goto last good record
-        if (gbaCRDB->hasError() || !gbaCRDB->gotoRecordIndex(lastFound))
-        {
-          OSCR::UI::fatalErrorStorage();
-        }
-
-        // Update current index
-        recordIndex = lastFound;
+        currentIndex = previousIndex;
+        continue;
       }
 
       OSCR::UI::clearLine(); // Clear "Searching Database..."
 
+      currentIndex = gbaCRDB->getRecordIndex();
       romRecord = gbaCRDB->record();
       romDetail = romRecord->data();
 
@@ -787,14 +780,17 @@ namespace OSCR::Cores::GameBoyAdvance
       OSCR::UI::printSize(OSCR::Strings::Common::ROM, ((uint32_t)romDetail->size) * 1024 * 1024);
       OSCR::UI::printType(OSCR::Strings::Common::Save, romDetail->saveType);
 
-#   if HAS_OUTPUT_LINE_ADJUSTMENTS
-      if (recordIndex == lastFound)
+#   if HAS_OUTPUT_LINE_ALIGNMENT
+      if (found)
       {
-        OSCR::UI::printCenter_P(OSCR::Strings::Errors::OnlyMatchingRecord);
-      }
-      else if (recordIndex == firstFound)
-      {
-        OSCR::UI::printCenter_P(OSCR::Strings::Errors::BackAtFirst);
+        if (currentIndex == previousIndex)
+        {
+          OSCR::UI::printCenter_P(OSCR::Strings::Errors::OnlyMatchingRecord);
+        }
+        else if (currentIndex == firstIndex)
+        {
+          OSCR::UI::printCenter_P(OSCR::Strings::Errors::BackAtFirst);
+        }
       }
 
       OSCR::UI::gotoLast();
@@ -809,13 +805,16 @@ namespace OSCR::Cores::GameBoyAdvance
 
       OSCR::UI::printRight(tmpText);
 #   else
-      if (recordIndex == lastFound)
+      if (found)
       {
-        OSCR::UI::printLine(FS(OSCR::Strings::Errors::OnlyMatchingRecord));
-      }
-      else if (recordIndex == firstFound)
-      {
-        OSCR::UI::printLine(FS(OSCR::Strings::Errors::BackAtFirst));
+        if (currentIndex == previousIndex)
+        {
+          OSCR::UI::printLine(FS(OSCR::Strings::Errors::OnlyMatchingRecord));
+        }
+        else if (currentIndex == firstIndex)
+        {
+          OSCR::UI::printLine(FS(OSCR::Strings::Errors::BackAtFirst));
+        }
       }
 
       OSCR::UI::gotoLast();
@@ -826,51 +825,52 @@ namespace OSCR::Cores::GameBoyAdvance
       OSCR::UI::print(tmpText);
 #   endif
 
+      if (!found)
+      {
+        found = true;
+        firstIndex = currentIndex;
+      }
+
+      previousIndex = currentIndex;
+
       switch (OSCR::UI::waitInput())
       {
       case OSCR::UI::UserInput::kUserInputConfirm: // Confirmed
       case OSCR::UI::UserInput::kUserInputConfirmShort:
       case OSCR::UI::UserInput::kUserInputConfirmLong:
         searching = false; // Exit the loop
-        found = true;
-        break;
+        continue;
 
       case OSCR::UI::UserInput::kUserInputNext: // Read next entry
         reverse = false;
-        lastFound = gbaCRDB->getRecordIndex();
-        recordIndex = lastFound + 1;
 
-        if (firstFound < 0)
+        if (currentIndex == indexMax)
         {
-          firstFound = lastFound;
+          currentIndex = 0;
         }
-
+        else
+        {
+          currentIndex++;
+        }
         continue;
 
       case OSCR::UI::UserInput::kUserInputBack: // Read previous entry
         reverse = true;
-        lastFound = gbaCRDB->getRecordIndex();
-        recordIndex = lastFound - 1;
 
-        if (firstFound < 0)
+        if (currentIndex == 0)
         {
-          firstFound = lastFound;
+          currentIndex = indexMax;
         }
-
+        else
+        {
+          currentIndex--;
+        }
         continue;
 
-      case OSCR::UI::UserInput::kUserInputUnknown:
+      case OSCR::UI::UserInput::kUserInputUnknown: // Should not happen.
       case OSCR::UI::UserInput::kUserInputIgnore:
-        // Should not happen.
-        break;
+        OSCR::Util::unreachable();
       }
-    }
-
-    if (!found)
-    {
-      configureCart();
-
-      return;
     }
 
     cartSize = romDetail->size *= 0x100000;

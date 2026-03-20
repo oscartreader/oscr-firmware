@@ -266,7 +266,7 @@ namespace OSCR::CRDB
     return readLen;
   }
 
-  uint32_t CRDBBase::numRecords() const
+  uint_fast16_t CRDBBase::numRecords() const
   {
     return recordCount;
   }

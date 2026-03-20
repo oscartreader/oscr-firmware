@@ -63,6 +63,7 @@ namespace OSCR::Databases
     bool searchRecord(char const * serialSearch, uint16_t startingRecord = 0, bool reverse = false)
     {
       constexpr uint8_t const offset = 4;
+      uint_fast16_t const indexMax = recordCount - 1;
       int8_t const step = reverse ? -1 : 1;
       uint16_t endRecord;
 
@@ -78,18 +79,9 @@ namespace OSCR::Databases
       else if (startingRecord == recordCount) endRecord = 0;
       else endRecord = startingRecord + -step;
 
-      for (int_fast32_t i = startingRecord; gotoRecordIndex(i) && file.seekCur(offset); i += step)
+      for (uint_fast16_t i = startingRecord; gotoRecordIndex(i) && file.seekCur(offset);)
       {
         char serial[5];
-
-        if (i < 0)
-        {
-          i = recordCount;
-        }
-        else if (i > recordCount)
-        {
-          i = 0;
-        }
 
         int_fast8_t const readLen = readBytes(serial, 4);
 
@@ -123,7 +115,20 @@ namespace OSCR::Databases
           return true;
         }
 
-        if (i == endRecord) break; // Will loop around otherwise
+        if (reverse && (i == 0))
+        {
+          i = indexMax;
+        }
+        else if (!reverse && (i == indexMax))
+        {
+          i = 0;
+        }
+        else
+        {
+          i += step;
+        }
+
+        if (i == endRecord) return false; // Will infinite loop otherwise
       }
 
 #   if CRDB_DEBUGGING
