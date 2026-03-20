@@ -1,0 +1,3 @@
+[submodule "databases"]
+	path = databases
+	url = git@github.com:oscartreader/oscr-databases.git
