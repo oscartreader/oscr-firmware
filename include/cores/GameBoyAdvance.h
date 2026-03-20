@@ -25,6 +25,8 @@ namespace OSCR::Cores::GameBoyAdvance
     char name[101];
   };
 
+  constexpr uint8_t const kMenuOptionMax = 6;
+
   extern crdbGBARecord * romDetail;
 
   void menu();
@@ -43,6 +45,8 @@ namespace OSCR::Cores::GameBoyAdvance
   void configureCart();
 
   void readROM();
+  void readSave();
+  void writeSave();
 
   void rtcTest();
 
@@ -75,8 +79,6 @@ namespace OSCR::Cores::GameBoyAdvance
 
   void setROM();
 
-  bool compare_checksum();
-
   uint16_t readWord(uint32_t myAddress);
   void writeWord(uint32_t myAddress, uint16_t myWord);
 
@@ -87,7 +89,7 @@ namespace OSCR::Cores::GameBoyAdvance
   void writeByte(uint16_t myAddress, uint8_t myData);
 
   uint8_t checksumHeader(uint8_t const * header);
-  void getCartInfo();
+  bool getCartInfo();
 
   uint8_t getSaveType();
   void printFlashTypeAndWait(char const * caption);

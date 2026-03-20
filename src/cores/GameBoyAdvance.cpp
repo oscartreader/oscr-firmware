@@ -31,15 +31,6 @@ namespace OSCR::Cores::GameBoyAdvance
   constexpr uint32_t const saveRtcRW      = 0xC6;
   constexpr uint32_t const saveRtcEnable  = 0xC8;
 
-  constexpr char const * const PROGMEM menuOptionsGBA[] = {
-    OSCR::Strings::MenuOptions::ReadROM,
-    OSCR::Strings::MenuOptions::ReadSave,
-    OSCR::Strings::MenuOptions::WriteSave,
-    OSCR::Strings::MenuOptions::SetSaveType,
-    OSCR::Strings::MenuOptions::RefreshCart,
-    OSCR::Strings::MenuOptions::Back,
-  };
-
 # if HAS_FLASH
   // 369-in-1 menu items
   constexpr char const PROGMEM Menu369Item1[] = "Read 256MB";
@@ -76,192 +67,89 @@ namespace OSCR::Cores::GameBoyAdvance
   crdbGBARecord * romDetail;
   OSCR::Databases::GBARecord * romRecord = nullptr;
 
+  uint8_t refreshCart(__FlashStringHelper const * menuOptions[], MenuOption * const menuOptionMap)
+  {
+    uint8_t option = 0;
+
+    if (!getCartInfo())
+    {
+      // Set the menu options to only be "Back" so we return to the main menu.
+      menuOptions[option] = FS(OSCR::Strings::MenuOptions::Back);
+      menuOptionMap[option] = MenuOption::Back;
+      return 1;
+    }
+
+    menuOptions[option] = FS(OSCR::Strings::MenuOptions::ReadROM);
+    menuOptionMap[option] = MenuOption::ReadROM;
+    option++;
+
+    if (saveType)
+    {
+      menuOptions[option] = FS(OSCR::Strings::MenuOptions::ReadSave);
+      menuOptionMap[option] = MenuOption::ReadSave;
+      option++;
+
+      menuOptions[option] = FS(OSCR::Strings::MenuOptions::WriteSave);
+      menuOptionMap[option] = MenuOption::WriteSave;
+      option++;
+    }
+
+    menuOptions[option] = FS(OSCR::Strings::MenuOptions::SetSaveType);
+    menuOptionMap[option] = MenuOption::SetSaveType;
+    option++;
+
+    menuOptions[option] = FS(OSCR::Strings::MenuOptions::RefreshCart);
+    menuOptionMap[option] = MenuOption::RefreshCart;
+    option++;
+
+    // Fill the rest of the array with the "Back" option
+    //  (just in case something tries to read it)
+    for (uint8_t i = option; i < kMenuOptionMax; i++)
+    {
+      menuOptions[i] = FS(OSCR::Strings::MenuOptions::Back);
+      menuOptionMap[i] = MenuOption::Back;
+    }
+
+    // Increment once so the first "Back" option shows
+    return ++option;
+  }
+
   void menu()
   {
+    __FlashStringHelper const * menuOptions[kMenuOptionMax] = {};
+    MenuOption menuOptionMap[kMenuOptionMax] = {};
+    uint8_t menuOptionCount;
+
     openCRDB();
 
-    getCartInfo();
+    menuOptionCount = refreshCart(menuOptions, menuOptionMap);
 
     do
     {
-      switch (static_cast<MenuOption>(OSCR::UI::menu(FS(OSCR::Strings::Cores::GameBoyAdvance), menuOptionsGBA, sizeofarray(menuOptionsGBA))))
+      // If there is only one option, automatically select it. Otherwise, create a menu as normal.
+      uint8_t selected = (menuOptionCount == 1) ? 0 : OSCR::UI::menu(FS(OSCR::Strings::Cores::GameBoyAdvance), menuOptions, menuOptionCount);
+
+      switch (menuOptionMap[selected])
       {
       case MenuOption::ReadROM:
-        // Read rom
         readROM();
         break;
 
-      case MenuOption::ReadSave: // Read save
-        switch (getSaveType())
-        {
-        case 1:
-          // 4K EEPROM
-          readEeprom(4);
-          break;
-
-        case 2:
-          // 64K EEPROM
-          readEeprom(64);
-          break;
-
-        case 3:
-          // 256K SRAM/FRAM
-          readSRAM(32768, 0);
-          break;
-
-        case 4:
-          // 512K Flash
-          readFlash(1, 65536, 0);
-          break;
-
-        case 5:
-          // 1M Flash (divided into two banks)
-          switchBank(0x0);
-          setROM();
-          readFlash(1, 65536, 0);
-          switchBank(0x1);
-          setROM();
-          readFlash(0, 65536, 65536);
-          break;
-
-        case 6:
-          // 512K SRAM/FRAM
-          readSRAM(65536, 0);
-          break;
-        }
-
-        setROM();
+      case MenuOption::ReadSave:
+        readSave();
         break;
 
-      case MenuOption::WriteSave: // Write save
-        switch (getSaveType())
-        {
-        case 1:
-          // 4K EEPROM
-          writeEeprom(4);
-          verifyEEP(4);
-          setROM();
-          break;
-
-        case 2:
-          // 64K EEPROM
-          writeEeprom(64);
-          verifyEEP(64);
-          break;
-
-        case 3:
-          // 256K SRAM/FRAM
-          writeSRAM(32768, 0);
-          break;
-
-        case 4:
-          // 512K Flash
-          idFlash();
-          resetFlash();
-
-          if (flashid == 0x1F3D)
-          {
-            printFlashTypeAndWait(PSTR("Atmel AT29LV512"));
-          }
-          else if (flashid == 0xBFD4)
-          {
-            printFlashTypeAndWait(PSTR("SST 39VF512"));
-          }
-          else if (flashid == 0xC21C)
-          {
-            printFlashTypeAndWait(PSTR("Macronix MX29L512"));
-          }
-          else if (flashid == 0x321B)
-          {
-            printFlashTypeAndWait(PSTR("Panasonic MN63F805MNP"));
-          }
-          else
-          {
-            printFlashTypeAndWait(OSCR::Strings::Common::Unknown);
-          }
-
-          if (flashid == 0x1F3D) // Atmel
-          {
-            writeFlash(1, 65536, 0, 1);
-            verifyFlash(65536, 0);
-          }
-          else
-          {
-            eraseFlash();
-
-            const uint32_t blankCheckSize = (strcmp_P(cartID, PSTR("PEAJ")) == 0) ? 65408 : 65536;
-
-            if (blankcheckFlash(blankCheckSize))
-            {
-              writeFlash(1, blankCheckSize, 0, 0);
-              verifyFlash(blankCheckSize, 0);
-            }
-          }
-          break;
-
-        case 5:
-          // 1M Flash
-          idFlash();
-          resetFlash();
-
-          if (flashid == 0xC209)
-          {
-            printFlashTypeAndWait(PSTR("Macronix MX29L010"));
-          }
-          else if (flashid == 0x6213)
-          {
-            printFlashTypeAndWait(PSTR("SANYO LE26FV10N1TS"));
-          }
-          else
-          {
-            printFlashTypeAndWait(OSCR::Strings::Common::Unknown);
-          }
-
-          eraseFlash();
-
-          // 131072 bytes are divided into two 65536 byte banks
-          for (uint8_t bank = 0; bank < 2; bank++)
-          {
-            switchBank(bank);
-            setROM();
-
-            // Card e-Reader+ does not allow access to last 128 bytes of a bank
-            if (strcmp_P(cartID, PSTR("PSAE")) == 0 || strcmp_P(cartID, PSTR("PSAJ")) == 0) // Japanese e-reader+, USA e-reader
-            {
-              if (!blankcheckFlash(65408))
-                break;
-              writeFlash(!bank, 65408, bank ? 65536 : 0, 0);
-              if (verifyFlash(65408, bank ? 65536 : 0))
-                break;
-            }
-            else
-            {
-              if (!blankcheckFlash(65536))
-                break;
-              writeFlash(!bank, 65536, bank ? 65536 : 0, 0);
-              if (verifyFlash(65536, bank ? 65536 : 0))
-                break;
-            }
-          }
-          break;
-
-        case 6:
-          // 512K SRAM/FRAM
-          writeSRAM(65536, 0);
-          break;
-        }
-
-        setROM();
+      case MenuOption::WriteSave:
+        writeSave();
         break;
 
       case MenuOption::SetSaveType:
-        saveType = 0;
-        saveType = getSaveType();
+        configureSave();
         break;
 
       case MenuOption::RefreshCart:
-        getCartInfo();
-        break;
+        menuOptionCount = refreshCart(menuOptions, menuOptionMap);
+        continue;
 
       case MenuOption::Back:
         closeCRDB();
@@ -685,7 +573,7 @@ namespace OSCR::Cores::GameBoyAdvance
   }
 
   // Read info out of rom header
-  void getCartInfo()
+  bool getCartInfo()
   {
     uint16_t logoChecksum;
 
@@ -716,7 +604,7 @@ namespace OSCR::Cores::GameBoyAdvance
 
       switch(OSCR::Prompts::abortRetryContinue())
       {
-      case OSCR::Prompts::AbortRetryContinue::Abort:    return;
+      case OSCR::Prompts::AbortRetryContinue::Abort:    return false;
 
       case OSCR::Prompts::AbortRetryContinue::Retry:    continue; // repeat the loop
       case OSCR::Prompts::AbortRetryContinue::Continue: break;    // exit the switch and then exit the loop
@@ -754,7 +642,7 @@ namespace OSCR::Cores::GameBoyAdvance
         if ((!found) || (currentIndex == previousIndex))
         {
           configureCart();
-          return;
+          return true;
         }
 
         currentIndex = previousIndex;
@@ -873,7 +761,7 @@ namespace OSCR::Cores::GameBoyAdvance
       }
     }
 
-    cartSize = romDetail->size *= 0x100000;
+    cartSize = romDetail->size * 0x100000;
 
     setOutName((char *)&OSCR::Storage::Shared::buffer[0xA0], 12);
 
@@ -940,6 +828,8 @@ namespace OSCR::Cores::GameBoyAdvance
         }
       }
     }
+
+    return true;
   }
 
   void configureROM()
@@ -1058,6 +948,159 @@ namespace OSCR::Cores::GameBoyAdvance
     {
       OSCR::Storage::Shared::rename_P(gbaCRDB->record()->data()->name, FS(OSCR::Strings::FileType::GameBoyAdvance));
     }
+  }
+
+  void readSave()
+  {
+    switch (saveType)
+    {
+    case 1: // 4K EEPROM
+      readEeprom(4);
+      break;
+
+    case 2: // 64K EEPROM
+      readEeprom(64);
+      break;
+
+    case 3: // 256K SRAM/FRAM
+      readSRAM(32768, 0);
+      break;
+
+    case 4: // 512K Flash
+      readFlash(1, 65536, 0);
+      break;
+
+    case 5: // 1M Flash (divided into two banks)
+      switchBank(0x0);
+      setROM();
+      readFlash(1, 65536, 0);
+      switchBank(0x1);
+      setROM();
+      readFlash(0, 65536, 65536);
+      break;
+
+    case 6: // 512K SRAM/FRAM
+      readSRAM(65536, 0);
+      break;
+    }
+
+    setROM();
+  }
+
+  void writeSave()
+  {
+    switch (getSaveType())
+    {
+    case 1: // 4K EEPROM
+      writeEeprom(4);
+      verifyEEP(4);
+      setROM();
+      break;
+
+    case 2: // 64K EEPROM
+      writeEeprom(64);
+      verifyEEP(64);
+      break;
+
+    case 3: // 256K SRAM/FRAM
+      writeSRAM(32768, 0);
+      break;
+
+    case 4: // 512K Flash
+      idFlash();
+      resetFlash();
+
+      if (flashid == 0x1F3D)
+      {
+        printFlashTypeAndWait(PSTR("Atmel AT29LV512"));
+      }
+      else if (flashid == 0xBFD4)
+      {
+        printFlashTypeAndWait(PSTR("SST 39VF512"));
+      }
+      else if (flashid == 0xC21C)
+      {
+        printFlashTypeAndWait(PSTR("Macronix MX29L512"));
+      }
+      else if (flashid == 0x321B)
+      {
+        printFlashTypeAndWait(PSTR("Panasonic MN63F805MNP"));
+      }
+      else
+      {
+        printFlashTypeAndWait(OSCR::Strings::Common::Unknown);
+      }
+
+      if (flashid == 0x1F3D) // Atmel
+      {
+        writeFlash(1, 65536, 0, 1);
+        verifyFlash(65536, 0);
+      }
+      else
+      {
+        eraseFlash();
+
+        const uint32_t blankCheckSize = (strcmp_P(cartID, PSTR("PEAJ")) == 0) ? 65408 : 65536;
+
+        if (blankcheckFlash(blankCheckSize))
+        {
+          writeFlash(1, blankCheckSize, 0, 0);
+          verifyFlash(blankCheckSize, 0);
+        }
+      }
+      break;
+
+    case 5: // 1M Flash
+      idFlash();
+      resetFlash();
+
+      if (flashid == 0xC209)
+      {
+        printFlashTypeAndWait(PSTR("Macronix MX29L010"));
+      }
+      else if (flashid == 0x6213)
+      {
+        printFlashTypeAndWait(PSTR("SANYO LE26FV10N1TS"));
+      }
+      else
+      {
+        printFlashTypeAndWait(OSCR::Strings::Common::Unknown);
+      }
+
+      eraseFlash();
+
+      // 131072 bytes are divided into two 65536 byte banks
+      for (uint8_t bank = 0; bank < 2; bank++)
+      {
+        switchBank(bank);
+        setROM();
+
+        // Card e-Reader+ does not allow access to last 128 bytes of a bank
+        if (strcmp_P(cartID, PSTR("PSAE")) == 0 || strcmp_P(cartID, PSTR("PSAJ")) == 0) // Japanese e-reader+, USA e-reader
+        {
+          if (!blankcheckFlash(65408))
+            break;
+          writeFlash(!bank, 65408, bank ? 65536 : 0, 0);
+          if (verifyFlash(65408, bank ? 65536 : 0))
+            break;
+        }
+        else
+        {
+          if (!blankcheckFlash(65536))
+            break;
+          writeFlash(!bank, 65536, bank ? 65536 : 0, 0);
+          if (verifyFlash(65536, bank ? 65536 : 0))
+            break;
+        }
+      }
+      break;
+
+    case 6: // 512K SRAM/FRAM
+      writeSRAM(65536, 0);
+      break;
+    }
+
+    setROM();
   }
 
   /******************************************
