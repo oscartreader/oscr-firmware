@@ -115,6 +115,7 @@ namespace OSCR
 
       bool loadRecordIndex(uint16_t index);
       bool gotoRecordIndex(uint16_t index);
+      uint_fast16_t getRecordIndex();
 
 #if defined(NEEDS_CRDB_ISQUIET)
       bool isQuiet();

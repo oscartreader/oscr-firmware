@@ -289,6 +289,11 @@ namespace OSCR::CRDB
     return file.seekSet((uint64_t)recordSize * ((uint64_t)1 + (uint64_t)index));
   }
 
+  uint_fast16_t CRDBBase::getRecordIndex()
+  {
+    return recordNum;
+  }
+
 
 # pragma region ByID
 

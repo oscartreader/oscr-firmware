@@ -188,6 +188,9 @@ namespace OSCR
       extern char const PROGMEM Yes[];
       extern char const PROGMEM No[];
 
+      extern char const PROGMEM Next[];
+      extern char const PROGMEM Previous[];
+
       extern char const PROGMEM Back[];
       extern char const PROGMEM Reset[];
 
@@ -258,6 +261,7 @@ namespace OSCR
       extern char const PROGMEM MenuSpaces[];
       extern char const PROGMEM MenuSelection[];
       extern char const PROGMEM Arrow[];
+      extern char const PROGMEM ArrowLeft[];
       extern char const PROGMEM NotEqual[];
       extern char const PROGMEM Colon[];
       extern char const PROGMEM LabelEnd[];
@@ -346,6 +350,9 @@ namespace OSCR
       extern char const PROGMEM NotFoundDB[];
 
       extern char const PROGMEM IncorrectVoltage[];
+
+      extern char const PROGMEM OnlyMatchingRecord[];
+      extern char const PROGMEM BackAtFirst[];
     }
 
     // Statuses

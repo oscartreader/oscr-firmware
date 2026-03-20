@@ -60,9 +60,12 @@ namespace OSCR::Databases
 #   endif /* CRDB_DEBUGGING */
     }
 
-    bool searchRecord(char const * serialSearch, uint16_t startingRecord = 0)
+    bool searchRecord(char const * serialSearch, uint16_t startingRecord = 0, bool reverse = false)
     {
       constexpr uint8_t const offset = 4;
+      int8_t const step = reverse ? -1 : 1;
+      uint16_t endRecord;
+
       clearError();
 
 #   if CRDB_DEBUGGING
@@ -71,9 +74,23 @@ namespace OSCR::Databases
       OSCR::Serial::printLineSync(serialSearch);
 #   endif /* CRDB_DEBUGGING */
 
-      for (uint_fast32_t i = startingRecord; gotoRecordIndex(i) && file.seekCur(offset); ++i)
+      if (startingRecord == 0) endRecord = recordCount;
+      else if (startingRecord == recordCount) endRecord = 0;
+      else endRecord = startingRecord + -step;
+
+      for (int_fast32_t i = startingRecord; gotoRecordIndex(i) && file.seekCur(offset); i += step)
       {
         char serial[5];
+
+        if (i < 0)
+        {
+          i = recordCount;
+        }
+        else if (i > recordCount)
+        {
+          i = 0;
+        }
+
         int_fast8_t const readLen = readBytes(serial, 4);
 
         if (readLen != 4) break;
@@ -105,6 +122,8 @@ namespace OSCR::Databases
 
           return true;
         }
+
+        if (i == endRecord) break; // Will loop around otherwise
       }
 
 #   if CRDB_DEBUGGING
@@ -113,11 +132,6 @@ namespace OSCR::Databases
 
       gotoRecordIndex(0);
       return false;
-    }
-
-    bool searchRecordNext(char const * serialSearch)
-    {
-      return searchRecord(serialSearch, recordNum);
     }
   };
 }

@@ -100,6 +100,9 @@ namespace OSCR::Strings
     constexpr char const PROGMEM Yes[]              = "Yes";
     constexpr char const PROGMEM No[]               = "No";
 
+    constexpr char const PROGMEM Next[]             = "Next";
+    constexpr char const PROGMEM Previous[]         = "Previous";
+
     constexpr char const PROGMEM Back[]             = "Back";
     constexpr char const PROGMEM Reset[]            = "Reset";
 
@@ -176,6 +179,9 @@ namespace OSCR::Strings
     constexpr char const PROGMEM NotFoundDB[]         = "Not found in database";
 
     constexpr char const PROGMEM IncorrectVoltage[]   = "Incorrect voltage, aborting";
+
+    constexpr char const PROGMEM OnlyMatchingRecord[] = "Only Matching Record";
+    constexpr char const PROGMEM BackAtFirst[]        = "Back at First Found";
   }
 
   // Statuses

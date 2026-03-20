@@ -64,6 +64,7 @@ namespace OSCR::Cores::GameBoyAdvance
   constexpr char const PROGMEM GBASaveItem6[] = "1M FLASH";
 
   constexpr char const * const PROGMEM saveOptionsGBA[] = {
+    OSCR::Strings::Common::None,
     GBASaveItem1,
     GBASaveItem2,
     GBASaveItem3,
@@ -87,25 +88,7 @@ namespace OSCR::Cores::GameBoyAdvance
       {
       case MenuOption::ReadROM:
         // Read rom
-        if (cartSize == 0)
-        {
-          constexpr uint8_t const romOptionsGBASize[] = { 1, 2, 4, 8, 16, 32, };
-          cartSize = OSCR::UI::menu(FS(OSCR::Strings::Headings::SelectCartSize), FS(OSCR::Strings::Templates::SizeMB), romOptionsGBASize, sizeofarray(romOptionsGBASize));
-        }
-
-        if (cartSize < 128)  // Don't multiply cartSize on second dump
-          cartSize *= 0x100000;
-
         readROM();
-
-        // Internal Checksum
-        compare_checksum();
-
-        // CRC32
-        if (gbaCRDB->matchCRC(OSCR::CRC32::current))
-        {
-          OSCR::Storage::Shared::rename_P(gbaCRDB->record()->data()->name, FS(OSCR::Strings::FileType::GameBoyAdvance));
-        }
         break;
 
       case MenuOption::ReadSave: // Read save
@@ -400,56 +383,6 @@ namespace OSCR::Cores::GameBoyAdvance
     OSCR::Power::disableCartridge();
   }
 
-  void printCartInfo()
-  {
-    // Print start page
-    printHeader();
-    OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
-    OSCR::UI::printValue(OSCR::Strings::Common::ID, cartID);
-    OSCR::UI::printValue(OSCR::Strings::Common::Revision, romVersion);
-
-    if (cartSize != 0)
-    {
-      OSCR::UI::printSize(OSCR::Strings::Common::ROM, cartSize * 1024 * 1024);
-    }
-
-    char const * saveTypeFSTR;
-
-    switch (saveType)
-    {
-    case 1:
-      saveTypeFSTR = GBASaveItem1;
-      break;
-
-    case 2:
-      saveTypeFSTR = GBASaveItem2;
-      break;
-
-    case 3:
-      saveTypeFSTR = GBASaveItem3;
-      break;
-
-    case 4:
-      saveTypeFSTR = GBASaveItem4;
-      break;
-
-    case 5:
-      saveTypeFSTR = GBASaveItem5;
-      break;
-
-    default:
-      saveTypeFSTR = OSCR::Strings::Common::None;
-      break;
-    }
-
-    OSCR::UI::printType_P(OSCR::Strings::Common::Save, saveTypeFSTR);
-
-    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
-    OSCR::UI::printHexLine(checksum);
-
-    OSCR::UI::waitButton();
-  }
-
   void openCRDB()
   {
     cartCRDB = new OSCR::Databases::GBA(FS(OSCR::Strings::FileType::GameBoyAdvance));
@@ -469,7 +402,7 @@ namespace OSCR::Cores::GameBoyAdvance
   {
     if (saveType == 0)
     {
-      constexpr uint8_t const saveOptionsGBAType[] = { 1, 2, 3, 6, 4, 5 };
+      constexpr uint8_t const saveOptionsGBAType[] = { 0, 1, 2, 3, 6, 4, 5 };
       uint8_t selection = OSCR::UI::menu(FS(OSCR::Strings::MenuOptions::SetCartType), saveOptionsGBA, sizeofarray(saveOptionsGBA));
       saveType = saveOptionsGBAType[selection];
     }
@@ -805,14 +738,39 @@ namespace OSCR::Cores::GameBoyAdvance
     cartID[2] = char(OSCR::Storage::Shared::buffer[0xAE]);
     cartID[3] = char(OSCR::Storage::Shared::buffer[0xAF]);
 
-    printHeader();
-    OSCR::UI::printLineSync(FS(OSCR::Strings::Status::SearchingDatabase));
-
     bool searching = true;
+    bool found = false;
+    bool reverse = false;
+    int_fast32_t firstFound = -1;
+    int_fast32_t lastFound = -1;
+    uint_fast16_t recordIndex = 0;
 
     // Loop through file
-    while (searching && gbaCRDB->searchRecordNext(cartID))
+    while (searching)
     {
+      printHeader();
+      OSCR::UI::printSync(FS(OSCR::Strings::Status::SearchingDatabase));
+
+      if (!gbaCRDB->searchRecord(cartID, recordIndex, reverse))
+      {
+        if (firstFound < 0) // Never found anything
+        {
+          searching = false;
+          break;
+        }
+
+        // Check for error / goto last good record
+        if (gbaCRDB->hasError() || !gbaCRDB->gotoRecordIndex(lastFound))
+        {
+          OSCR::UI::fatalErrorStorage();
+        }
+
+        // Update current index
+        recordIndex = lastFound;
+      }
+
+      OSCR::UI::clearLine(); // Clear "Searching Database..."
+
       romRecord = gbaCRDB->record();
       romDetail = romRecord->data();
 
@@ -825,28 +783,80 @@ namespace OSCR::Cores::GameBoyAdvance
 
       // Print current database entry
       OSCR::UI::printLine(romDetail->name);
-
       OSCR::UI::printValue(OSCR::Strings::Common::ID, romDetail->serial);
-
       OSCR::UI::printSize(OSCR::Strings::Common::ROM, ((uint32_t)romDetail->size) * 1024 * 1024);
-
       OSCR::UI::printType(OSCR::Strings::Common::Save, romDetail->saveType);
+
+#   if HAS_OUTPUT_LINE_ADJUSTMENTS
+      if (recordIndex == lastFound)
+      {
+        OSCR::UI::printCenter_P(OSCR::Strings::Errors::OnlyMatchingRecord);
+      }
+      else if (recordIndex == firstFound)
+      {
+        OSCR::UI::printCenter_P(OSCR::Strings::Errors::BackAtFirst);
+      }
+
+      OSCR::UI::gotoLast();
+
+      char tmpText[14];
+
+      snprintf_P(tmpText, 14, OSCR::Strings::Templates::WordsPP, OSCR::Strings::Symbol::ArrowLeft, OSCR::Strings::MenuOptions::Previous);
+
+      OSCR::UI::print(tmpText);
+
+      snprintf_P(tmpText, 14, OSCR::Strings::Templates::WordsPP, OSCR::Strings::MenuOptions::Next, OSCR::Strings::Symbol::Arrow);
+
+      OSCR::UI::printRight(tmpText);
+#   else
+      if (recordIndex == lastFound)
+      {
+        OSCR::UI::printLine(FS(OSCR::Strings::Errors::OnlyMatchingRecord));
+      }
+      else if (recordIndex == firstFound)
+      {
+        OSCR::UI::printLine(FS(OSCR::Strings::Errors::BackAtFirst));
+      }
+
+      OSCR::UI::gotoLast();
+
+      char tmpText[32];
+      snprintf_P(tmpText, 32, OSCR::Strings::Templates::WordsPPPPP, OSCR::Strings::Symbol::ArrowLeft, OSCR::Strings::MenuOptions::Previous, OSCR::Strings::Symbol::MenuSpaces, OSCR::Strings::MenuOptions::Next, OSCR::Strings::Symbol::Arrow);
+
+      OSCR::UI::print(tmpText);
+#   endif
 
       switch (OSCR::UI::waitInput())
       {
       case OSCR::UI::UserInput::kUserInputConfirm: // Confirmed
       case OSCR::UI::UserInput::kUserInputConfirmShort:
       case OSCR::UI::UserInput::kUserInputConfirmLong:
-        // Exit the loop
-        searching = false;
+        searching = false; // Exit the loop
+        found = true;
         break;
 
-      case OSCR::UI::UserInput::kUserInputNext: // Next
-        // Read next entry
+      case OSCR::UI::UserInput::kUserInputNext: // Read next entry
+        reverse = false;
+        lastFound = gbaCRDB->getRecordIndex();
+        recordIndex = lastFound + 1;
+
+        if (firstFound < 0)
+        {
+          firstFound = lastFound;
+        }
+
         continue;
 
-      case OSCR::UI::UserInput::kUserInputBack: // Previous
-        // TODO: Go back a line
+      case OSCR::UI::UserInput::kUserInputBack: // Read previous entry
+        reverse = true;
+        lastFound = gbaCRDB->getRecordIndex();
+        recordIndex = lastFound - 1;
+
+        if (firstFound < 0)
+        {
+          firstFound = lastFound;
+        }
+
         continue;
 
       case OSCR::UI::UserInput::kUserInputUnknown:
@@ -856,7 +866,14 @@ namespace OSCR::Cores::GameBoyAdvance
       }
     }
 
-    cartSize = romDetail->size;
+    if (!found)
+    {
+      configureCart();
+
+      return;
+    }
+
+    cartSize = romDetail->size *= 0x100000;
 
     setOutName((char *)&OSCR::Storage::Shared::buffer[0xA0], 12);
 
@@ -925,16 +942,44 @@ namespace OSCR::Cores::GameBoyAdvance
     }
   }
 
+  void configureROM()
+  {
+    constexpr uint8_t const romOptionsGBASize[] = { 1, 2, 4, 8, 16, 32, };
+    cartSize = OSCR::UI::menu(FS(OSCR::Strings::Headings::SelectCartSize), FS(OSCR::Strings::Templates::SizeMB), romOptionsGBASize, sizeofarray(romOptionsGBASize));
+    cartSize *= 0x100000;
+  }
+
+  void configureSave()
+  {
+    constexpr uint8_t const saveOptionsGBAType[] = { 0, 1, 2, 3, 6, 4, 5 };
+    uint8_t selection = OSCR::UI::menu(FS(OSCR::Strings::MenuOptions::SetCartType), saveOptionsGBA, sizeofarray(saveOptionsGBA));
+    saveType = saveOptionsGBAType[selection];
+  }
+
+  void configureCart()
+  {
+    configureROM();
+
+    if (OSCR::Prompts::askYesNo(OSCR::Strings::MenuOptions::SetSaveType))
+    {
+      configureSave();
+    }
+    else
+    {
+      saveType = 0;
+    }
+  }
+
   // Dump ROM
   void readROM()
   {
     printHeader();
 
-    // Get name, add extension and convert to char array for sd lib
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::GameBoyAdvance), FS(OSCR::Strings::Directory::ROM), fileName);
 
-    //Initialize progress bar
-    OSCR::UI::ProgressBar::init((uint32_t)(cartSize));
+    OSCR::UI::ProgressBar::init((uint32_t)(cartSize), 1);
+
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
     cartOn();
 
@@ -949,7 +994,6 @@ namespace OSCR::Cores::GameBoyAdvance
         OSCR::Storage::Shared::buffer[currWord + 1] = (tempWord >> 8) & 0xFF;
       }
 
-      // Write to SD
       OSCR::Storage::Shared::writeBuffer();
 
       OSCR::UI::ProgressBar::advance(512);
@@ -975,42 +1019,46 @@ namespace OSCR::Cores::GameBoyAdvance
       OSCR::Storage::Shared::sharedFile.write(padding_byte, 256);
     }
 
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
+
     OSCR::UI::ProgressBar::finish();
 
-    OSCR::Storage::Shared::close();
-  }
+    // Overwrite the progress bar
+    OSCR::UI::setLineRel(-1);
+    OSCR::UI::clearLine();
 
-  // Calculate the checksum of the dumped rom
-  bool compare_checksum()
-  {
-    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Checking));
 
-    OSCR::Storage::Shared::openRO();
+    OSCR::Storage::Shared::rewind();
 
     OSCR::Storage::Shared::readBuffer();
 
     OSCR::Storage::Shared::close();
 
-    // Calculate Checksum
     uint8_t calcChecksum = checksumHeader(OSCR::Storage::Shared::buffer);
 
-    OSCR::UI::printHex(calcChecksum);
+    OSCR::UI::clearLine();
+
+    OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
 
     if (calcChecksum == checksum)
     {
-      OSCR::UI::printLine(FS(OSCR::Strings::Symbol::Arrow));
+      OSCR::UI::print(FS(OSCR::Strings::Symbol::Arrow));
       OSCR::UI::printLineSync(FS(OSCR::Strings::Common::OK));
-      return true;
     }
     else
     {
       OSCR::UI::print(FS(OSCR::Strings::Symbol::NotEqual));
       OSCR::UI::printHexLine(checksum);
       OSCR::UI::error(FS(OSCR::Strings::Errors::IncorrectChecksum));
-      return false;
+    }
+
+    // CRC32
+    if (gbaCRDB->matchCRC(OSCR::CRC32::current))
+    {
+      OSCR::Storage::Shared::rename_P(gbaCRDB->record()->data()->name, FS(OSCR::Strings::FileType::GameBoyAdvance));
     }
   }
-
 
   /******************************************
     GBA SRAM SAVE Functions

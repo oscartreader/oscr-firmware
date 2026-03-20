@@ -20,7 +20,10 @@ namespace OSCR::Strings::Symbol
   constexpr char const PROGMEM Slash[]              = "/";
   constexpr char const PROGMEM MenuSpaces[]         = "   ";
   constexpr char const PROGMEM MenuSelection[]      = " > ";
+
   constexpr char const PROGMEM Arrow[]              = " -> ";
+  constexpr char const PROGMEM ArrowLeft[]          = " <- ";
+
   constexpr char const PROGMEM NotEqual[]           = " != ";
   constexpr char const PROGMEM Colon[]              = ":";
   constexpr char const PROGMEM LabelEnd[]           = ": ";

@@ -38,6 +38,10 @@ namespace OSCR::Cores::GameBoyAdvance
 
   void printHeader();
 
+  void configureROM();
+  void configureSave();
+  void configureCart();
+
   void readROM();
 
   void rtcTest();
