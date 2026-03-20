@@ -72,7 +72,7 @@ namespace OSCR::Cores::GameBoyAdvance
   bool blankcheckFlash(uint32_t flashSize);
   void switchBank(uint8_t bankNum);
 
-  void readFlash(bool browseFile, uint32_t flashSize, uint32_t pos);
+  void readFlash();
   void writeFlash(bool browseFile, uint32_t flashSize, uint32_t pos, bool isAtmel);
   uint32_t verifyFlash(uint32_t flashSize, uint32_t pos);
   void busyCheck(uint16_t currByte);

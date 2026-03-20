@@ -967,24 +967,17 @@ namespace OSCR::Cores::GameBoyAdvance
       break;
 
     case 4: // 512K Flash
-      readFlash(1, 65536, 0);
+      readFlash();
       break;
 
     case 5: // 1M Flash (divided into two banks)
-      switchBank(0x0);
-      setROM();
-      readFlash(1, 65536, 0);
-      switchBank(0x1);
-      setROM();
-      readFlash(0, 65536, 65536);
+      readFlash();
       break;
 
     case 6: // 512K SRAM/FRAM
       readSRAM(65536, 0);
       break;
     }
-
-    setROM();
   }
 
   void writeSave()
@@ -1108,6 +1101,8 @@ namespace OSCR::Cores::GameBoyAdvance
   *****************************************/
   void readSRAM(uint32_t sramSize, uint32_t pos)
   {
+    printHeader();
+
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::GameBoyAdvance), FS(OSCR::Strings::Directory::ROM), fileName, FS(OSCR::Strings::FileType::SaveRAM));
 
     OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
@@ -1130,6 +1125,8 @@ namespace OSCR::Cores::GameBoyAdvance
 
       OSCR::Storage::Shared::writeBuffer();
     }
+
+    setROM();
 
     cartOff();
 
@@ -1612,8 +1609,20 @@ namespace OSCR::Cores::GameBoyAdvance
     PORTH |= (1 << 0);
   }
 
-  void readFlash(bool browseFile, uint32_t flashSize, uint32_t pos)
+  void readFlash()
   {
+    constexpr uint32_t const chipSize = 65536;
+    uint8_t const flashChips = (saveType == 5) ? 2 : 1;
+    uint32_t const flashSize = chipSize * flashChips;
+
+    printHeader();
+
+    OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::GameBoyAdvance), FS(OSCR::Strings::Directory::Save), fileName, FS(OSCR::Strings::FileType::SaveFlash));
+
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
+
+    cartOn();
+
     // Output a HIGH signal on CS_ROM(PH3) WE_FLASH(PH5)
     PORTH |= (1 << 3) | (1 << 5);
 
@@ -1627,47 +1636,36 @@ namespace OSCR::Cores::GameBoyAdvance
     // Set data pins to input
     DDRC = 0x00;
 
-    if (browseFile)
+    for (uint8_t chip = 0; chip < flashChips; chip++)
     {
-      // Get name, add extension and convert to char array for sd lib
-      OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::GameBoyAdvance), FS(OSCR::Strings::Directory::Save), fileName, FS(OSCR::Strings::FileType::SaveFlash));
-    }
-    else
-    {
-      OSCR::Storage::Shared::openRWC();
-    }
-
-    // Seek to a new position in the file
-    if (pos != 0)
-    {
-      OSCR::Storage::Shared::sharedFile.seekCur(pos);
-    }
-
-    // Output a LOW signal on CE_FLASH(PH0)
-    PORTH &= ~(1 << 0);
-
-    // Output a LOW signal on OE_FLASH(PH6)
-    PORTH &= ~(1 << 6);
-
-    for (uint32_t currAddress = 0; currAddress < flashSize; currAddress += 512)
-    {
-      for (int c = 0; c < 512; c++)
+      if (flashChips > 1)
       {
-        // Read byte
-        OSCR::Storage::Shared::buffer[c] = readByteFlash(currAddress + c);
+        switchBank(chip);
+        setROM();
       }
 
-      OSCR::Storage::Shared::writeBuffer();
+      PORTH &= ~(1 << 0); // Output a LOW signal on CE_FLASH(PH0)
+      PORTH &= ~(1 << 6); // Output a LOW signal on OE_FLASH(PH6)
+
+      for (uint32_t currAddress = 0; currAddress < chipSize; currAddress += 512)
+      {
+        for (int c = 0; c < 512; c++)
+        {
+          OSCR::Storage::Shared::buffer[c] = readByteFlash(currAddress + c);
+        }
+
+        OSCR::Storage::Shared::writeBuffer();
+      }
+
+      PORTH |= (1 << 0); // Set CS_FLASH(PH0) high
     }
+
+    setROM();
 
     OSCR::Storage::Shared::close();
 
-    // Set CS_FLASH(PH0) high
-    PORTH |= (1 << 0);
-
     cartOff();
 
-    // Signal end of process
     OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
   }
 
@@ -1870,8 +1868,11 @@ namespace OSCR::Cores::GameBoyAdvance
   // Read eeprom to file
   void readEeprom(uint16_t eepSize)
   {
-    // Get name, add extension and convert to char array for sd lib
+    printHeader();
+
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::GameBoyAdvance), FS(OSCR::Strings::Directory::Save), fileName, FS(OSCR::Strings::FileType::SaveEEPROM));
+
+    cartOn();
 
     // Each block contains 8 Bytes, so for a 8KB eeprom 1024 blocks need to be read
     for (uint16_t currAddress = 0; currAddress < eepSize * 16; currAddress += 64)
@@ -1887,6 +1888,8 @@ namespace OSCR::Cores::GameBoyAdvance
       // Wait
       delayMicroseconds(200);
     }
+
+    setROM();
 
     cartOff();
 
