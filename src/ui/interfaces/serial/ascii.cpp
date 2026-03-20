@@ -10,16 +10,6 @@ namespace OSCR
 {
   namespace UI
   {
-    constexpr bool const kSupportsLineAdjustments = false;
-
-    constexpr uint8_t const kDisplayWidth = 0;
-    constexpr uint8_t const kDisplayHeight = 0;
-
-    constexpr uint8_t const kLineHeight = 0;
-
-    constexpr uint8_t const kDisplayLines = 0;
-    constexpr uint8_t const kDisplayLineStart = 0;
-
     /**
      * Define if a menu is active.
      */

@@ -9,10 +9,26 @@
 
 # if defined(ENABLE_SERIAL_ASCII)
 
+#   define HAS_OUTPUT_LINE_ADJUSTMENTS false
+#   define HAS_OUTPUT_LINE_ALIGNMENT false
+
 namespace OSCR
 {
   namespace UI
   {
+    //! @cond
+
+    inline constexpr bool const kSupportsLineAdjustments = false;
+    inline constexpr bool const kSupportsLineAlignment = false;
+
+    inline constexpr uint8_t const kDisplayWidth = 0;
+    inline constexpr uint8_t const kDisplayHeight = 0;
+
+    inline constexpr uint8_t const kLineHeight = 0;
+
+    inline constexpr uint8_t const kDisplayLines = 0;
+    inline constexpr uint8_t const kDisplayLineStart = 0;
+
     /**
      * Define if a menu is active.
      */
@@ -32,6 +48,8 @@ namespace OSCR
 
     extern void update();
     extern void clear();
+
+    //! @endcond
   }
 }
 

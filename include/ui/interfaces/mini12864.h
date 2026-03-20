@@ -12,6 +12,9 @@
 #   include "common/Util.h"
 #   include "hardware/peripherals/NeoPixel.h"
 
+#   define HAS_OUTPUT_LINE_ADJUSTMENTS true
+#   define HAS_OUTPUT_LINE_ALIGNMENT true
+
 namespace OSCR
 {
   namespace UI
@@ -26,8 +29,24 @@ namespace OSCR
 
     //! @cond
 
+    inline constexpr bool const kSupportsLineAdjustments = true;
+    inline constexpr bool const kSupportsLineAlignment = true;
+
+    inline constexpr uint8_t const kDisplayWidth = 128;
+    inline constexpr uint8_t const kDisplayHeight = 64;
+
+    inline constexpr uint8_t const kLineHeight = 8;
+
+    inline constexpr uint8_t const kDisplayLines = 8;
+    inline constexpr uint8_t const kDisplayLineStart = 8;
+
     extern void update();
     extern void clear();
+
+    extern void printCenter(char const * text);
+    extern void printCenter_P(char const * flashText);
+    extern void printRight(char const * text);
+    extern void printRight_P(char const * flashText);
 
     template <bool sync,
               typename T,
@@ -50,6 +69,8 @@ namespace OSCR
               typename Tint,
               OSCR::Util::enable_if_t<OSCR::Util::is_integer<Tint>::value, bool> Enable>
     extern void printLine(Tint number, int base);
+
+    //! @endcond
   }
 }
 

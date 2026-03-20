@@ -19,17 +19,6 @@ namespace OSCR
     //! @cond
     U8G2_ST7567_OS12864_F_4W_HW_SPI display(U8G2_R2, /* cs=*/12, /* dc=*/11, /* reset=*/10);
 
-    constexpr bool const kSupportsLineAdjustments = true;
-
-    constexpr uint8_t const kDisplayWidth = 128;
-    constexpr uint8_t const kDisplayHeight = 64;
-
-    constexpr uint8_t const kLineHeight = 8;
-    //constexpr uint8_t const kLineHeightFull = 9;
-
-    constexpr uint8_t const kDisplayLines = 8;
-    constexpr uint8_t const kDisplayLineStart = 8;
-
     Button button(PING, PING2);
 
 # ifdef rotate_counter_clockwise
@@ -67,6 +56,36 @@ namespace OSCR
     void setCursorXY(void)
     {
       display.setCursor(x, y);
+    }
+
+    void printCenter(char const * text)
+    {
+      uint8_t currentY = display.ty;
+      uint8_t centeredX = ((kDisplayWidth - (OSCR::UI::display.getStrWidth(text))) / 2);
+      display.setCursor(centeredX, currentY);
+      print(text);
+    }
+
+    void printCenter_P(char const * flashText)
+    {
+      char text[50];
+      OSCR::Util::copyStr_P(text, 50, flashText);
+      printCenter(text);
+    }
+
+    void printRight(char const * text)
+    {
+      uint8_t currentY = display.ty;
+      uint8_t centeredX = (kDisplayWidth - OSCR::UI::display.getStrWidth(text));
+      display.setCursor(centeredX, currentY);
+      print(text);
+    }
+
+    void printRight_P(char const * flashText)
+    {
+      char text[50];
+      OSCR::Util::copyStr_P(text, 50, flashText);
+      printRight(text);
     }
 
     void setLineRel(int8_t numLines)
