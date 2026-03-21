@@ -16,7 +16,7 @@
       "commands": [
         {
           "id": "platformio-ide.runPIOCoreCommand",
-          "args": "pio run --environment Hardware3"
+          "args": "pio run --environment HardwareV3"
         }
       ]
     },
@@ -26,7 +26,7 @@
       "commands": [
         {
           "id": "platformio-ide.runPIOCoreCommand",
-          "args": "pio run --environment Hardware5"
+          "args": "pio run --environment HardwareV5"
         }
       ]
     },
