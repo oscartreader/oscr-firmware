@@ -1,8 +1,50 @@
 {
-    "files.associations": {
-        "new": "cpp",
-        "*.def": "cpp",
-        "chrono": "cpp"
+  "files.associations": {
+    "new": "cpp",
+    "*.def": "cpp",
+    "chrono": "cpp"
+  },
+  "platformio-ide.toolbar": [
+    {
+      "text": "$(play-circle)",
+      "tooltip": "Build firmware",
+      "commands": "platformio-ide"
     },
-    "editor.tabSize": 2
+    {
+      "text": "$(play) HW3",
+      "tooltip": "Build firmware for Hardware 3",
+      "commands": [
+        {
+          "id": "platformio-ide.runPIOCoreCommand",
+          "args": "pio run --environment Hardware3"
+        }
+      ]
+    },
+    {
+      "text": "$(play) HW5",
+      "tooltip": "Build firmware for Hardware 5",
+      "commands": [
+        {
+          "id": "platformio-ide.runPIOCoreCommand",
+          "args": "pio run --environment Hardware5"
+        }
+      ]
+    },
+    {
+      "text": "$(database) CRDB",
+      "tooltip": "Build CRDB",
+      "commands": [
+        {
+          "id": "platformio-ide.runPIOCoreCommand",
+          "args": "pio run --environment Databases"
+        }
+      ]
+    },
+    {
+      "text": "$(plug)",
+      "tooltip": "PlatformIO: Serial Monitor",
+      "commands": "platformio-ide.serialMonitor"
+    }
+  ],
+  "editor.tabSize": 2
 }
