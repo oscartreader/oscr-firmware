@@ -101,6 +101,15 @@ namespace OSCR
       OSCR::UI::printLine<true>();
     }
 
+    void printValue(char const * label, OSCR::Storage::Path const & path)
+    {
+      char value[OSCR::Storage::kFilePathnameLength];
+
+      path.getPath(BUFFN(value));
+
+      OSCR::UI::printLineSync(OSCR::Lang::formatLabel(label, value));
+    }
+
     //
     // CRC32
     //
@@ -129,6 +138,15 @@ namespace OSCR
     {
       OSCR::UI::print(&crc32);
       OSCR::UI::printLine<true>();
+    }
+
+    void printValue(char const * label, OSCR::CRC32::crc32_t const & crc32)
+    {
+      char value[9];
+
+      crc32.human(BUFFN(value));
+
+      OSCR::UI::printLineSync(OSCR::Lang::formatLabel(label, value));
     }
   }
 
@@ -229,6 +247,15 @@ namespace OSCR
       printLineSync(&path);
     }
 
+    void printValue(char const * label, OSCR::Storage::Path const & path)
+    {
+      char value[OSCR::Storage::kFilePathnameLength];
+
+      path.getPath(BUFFN(value));
+
+      printLineSync(OSCR::Lang::formatLabel(label, value));
+    }
+
     //
     // CRC32
     //
@@ -254,6 +281,15 @@ namespace OSCR
     void printLineSync(OSCR::CRC32::crc32_t const & crc32)
     {
       printLineSync(&crc32);
+    }
+
+    void printValue(char const * label, OSCR::CRC32::crc32_t const & crc32)
+    {
+      char value[9];
+
+      crc32.human(BUFFN(value));
+
+      printLineSync(OSCR::Lang::formatLabel(label, value));
     }
   }
 

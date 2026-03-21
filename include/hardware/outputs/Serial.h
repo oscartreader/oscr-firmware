@@ -102,6 +102,117 @@ namespace OSCR::Serial
             OSCR::Util::if_is_any_unsigned_t<T> Enable = true>
   extern void printHexLine(T number);
 
+  /**
+   * @brief Print a label.
+   *
+   * Prints a label using the provided string.
+   *
+   * Example Output: `LabelText: `
+   *
+   * @param label A flash pointer to use for label.
+   */
+  extern void printLabel(char const * label);
+
+  /**
+   * @brief Print a label and a value.
+   *
+   * Prints a line with the provided label and value pair.
+   *
+   * Example Output: `LabelText: ValueText`
+   *
+   * @param label A flash pointer to use for label.
+   * @param value A string (char array) in SRAM to use as the value.
+   */
+  extern void printValue(char const * label, char const * value);
+
+  /**
+   * @brief Print a label and a value.
+   *
+   * Prints a line with the provided label and value pair.
+   *
+   * Example Output: `LabelText: ValueText`
+   *
+   * @param label A flash pointer to use for label.
+   * @param value A flash pointer to use as the value.
+   */
+  extern void printValue_P(char const * label, char const * value);
+
+  /**
+   * @brief Print a label and a value.
+   *
+   * Prints a line with the provided label and value pair.
+   *
+   * Example Output: `LabelText: Value`
+   *
+   * @param label A flash pointer to use for label.
+   * @param value A number in SRAM to use as the value.
+   */
+  template <typename T,
+            OSCR::Util::enable_if_t<OSCR::Util::is_integer<T>::value, bool> Enable = true>
+  extern void printValue(char const * label, T value);
+
+  /**
+   * @brief Print a label and a value out of a total.
+   *
+   * Prints a line with the provided label, value, and total.
+   *
+   * Example Output: `LabelText: Value/Total`
+   *
+   * @param label A flash pointer to use for label.
+   * @param value A number in SRAM to use as the value.
+   * @param total A number in SRAM to use as the total.
+   */
+  template <typename T,
+            OSCR::Util::enable_if_t<OSCR::Util::is_integer<T>::value, bool> Enable = true>
+  extern void printValue(char const * label, T value, T total);
+
+
+  void printSize(char const * label, uint32_t size);
+  void printSize(char const * label, uint32_t size, bool isBytes);
+  void printSize_P(char const * label, char const * size);
+
+  void printType(char const * label);
+  void printType(char const * label, char const * value);
+  void printType_P(char const * label, char const * value);
+
+  template <typename T,
+            OSCR::Util::enable_if_t<OSCR::Util::is_integer<T>::value, bool> Enable = true>
+  extern void printType(char const * label, T number);
+
+  //! @cond
+
+  /**
+   * Invalid. Remove `FS()`, or use `PSTR()` instead of `F()`.
+   */
+  inline void printLabel(__FlashStringHelper const * label) = delete;
+
+  /**
+   * Invalid. Remove `FS()`, or use `PSTR()` instead of `F()`.
+   */
+  inline void printValue_P(__FlashStringHelper const * label, __FlashStringHelper const * value) = delete;
+
+  /**
+   * Invalid. Remove `FS()`, or use `PSTR()` instead of `F()`.
+   */
+  inline void printValue_P(__FlashStringHelper const * label, char const * value) = delete;
+
+  /**
+   * Invalid. Remove `FS()`, or use `PSTR()` instead of `F()`.
+   */
+  inline void printValue_P(char const * label, __FlashStringHelper const * value) = delete;
+
+  /**
+   * Invalid. Remove `FS()`, or use `PSTR()` instead of `F()`.
+   */
+  inline void printValue(char const * label, __FlashStringHelper const * value) = delete;
+
+  /**
+   * Invalid. Remove `FS()`, or use `PSTR()` instead of `F()`.
+   */
+  inline void printValue(__FlashStringHelper const * label, char const * value) = delete;
+
+  //! @endcond
+
   extern void gotoLast();
 
   //! @endcond

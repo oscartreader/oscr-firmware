@@ -36,6 +36,8 @@ namespace OSCR
     extern void printSync(OSCR::Storage::Path const & path);
     extern void printLineSync(OSCR::Storage::Path const & path);
 
+    extern void printValue(char const * label, OSCR::Storage::Path const & path);
+
     extern void print(OSCR::CRC32::crc32_t const * crc32);
     extern void printLine(OSCR::CRC32::crc32_t const * crc32);
     extern void print(OSCR::CRC32::crc32_t const & crc32);
@@ -45,6 +47,8 @@ namespace OSCR
     extern void printLineSync(OSCR::CRC32::crc32_t const * crc32);
     extern void printSync(OSCR::CRC32::crc32_t const & crc32);
     extern void printLineSync(OSCR::CRC32::crc32_t const & crc32);
+
+    extern void printValue(char const * label, OSCR::CRC32::crc32_t const & crc32);
   }
 
   namespace Serial
@@ -64,10 +68,14 @@ namespace OSCR
     extern void printSync(OSCR::Storage::Path const & path);
     extern void printLineSync(OSCR::Storage::Path const & path);
 
+    extern void printValue(char const * label, OSCR::Storage::Path const & path);
+
     extern void printSync(OSCR::CRC32::crc32_t const * crc32);
     extern void printLineSync(OSCR::CRC32::crc32_t const * crc32);
     extern void printSync(OSCR::CRC32::crc32_t const & crc32);
     extern void printLineSync(OSCR::CRC32::crc32_t const & crc32);
+
+    extern void printValue(char const * label, OSCR::CRC32::crc32_t const & crc32);
   }
 }
 

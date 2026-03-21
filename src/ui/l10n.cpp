@@ -243,7 +243,7 @@ namespace OSCR
 
       updateDataSize(myLabel);
 
-      snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::SizeLabelFormat + offset, label, myLabel.formatSize, myLabel.unit);
+      snprintf_P(BUFFN(bufferStr), OSCR::Strings::Templates::SizeLabelFormat + offset, label, myLabel.formatSize, myLabel.formatUnit);
 
       return bufferStr;
     }

@@ -197,6 +197,84 @@ namespace OSCR::Serial
     printLine();
   }
 
+  // flash pointer
+  void printLabel(char const * label)
+  {
+    OSCR::Serial::printSync(OSCR::Lang::formatLabel(label));
+  }
+
+  // flash pointer + SRAM pointer
+  void printValue(char const * label, char const * value)
+  {
+    OSCR::Serial::printLineSync(OSCR::Lang::formatLabel(label, value));
+  }
+
+  // flash pointer + flash pointer
+  void printValue_P(char const * label, char const * value)
+  {
+    OSCR::Serial::printLineSync(OSCR::Lang::formatLabel_P(label, value));
+  }
+
+  // flash pointer + SRAM number
+  template <typename T,
+            OSCR::Util::enable_if_t<OSCR::Util::is_integer<T>::value, bool> Enable>
+  void printValue(char const * label, T number)
+  {
+    OSCR::Serial::printLineSync(OSCR::Lang::formatLabel(label, number));
+  }
+
+  // flash pointer + SRAM number + SRAM number
+  template <typename T,
+            OSCR::Util::enable_if_t<OSCR::Util::is_integer<T>::value, bool> Enable>
+  void printValue(char const * label, T number, T total)
+  {
+    OSCR::Serial::printLineSync(OSCR::Lang::formatLabel(label, number, total));
+  }
+
+  // flash pointer
+  void printType(char const * label)
+  {
+    OSCR::Serial::printLineSync(OSCR::Lang::formatType(label));
+  }
+
+  // flash pointer + SRAM pointer
+  void printType(char const * label, char const * value)
+  {
+    OSCR::Serial::printLineSync(OSCR::Lang::formatType(label, value));
+  }
+
+  // flash pointer + flash pointer
+  void printType_P(char const * label, char const * value)
+  {
+    OSCR::Serial::printLineSync(OSCR::Lang::formatType_P(label, value));
+  }
+
+  // flash pointer + SRAM number
+  template <typename T,
+            OSCR::Util::enable_if_t<OSCR::Util::is_integer<T>::value, bool> Enable>
+  void printType(char const * label, T number)
+  {
+    OSCR::Serial::printLineSync(OSCR::Lang::formatType(label, number));
+  }
+
+  // flash pointer + SRAM number + bool
+  void printSize(char const * label, uint32_t size, bool isBytes)
+  {
+    OSCR::Serial::printLineSync(OSCR::Lang::formatLabelSize(label, size, isBytes));
+  }
+
+  // flash pointer + SRAM number
+  void printSize(char const * label, uint32_t size)
+  {
+    OSCR::Serial::printLineSync(OSCR::Lang::formatLabelSize(label, size, false));
+  }
+
+  // flash pointer + flash pointer
+  void printSize_P(char const * label, char const * size)
+  {
+    OSCR::Serial::printLineSync(OSCR::Lang::formatLabel_P(label, size));
+  }
+
   void flush()
   {
     ClockedSerial.flush();
@@ -386,6 +464,27 @@ template void OSCR::Serial::printHexLine<true >(uint32_t number);
 template void OSCR::Serial::printHexLine<false>(uint32_t number);
 template void OSCR::Serial::printHexLine<true >(uint64_t number);
 template void OSCR::Serial::printHexLine<false>(uint64_t number);
+
+template void OSCR::Serial::printValue(char const * label, int8_t number);
+template void OSCR::Serial::printValue(char const * label, uint8_t number);
+template void OSCR::Serial::printValue(char const * label, int16_t number);
+template void OSCR::Serial::printValue(char const * label, uint16_t number);
+template void OSCR::Serial::printValue(char const * label, int32_t number);
+template void OSCR::Serial::printValue(char const * label, uint32_t number);
+
+template void OSCR::Serial::printValue(char const * label, int8_t number, int8_t total);
+template void OSCR::Serial::printValue(char const * label, uint8_t number, uint8_t total);
+template void OSCR::Serial::printValue(char const * label, int16_t number, int16_t total);
+template void OSCR::Serial::printValue(char const * label, uint16_t number, uint16_t total);
+template void OSCR::Serial::printValue(char const * label, int32_t number, int32_t total);
+template void OSCR::Serial::printValue(char const * label, uint32_t number, uint32_t total);
+
+template void OSCR::Serial::printType(char const * label, int8_t number);
+template void OSCR::Serial::printType(char const * label, uint8_t number);
+template void OSCR::Serial::printType(char const * label, int16_t number);
+template void OSCR::Serial::printType(char const * label, uint16_t number);
+template void OSCR::Serial::printType(char const * label, int32_t number);
+template void OSCR::Serial::printType(char const * label, uint32_t number);
   //! @endcond
 
 # endif /* ENABLE_SERIAL_OUTPUT || ENABLE_UPDATER */
