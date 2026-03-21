@@ -227,6 +227,7 @@ namespace OSCR::Cores::NES
         break;
 
       case MenuOption::SetMapper: // Change Mapper
+        fromCRDB = false;
         useDefaultName();
         while (!setMapper());
         checkMapperSize();
@@ -442,6 +443,7 @@ namespace OSCR::Cores::NES
 
     printHeader();
 
+    fromCRDB = false;
     oldcrc32.reset();
     oldcrc32MMC3.reset();
 
@@ -489,6 +491,7 @@ namespace OSCR::Cores::NES
         {
           romRecord = record;
           romDetail = record->data();
+          fromCRDB = true;
 
           setOutName(BUFFN(romDetail->name));
 
@@ -528,15 +531,24 @@ namespace OSCR::Cores::NES
   // void read(char const * fileSuffix, uint8_t const * header, uint8_t const headersize, bool const renamerom)
   void read(bool const headered)
   {
-    uint8_t const headerSize = sizeof(NES_INES);
+    uint8_t const headerSize = headered ? 16 : 0;
 
     printHeader();
 
-    // Create file
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::NES), FS(OSCR::Strings::Directory::ROM), fileName, FS(headered ? OSCR::Strings::FileType::NES : OSCR::Strings::FileType::Raw));
 
-    //Initialize progress bar
-    OSCR::UI::ProgressBar::init(headerSize + (NES_PRG * 16 * 1024) + (NES_CHR * 4 * 1024));
+    if (fromCRDB)
+    {
+      OSCR::UI::printValue(OSCR::Strings::Common::Name, romDetail->name);
+    }
+    else
+    {
+      OSCR::UI::printValue_P(OSCR::Strings::Common::Name, OSCR::Strings::Common::Unknown);
+    }
+
+    OSCR::UI::ProgressBar::init(headerSize + (((uint32_t)NES_PRGSIZE) * 1024) + (((uint32_t)NES_CHRSIZE) * 1024), 1);
+
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
     //Write header
     if (headered)
@@ -544,24 +556,21 @@ namespace OSCR::Cores::NES
       OSCR::Storage::Shared::sharedFile.write(NES_INES, headerSize);
       OSCR::Storage::Shared::sharedFile.crcReset(); // Don't include header in CRC32
 
-      // update progress bar
       OSCR::UI::ProgressBar::advance(headerSize);
     }
 
     cartOn();
 
-    //Write PRG
     readPRG(true);
-
-    //Write CHR
     readCHR(true);
 
-    OSCR::UI::ProgressBar::finish();
+    cartOff();
 
-    // Close the file:
     OSCR::Storage::Shared::close();
 
-    cartOff();
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
+
+    OSCR::UI::ProgressBar::finish();
 
     // Compare CRC32 with database
     if (nesCRDB->matchCRC(OSCR::CRC32::current))
@@ -1264,7 +1273,8 @@ namespace OSCR::Cores::NES
 
   void dumpBankCHR(size_t const from, size_t const to)
   {
-    for (size_t address = from; address < to; address += 512) {
+    for (size_t address = from; address < to; address += 512)
+    {
       dumpCHR(address);
     }
   }
@@ -1273,14 +1283,11 @@ namespace OSCR::Cores::NES
   {
     if (!readrom)
     {
-      OSCR::UI::clear();
+      printHeader();
+
       OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::NES), FS(OSCR::Strings::Directory::ROM), "PRG", FS(OSCR::Strings::FileType::Raw));
 
       cartOn();
-    }
-    else if (!OSCR::Storage::Shared::sharedFile.isOpen())
-    {
-      OSCR::Storage::Shared::openRWC();
     }
 
     set_address(0);
@@ -1301,7 +1308,7 @@ namespace OSCR::Cores::NES
       case 185:  // 16K/32K
         if (oldcrc32 == 0xE37A6AA8 || oldcrc32 == 0x90046A48 || oldcrc32 == 0xCBA2352F || oldcrc32 == 0x56DA99FA || oldcrc32MMC3 == 0xE37A6AA8 || oldcrc32MMC3 == 0x90046A48 || oldcrc32MMC3 == 0xCBA2352F || oldcrc32MMC3 == 0x56DA99FA)
         {
-          OSCR::UI::printLineSync(F("DUMPING 8KiB PRG"));
+          //OSCR::UI::printLineSync(F("DUMPING 8KiB PRG"));
           dumpBankPRG(0x0, 0x2000, base);
         }
         else
@@ -2645,7 +2652,7 @@ namespace OSCR::Cores::NES
       case 232:
         if (oldcrc32 == 0x2B50A29C || oldcrc32 == 0x9DF7D376 || oldcrc32 == 0x596EC6E6 || oldcrc32 == 0xD003AFCA || oldcrc32 == 0x5004C6CF || oldcrc32 == 0x59D7D89D || oldcrc32 == 0x017D903E || oldcrc32 == 0xC1E6A786 || oldcrc32 == 0xD43AC4BE || oldcrc32 == 0x3E54E71D || oldcrc32 == 0x3D8497EA || oldcrc32MMC3 == 0x2B50A29C || oldcrc32MMC3 == 0x9DF7D376 || oldcrc32MMC3 == 0x596EC6E6 || oldcrc32MMC3 == 0xD003AFCA || oldcrc32MMC3 == 0x5004C6CF || oldcrc32MMC3 == 0x59D7D89D || oldcrc32MMC3 == 0x017D903E || oldcrc32MMC3 == 0xC1E6A786 || oldcrc32MMC3 == 0xD43AC4BE || oldcrc32MMC3 == 0x3E54E71D || oldcrc32MMC3 == 0x3D8497EA)
         {
-          OSCR::UI::printLineSync(F("DUMPING QUATTRO CART"));
+          //OSCR::UI::printLineSync(F("DUMPING QUATTRO CART"));
 
           for (size_t i = 0; i < 16; i++)
           {
@@ -3011,1018 +3018,1008 @@ namespace OSCR::Cores::NES
 
   void readCHR(bool readrom)
   {
-    if (!readrom)
-    {
-      cartOn();
-    }
-
     uint16_t banks;
     bool busConflict = false;
+
+    if (!readrom)
+    {
+      printHeader();
+
+      OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::NES), FS(OSCR::Strings::Directory::ROM), "CHR", FS(OSCR::Strings::FileType::Raw));
+
+      cartOn();
+    }
 
     set_address(0);
     _delay_us(1);
 
-    if (NES_CHR == 0)
+    switch (NES_MAPPER)
     {
-        OSCR::UI::printLineSync(FS(OSCR::Strings::Errors::NotSupportedByCart));
-    }
-    else
-    {
-      if (!readrom)
-      {
-        OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::NES), FS(OSCR::Strings::Directory::ROM), "CHR", FS(OSCR::Strings::FileType::Raw));
+    case 0:  // 8K
+    case 43:
+    case 55:
+      dumpBankCHR(0x0, 0x2000);
+      break;
+
+    case 1:
+    case 155:
+      banks = OSCR::Util::power<2>(NES_CHR);
+      for (size_t i = 0; i < banks; i += 2) {  // 8K/16K/32K/64K/128K (Bank #s are based on 4K Banks)
+        write_prg_byte(0x8000, 0x80);          // Clear Register
+        write_mmc1_byte(0xA000, i);
+        dumpBankCHR(0x0, 0x2000);
       }
+      break;
 
-      if (OSCR::Storage::Shared::sharedFile.isOpen())
+    case 3:  // 8K/16K/32K - bus conflicts
+    case 29:
+    case 66:  // 16K/32K
+    case 70:
+    case 148:  // Sachen SA-008-A and Tengen 800008 - Bus conflicts
+    case 152:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      busConflict = true;
+      for (size_t i = 0; i < banks; i++) {
+        for (size_t x = 0; x < 0x8000; x++) {
+          if (read_prg_byte(0x8000 + x) == i) {
+            write_prg_byte(0x8000 + x, i);
+            busConflict = false;
+            break;
+          }
+        }
+        if (busConflict) {
+          write_prg_byte(0x8000 + i, i);
+        }
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 4:
+    case 12:
+    case 37:
+    case 44:
+    case 47:
+    case 49:
+    case 52:
+    case 64:
+    case 74:
+    case 95:  // 32K
+    case 115:
+    case 116:
+    case 118:
+    case 119:
+    case 126:
+    case 134:
+    case 158:
+    case 176:
+    case 189:
+    case 195:
+    case 196:
+    case 206:  // 16K/32K/64K
+    case 224:
+    case 248:
+    case 268:
+    case 315:
+    case 351:
+    case 366:
+    case 422:
+    case 534:
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      write_prg_byte(0xA001, 0x80);
+      if ((NES_MAPPER == 126) || (NES_MAPPER == 422) || (NES_MAPPER == 534)) {
+        write_prg_byte(0x6803, 0);  // set MMC3 banking mode
+      }
+      if ((NES_MAPPER == 115) || (NES_MAPPER == 134) || (NES_MAPPER == 248)) {
+        write_prg_byte(0x6000, 0);  // set MMC3 banking mode
+      }
+      if (NES_MAPPER == 176) {
+        write_prg_byte(0x5FF3, 0);  // extended MMC3 mode: disabled
+        write_prg_byte(0x5FF0, 1);  // 256K outer bank mode
+      }
+      if (NES_MAPPER == 351) {
+        write_prg_byte(0x5000, 0);
+        write_prg_byte(0x5001, 0);
+        write_prg_byte(0x5002, 0);
+      }
+      for (size_t i = 0; i < banks; i++) {
+        if (NES_MAPPER == 12) {
+          write_prg_byte(0x4132, (i & 0x100) >> 8 | (i & 0x100) >> 4);
+        }
+        if (NES_MAPPER == 37) {
+          if (i == 0) {
+            write_prg_byte(0x6000, 0);
+          } else if (i == 64) {
+            write_prg_byte(0x6000, 3);
+          } else if (i == 128) {
+            write_prg_byte(0x6000, 4);
+          }
+        }
+        if (NES_MAPPER == 44) {
+          write_prg_byte(0xA001, 0x80 | ((i >> 7) & 0x07));
+        }
+        if (NES_MAPPER == 47) {
+          write_prg_byte(0x6800 + ((i & 0x180) >> 7), 0);
+        }
+        if (NES_MAPPER == 49) {
+          write_prg_byte(0x6800, ((i & 0x180) >> 1) | 1);
+        }
+        if (NES_MAPPER == 52) {
+          write_prg_byte(0x6000, (i & 0x180) >> 3 | (i & 0x200) >> 7);
+        }
+        if ((NES_MAPPER == 115) || (NES_MAPPER == 248)) {
+          write_prg_byte(0x6001, (i & 0x100) >> 8);  // A18
+        }
+        if (NES_MAPPER == 116) {
+          write_prg_byte(0x4100, 0x01 | ((i & 0x100) >> 6));  // A18
+        }
+        if (NES_MAPPER == 126) {
+          write_prg_byte(0x6800, (i & 0x200) >> 5 | (i & 0x100) >> 3);  // select outer bank
+        }
+        if (NES_MAPPER == 134) {
+          write_prg_byte(0x6000, (i & 0x200) >> 4);  // A19
+          write_prg_byte(0x6001, (i & 0x180) >> 3);  // A18-17
+        }
+        if (NES_MAPPER == 176) {
+          write_prg_byte(0x5FF2, (i & 0x700) >> 3);  // outer 256k bank
+        }
+        if ((NES_MAPPER == 224) || (NES_MAPPER == 268) || (NES_MAPPER == 995) || (NES_MAPPER == 996) || (NES_MAPPER == 997)) {
+          write_prg_byte(0x5000, ((i & 0x380) >> 4) | ((i & 0xC00) >> 9));
+          write_prg_byte(0x6000, ((i & 0x380) >> 4) | ((i & 0xC00) >> 9));
+        }
+        if (NES_MAPPER == 315) {
+          write_prg_byte(0x6800, ((i & 0x100) >> 8) | ((i & 0x80) >> 6) | ((i & 0x40) >> 3));
+        }
+        if (NES_MAPPER == 351) {
+          write_prg_byte(0x5000, (i >> 1) & 0xFC);
+        }
+        if (NES_MAPPER == 366) {
+          write_prg_byte(0x6800 + ((i & 0x380) >> 3), i);
+        }
+        if ((NES_MAPPER == 422) || (NES_MAPPER == 534)) {
+          write_prg_byte(0x6800, (i & 0x380) >> 4);
+        }
+        if ((NES_MAPPER == 998) || (NES_MAPPER == 999)) {
+          write_prg_byte(0x5000, (i & 0x80) >> 4);
+          write_prg_byte(0x6000, (i & 0x80) >> 4);
+        }
+        write_prg_byte(0x8000, 0x02);
+        write_prg_byte(0x8001, i);
+        dumpBankCHR(0x1000, 0x1400);
+      }
+      break;
+
+    case 5:  // 128K/256K/512K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      write_prg_byte(0x5101, 0);  // 8K CHR Banks
+      for (size_t i = 0; i < banks; i++) {
+        if (i == 0)
+          write_prg_byte(0x5130, 0);  // Set Upper 2 bits
+        else if (i == 8)
+          write_prg_byte(0x5130, 1);  // Set Upper 2 bits
+        else if (i == 16)
+          write_prg_byte(0x5130, 2);  // Set Upper 2 bits
+        else if (i == 24)
+          write_prg_byte(0x5130, 3);  // Set Upper 2 bits
+        write_prg_byte(0x5127, i);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 9:
+    case 10:
+      banks = OSCR::Util::power<2>(NES_CHR);
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xB000, i);
+        write_prg_byte(0xC000, i);
+        dumpBankCHR(0x0, 0x1000);
+      }
+      break;
+
+    case 11:
+    case 144:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xFFB0 + i, i << 4);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 16:
+    case 159:  // 128K/256K
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x6000, i);  // Submapper 4
+        write_prg_byte(0x8000, i);  // Submapper 5
+        dumpBankCHR(0x0, 0x400);
+      }
+      break;
+
+    case 18:  // 128K/256K
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xA000, i & 0xF);         // CHR Bank Lower 4 bits
+        write_prg_byte(0xA001, (i >> 4) & 0xF);  // CHR Bank Upper 4 bits
+        dumpBankCHR(0x0, 0x400);
+      }
+      break;
+
+    case 19:  // 128K/256K
+    case 532:
+      for (size_t j = 0; j < 64; j++) {  // Init Register
+        write_ram_byte(0xE800, 0xC0);    // CHR RAM High/Low Disable (ROM Enable)
+      }
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      write_ram_byte(0xE800, 0xC0);  // CHR RAM High/Low Disable (ROM Enable)
+      for (size_t i = 0; i < banks; i += 8) {
+        write_prg_byte(0x8000, i);      // CHR Bank 0
+        write_prg_byte(0x8800, i + 1);  // CHR Bank 1
+        write_prg_byte(0x9000, i + 2);  // CHR Bank 2
+        write_prg_byte(0x9800, i + 3);  // CHR Bank 3
+        write_prg_byte(0xA000, i + 4);  // CHR Bank 4
+        write_prg_byte(0xA800, i + 5);  // CHR Bank 5
+        write_prg_byte(0xB000, i + 6);  // CHR Bank 6
+        write_prg_byte(0xB800, i + 7);  // CHR Bank 7
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 21:  // 128K/256K
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xB000, i & 0xF);           // CHR Bank Lower 4 bits
+        if (NES_CHR == 5)                          // Check CHR Size to determine VRC4a (128K) or VRC4c (256K)
+          write_prg_byte(0xB002, (i >> 4) & 0xF);  // CHR Bank Upper 4 bits VRC4a (Wai Wai World 2)
+        else                                       // banks == 256
+          write_prg_byte(0xB040, (i >> 4) & 0xF);  // CHR Bank Upper 4 bits VRC4c (Ganbare Goemon Gaiden 2)
+        dumpBankCHR(0x0, 0x400);
+      }
+      break;
+
+
+    case 22:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xB000, (i << 1) & 0xF);  // CHR Bank Lower 4 bits
+        write_prg_byte(0xB002, (i >> 3) & 0xF);  // CHR Bank Upper 4 bits
+        dumpBankCHR(0x0, 0x400);
+      }
+      break;
+
+    case 23:
+    case 272:
       {
-        switch (NES_MAPPER)
+        banks = OSCR::Util::power<2>(NES_CHR) * 4;
+
+        // Detect VRC4e Carts - read PRG 0x1FFF6 (DATE)
+        // Boku Dracula-kun = 890810, Tiny Toon = 910809, Crisis Force = 910701, Parodius Da! = 900916
+        write_prg_byte(0x8000, 15);  // Load last bank
+
+        uint16_t m23reg = 0xB001;
+
+        if ((read_prg_byte(0x9FF6) == 0x30) && !(NES_MAPPER == 272))
         {
-          case 0:  // 8K
-          case 43:
-          case 55:
-            dumpBankCHR(0x0, 0x2000);
-            break;
+          OSCR::UI::printLineSync(F("VRC4e detected!"));
 
-          case 1:
-          case 155:
-            banks = OSCR::Util::power<2>(NES_CHR);
-            for (size_t i = 0; i < banks; i += 2) {  // 8K/16K/32K/64K/128K (Bank #s are based on 4K Banks)
-              write_prg_byte(0x8000, 0x80);          // Clear Register
-              write_mmc1_byte(0xA000, i);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 3:  // 8K/16K/32K - bus conflicts
-          case 29:
-          case 66:  // 16K/32K
-          case 70:
-          case 148:  // Sachen SA-008-A and Tengen 800008 - Bus conflicts
-          case 152:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            busConflict = true;
-            for (size_t i = 0; i < banks; i++) {
-              for (size_t x = 0; x < 0x8000; x++) {
-                if (read_prg_byte(0x8000 + x) == i) {
-                  write_prg_byte(0x8000 + x, i);
-                  busConflict = false;
-                  break;
-                }
-              }
-              if (busConflict) {
-                write_prg_byte(0x8000 + i, i);
-              }
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 4:
-          case 12:
-          case 37:
-          case 44:
-          case 47:
-          case 49:
-          case 52:
-          case 64:
-          case 74:
-          case 95:  // 32K
-          case 115:
-          case 116:
-          case 118:
-          case 119:
-          case 126:
-          case 134:
-          case 158:
-          case 176:
-          case 189:
-          case 195:
-          case 196:
-          case 206:  // 16K/32K/64K
-          case 224:
-          case 248:
-          case 268:
-          case 315:
-          case 351:
-          case 366:
-          case 422:
-          case 534:
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            write_prg_byte(0xA001, 0x80);
-            if ((NES_MAPPER == 126) || (NES_MAPPER == 422) || (NES_MAPPER == 534)) {
-              write_prg_byte(0x6803, 0);  // set MMC3 banking mode
-            }
-            if ((NES_MAPPER == 115) || (NES_MAPPER == 134) || (NES_MAPPER == 248)) {
-              write_prg_byte(0x6000, 0);  // set MMC3 banking mode
-            }
-            if (NES_MAPPER == 176) {
-              write_prg_byte(0x5FF3, 0);  // extended MMC3 mode: disabled
-              write_prg_byte(0x5FF0, 1);  // 256K outer bank mode
-            }
-            if (NES_MAPPER == 351) {
-              write_prg_byte(0x5000, 0);
-              write_prg_byte(0x5001, 0);
-              write_prg_byte(0x5002, 0);
-            }
-            for (size_t i = 0; i < banks; i++) {
-              if (NES_MAPPER == 12) {
-                write_prg_byte(0x4132, (i & 0x100) >> 8 | (i & 0x100) >> 4);
-              }
-              if (NES_MAPPER == 37) {
-                if (i == 0) {
-                  write_prg_byte(0x6000, 0);
-                } else if (i == 64) {
-                  write_prg_byte(0x6000, 3);
-                } else if (i == 128) {
-                  write_prg_byte(0x6000, 4);
-                }
-              }
-              if (NES_MAPPER == 44) {
-                write_prg_byte(0xA001, 0x80 | ((i >> 7) & 0x07));
-              }
-              if (NES_MAPPER == 47) {
-                write_prg_byte(0x6800 + ((i & 0x180) >> 7), 0);
-              }
-              if (NES_MAPPER == 49) {
-                write_prg_byte(0x6800, ((i & 0x180) >> 1) | 1);
-              }
-              if (NES_MAPPER == 52) {
-                write_prg_byte(0x6000, (i & 0x180) >> 3 | (i & 0x200) >> 7);
-              }
-              if ((NES_MAPPER == 115) || (NES_MAPPER == 248)) {
-                write_prg_byte(0x6001, (i & 0x100) >> 8);  // A18
-              }
-              if (NES_MAPPER == 116) {
-                write_prg_byte(0x4100, 0x01 | ((i & 0x100) >> 6));  // A18
-              }
-              if (NES_MAPPER == 126) {
-                write_prg_byte(0x6800, (i & 0x200) >> 5 | (i & 0x100) >> 3);  // select outer bank
-              }
-              if (NES_MAPPER == 134) {
-                write_prg_byte(0x6000, (i & 0x200) >> 4);  // A19
-                write_prg_byte(0x6001, (i & 0x180) >> 3);  // A18-17
-              }
-              if (NES_MAPPER == 176) {
-                write_prg_byte(0x5FF2, (i & 0x700) >> 3);  // outer 256k bank
-              }
-              if ((NES_MAPPER == 224) || (NES_MAPPER == 268) || (NES_MAPPER == 995) || (NES_MAPPER == 996) || (NES_MAPPER == 997)) {
-                write_prg_byte(0x5000, ((i & 0x380) >> 4) | ((i & 0xC00) >> 9));
-                write_prg_byte(0x6000, ((i & 0x380) >> 4) | ((i & 0xC00) >> 9));
-              }
-              if (NES_MAPPER == 315) {
-                write_prg_byte(0x6800, ((i & 0x100) >> 8) | ((i & 0x80) >> 6) | ((i & 0x40) >> 3));
-              }
-              if (NES_MAPPER == 351) {
-                write_prg_byte(0x5000, (i >> 1) & 0xFC);
-              }
-              if (NES_MAPPER == 366) {
-                write_prg_byte(0x6800 + ((i & 0x380) >> 3), i);
-              }
-              if ((NES_MAPPER == 422) || (NES_MAPPER == 534)) {
-                write_prg_byte(0x6800, (i & 0x380) >> 4);
-              }
-              if ((NES_MAPPER == 998) || (NES_MAPPER == 999)) {
-                write_prg_byte(0x5000, (i & 0x80) >> 4);
-                write_prg_byte(0x6000, (i & 0x80) >> 4);
-              }
-              write_prg_byte(0x8000, 0x02);
-              write_prg_byte(0x8001, i);
-              dumpBankCHR(0x1000, 0x1400);
-            }
-            break;
-
-          case 5:  // 128K/256K/512K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            write_prg_byte(0x5101, 0);  // 8K CHR Banks
-            for (size_t i = 0; i < banks; i++) {
-              if (i == 0)
-                write_prg_byte(0x5130, 0);  // Set Upper 2 bits
-              else if (i == 8)
-                write_prg_byte(0x5130, 1);  // Set Upper 2 bits
-              else if (i == 16)
-                write_prg_byte(0x5130, 2);  // Set Upper 2 bits
-              else if (i == 24)
-                write_prg_byte(0x5130, 3);  // Set Upper 2 bits
-              write_prg_byte(0x5127, i);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 9:
-          case 10:
-            banks = OSCR::Util::power<2>(NES_CHR);
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xB000, i);
-              write_prg_byte(0xC000, i);
-              dumpBankCHR(0x0, 0x1000);
-            }
-            break;
-
-          case 11:
-          case 144:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xFFB0 + i, i << 4);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 16:
-          case 159:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x6000, i);  // Submapper 4
-              write_prg_byte(0x8000, i);  // Submapper 5
-              dumpBankCHR(0x0, 0x400);
-            }
-            break;
-
-          case 18:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xA000, i & 0xF);         // CHR Bank Lower 4 bits
-              write_prg_byte(0xA001, (i >> 4) & 0xF);  // CHR Bank Upper 4 bits
-              dumpBankCHR(0x0, 0x400);
-            }
-            break;
-
-          case 19:  // 128K/256K
-          case 532:
-            for (size_t j = 0; j < 64; j++) {  // Init Register
-              write_ram_byte(0xE800, 0xC0);    // CHR RAM High/Low Disable (ROM Enable)
-            }
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            write_ram_byte(0xE800, 0xC0);  // CHR RAM High/Low Disable (ROM Enable)
-            for (size_t i = 0; i < banks; i += 8) {
-              write_prg_byte(0x8000, i);      // CHR Bank 0
-              write_prg_byte(0x8800, i + 1);  // CHR Bank 1
-              write_prg_byte(0x9000, i + 2);  // CHR Bank 2
-              write_prg_byte(0x9800, i + 3);  // CHR Bank 3
-              write_prg_byte(0xA000, i + 4);  // CHR Bank 4
-              write_prg_byte(0xA800, i + 5);  // CHR Bank 5
-              write_prg_byte(0xB000, i + 6);  // CHR Bank 6
-              write_prg_byte(0xB800, i + 7);  // CHR Bank 7
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 21:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xB000, i & 0xF);           // CHR Bank Lower 4 bits
-              if (NES_CHR == 5)                          // Check CHR Size to determine VRC4a (128K) or VRC4c (256K)
-                write_prg_byte(0xB002, (i >> 4) & 0xF);  // CHR Bank Upper 4 bits VRC4a (Wai Wai World 2)
-              else                                       // banks == 256
-                write_prg_byte(0xB040, (i >> 4) & 0xF);  // CHR Bank Upper 4 bits VRC4c (Ganbare Goemon Gaiden 2)
-              dumpBankCHR(0x0, 0x400);
-            }
-            break;
-
-
-          case 22:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xB000, (i << 1) & 0xF);  // CHR Bank Lower 4 bits
-              write_prg_byte(0xB002, (i >> 3) & 0xF);  // CHR Bank Upper 4 bits
-              dumpBankCHR(0x0, 0x400);
-            }
-            break;
-
-          case 23:
-          case 272:
-            {
-              banks = OSCR::Util::power<2>(NES_CHR) * 4;
-
-              // Detect VRC4e Carts - read PRG 0x1FFF6 (DATE)
-              // Boku Dracula-kun = 890810, Tiny Toon = 910809, Crisis Force = 910701, Parodius Da! = 900916
-              write_prg_byte(0x8000, 15);  // Load last bank
-
-              uint16_t m23reg = 0xB001;
-
-              if ((read_prg_byte(0x9FF6) == 0x30) && !(NES_MAPPER == 272))
-              {
-                OSCR::UI::printLineSync(F("VRC4e detected!"));
-
-                m23reg = 0xB004;
-              }
-
-              for (size_t i = 0; i < banks; i++)
-              {
-                write_prg_byte(0xB000, i & 0xF);          // CHR Bank 0: Lower 4 bits
-                write_prg_byte(m23reg, (i >> 4) & 0x1F);  // CHR Bank 0: Upper 5 bits
-                dumpBankCHR(0x0, 0x400);
-              }
-
-              break;
-            }
-
-          case 24:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            write_prg_byte(0xB003, 0);  // PPU Banking Mode 0
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xD000, i);  // CHR Bank 0
-              dumpBankCHR(0x0, 0x400);    // 1K Banks
-            }
-            break;
-
-          case 25:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xB000, i & 0xF);         // CHR Bank Lower 4 bits
-              write_prg_byte(0xB00A, (i >> 4) & 0xF);  // Combine VRC2c and VRC4b, VRC4d reg
-              dumpBankCHR(0x0, 0x400);
-            }
-            break;
-
-          case 26:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            write_prg_byte(0xB003, 0);
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xD000, i);
-              dumpBankCHR(0x0, 0x400);
-            }
-            break;
-
-          case 27:
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xB000, i & 0x0F);
-              write_prg_byte(0xB001, i >> 4);
-              dumpBankCHR(0x0, 0x400);
-            }
-            break;
-
-          case 32:  // 128K
-          case 65:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xB000, i);
-              dumpBankCHR(0x0, 0x400);
-            }
-            break;
-
-          case 33:  // 128K/256K
-          case 48:  // 256K
-            banks = OSCR::Util::power<2>(NES_CHR) * 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8002, i);
-              dumpBankCHR(0x0, 0x800);
-            }
-            break;
-
-          case 34:  // NINA
-            banks = OSCR::Util::power<2>(NES_CHR);
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x7FFE, i);  // Select 4 KB CHR bank at $0000
-              delay(200);                 // NINA seems slow to switch banks
-              dumpBankCHR(0x0, 0x1000);
-            }
-            break;
-
-          case 35:
-          case 90:
-          case 209:
-          case 211:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            write_prg_byte(0xD000, 0x02);
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xD003, ((i >> 3) & 0x18) | 0x20);
-              write_prg_byte(0x9000, (i & 0x3F));
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 36:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x4200, i);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 38:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x7000, i << 2);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 41:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x6004 + ((i & 0x0C) << 1), 0);
-              write_prg_byte(0x6004 + ((i & 0x0C) << 1), 0);
-              write_prg_byte(0xFFF0 + (i & 0x03), i & 0x03);
-              write_prg_byte(0xFFF0 + (i & 0x03), i & 0x03);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 42:
-            banks = OSCR::Util::power<2>(NES_CHR);
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000, i & 0x0F);
-              dumpBankCHR(0x0, 0x1000);
-            }
-            break;
-
-          case 45:  // 128K/256K/512K/1024K
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            write_prg_byte(0xA001, 0x80);  // Unlock Write Protection - not used by some carts
-            for (size_t i = 0; i < banks; i++) {
-              // set outer bank registers
-              write_prg_byte(0x6000, 0);                          // CHR-OR
-              write_prg_byte(0x6000, 0);                          // PRG-OR
-              write_prg_byte(0x6000, (((i / 256) << 4) | 0x0F));  // CHR-AND,CHR-OR/PRG-OR
-              write_prg_byte(0x6000, 0x80);                       // PRG-AND
-              // set inner bank registers
-              write_prg_byte(0x8000, 0x2);  // CHR Bank 2 ($1000-$13FF)
-              write_prg_byte(0x8001, i);
-              for (size_t address = 0x1000; address < 0x1200; address += 512) {
-                dumpCHR_M2(address);  // Read CHR with M2 Pulse
-              }
-              // set outer bank registers
-              write_prg_byte(0x6000, 0);                          // CHR-OR
-              write_prg_byte(0x6000, 0);                          // PRG-OR
-              write_prg_byte(0x6000, (((i / 256) << 4) | 0x0F));  // CHR-AND,CHR-OR/PRG-OR
-              write_prg_byte(0x6000, 0x80);                       // PRG-AND
-              // set inner bank registers
-              write_prg_byte(0x8000, 0x2);  // CHR Bank 2 ($1000-$13FF)
-              write_prg_byte(0x8001, i);
-              for (size_t address = 0x1200; address < 0x1400; address += 512) {
-                dumpCHR_M2(address);  // Read CHR with M2 Pulse
-              }
-            }
-            break;
-
-          case 46:
-            banks = OSCR::Util::power<2>(NES_CHR);  // 8k banks
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x6000, (i & 0x78) << 1);  // high bits
-              write_prg_byte(0x8000, (i & 0x07) << 4);  // low bits
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 56:
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xFC00, i);
-              dumpBankCHR(0x0, 0x400);
-            }
-            break;
-
-          case 57:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              for (uint16_t address = 0x0; address < 0x2000; address += 512)
-              {
-                write_prg_pulsem2(0x8800, i & 0x07);                  // A15-A13
-                write_prg_pulsem2(0x8000, 0x80 | ((i & 0x08) << 3));  // A16
-                dumpCHR_pulsem2(address);
-              }
-            }
-            break;
-
-          case 58:
-          case 213:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 + ((i & 0x07) << 3), 0);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 59:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_reg_m59(0x8000 + (i & 0x07));
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 60:
-            for (size_t i = 0; i < 4; i++) {
-              write_prg_byte(0x8D8D, i);
-              delay(500);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 61:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 | (i << 8), 0);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 62:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 + (i / 4), i & 3);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 67:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR) * 2;
-            for (size_t i = 0; i < banks; i++) {  // 2K Banks
-              write_prg_byte(0x8800, i);          // CHR Bank 0
-              dumpBankCHR(0x0, 0x800);
-            }
-            break;
-
-          case 68:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHR) * 2;
-            for (size_t i = 0; i < banks; i += 4) {  // 2K Banks
-              write_prg_byte(0x8000, i);             // CHR Bank 0
-              write_prg_byte(0x9000, i + 1);         // CHR Bank 1
-              write_prg_byte(0xA000, i + 2);         // CHR Bank 2
-              write_prg_byte(0xB000, i + 3);         // CHR Bank 3
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 69:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000, 0);  // Command Register - CHR Bank 0
-              write_prg_byte(0xA000, i);  // Parameter Register - ($0000-$03FF)
-              dumpBankCHR(0x0, 0x400);    // 1K Banks
-            }
-            break;
-
-          case 72:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            write_prg_byte(0x8000, 0);            // Reset Register
-            for (size_t i = 0; i < banks; i++) {  // 8K Banks
-              write_prg_byte(0x8000, i | 0x40);   // CHR Command + Bank
-              write_prg_byte(0x8000, i);          // CHR Bank
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 75:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR);
-            for (size_t i = 0; i < banks; i++) {        // 4K Banks
-              write_reg_byte(0xE000, i);                // CHR Bank Low Bits [WRITE RAM SAFE]
-              write_prg_byte(0x9000, (i & 0x10) >> 3);  // High Bit
-              dumpBankCHR(0x0, 0x1000);
-            }
-            break;
-
-          case 76:
-            banks = OSCR::Util::power<2>(NES_CHR) * 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000, 2);
-              write_prg_byte(0x8001, i);
-              dumpBankCHR(0x0, 0x800);
-            }
-            break;
-
-          case 77:  // 32K
-            banks = OSCR::Util::power<2>(NES_CHR) * 2;
-            for (size_t i = 0; i < banks; i++) {  // 2K Banks
-              write_prg_byte(0x8000, i << 4);     // CHR Bank 0
-              dumpBankCHR(0x0, 0x800);
-            }
-            break;
-
-          case 78:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {  // 8K Banks
-              write_prg_byte(0x8000, i << 4);     // CHR Bank 0
-              dumpBankCHR(0x0, 0x2000);           // 8K Banks ($0000-$1FFF)
-            }
-            break;
-
-          case 79:
-          case 146:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x4100, i);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 80:   // 128K/256K
-          case 82:   // 128K/256K
-          case 207:  // 128K [CART SOMETIMES NEEDS POWERCYCLE]
-          case 552:
-            banks = OSCR::Util::power<2>(NES_CHR) * 2;
-            write_prg_byte(0x7EF6, 0);  // CHR mode [2x 2KiB banks at $0000-$0FFF]
-            for (size_t i = 0; i < banks; i += 2) {
-              write_prg_byte(0x7EF0, i << 1);
-              write_prg_byte(0x7EF1, (i + 1) << 1);
-              dumpBankCHR(0x0, 0x1000);
-            }
-            break;
-
-          case 85:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i += 8) {
-              write_prg_byte(0xA000, i);      // CHR Bank 0
-              write_prg_byte(0xA008, i + 1);  // CHR Bank 1
-              write_prg_byte(0xB000, i + 2);  // CHR Bank 2
-              write_prg_byte(0xB008, i + 3);  // CHR Bank 3
-              write_prg_byte(0xC000, i + 4);  // CHR Bank 4
-              write_prg_byte(0xC008, i + 5);  // CHR Bank 5
-              write_prg_byte(0xD000, i + 6);  // CHR Bank 6
-              write_prg_byte(0xD008, i + 7);  // CHR Bank 7
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 86:  // 64K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {  // 8K Banks
-              if (i < 4)
-                write_prg_byte(0x6000, i & 0x3);
-              else
-                write_prg_byte(0x6000, (i | 0x40) & 0x43);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 87:  // 16K/32K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {  // 16K/32K
-              write_prg_byte(0x6000, ((i & 0x1) << 1) | ((i & 0x2) >> 1));
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 88:
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            write_prg_byte(0xA001, 0x80);
-            for (size_t i = 0; i < banks; i += 2) {
-              if (i < 64) {
-                write_prg_byte(0x8000, 0);
-                write_prg_byte(0x8001, i);
-                dumpBankCHR(0x0, 0x800);
-              } else {
-                write_prg_byte(0x8000, 2);
-                write_prg_byte(0x8001, i);
-                write_prg_byte(0x8000, 3);
-                write_prg_byte(0x8001, i + 1);
-                dumpBankCHR(0x1000, 0x1800);
-              }
-            }
-            break;
-
-          case 89:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {  // 8K Banks
-              if (i < 8)
-                write_prg_byte(0x8000, i & 0x7);
-              else
-                write_prg_byte(0x8000, (i | 0x80) & 0x87);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 91:
-            banks = OSCR::Util::power<2>(NES_CHR) * 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 + ((i & 0x100) >> 8), i);  // CHR A19 (submapper 0 only)
-              write_prg_byte(0x6000, i);                       // CHR A18-A11
-              dumpBankCHR(0x0, 0x800);
-            }
-            break;
-
-          case 92:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            write_prg_byte(0x8000, 0);            // Reset Register
-            for (size_t i = 0; i < banks; i++) {  // 8K Banks
-              write_prg_byte(0x8000, i | 0x40);   // CHR Command + Bank
-              write_prg_byte(0x8000, i);          // CHR Bank
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 107:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xC000, i);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 112:
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000, 6);
-              write_prg_byte(0xA000, i);
-              dumpBankCHR(0x1000, 0x1400);
-            }
-            break;
-
-          case 113:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x4100, (i & 0x08) << 3 | (i & 0x07));
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 114:  // Submapper 0
-          case 182:
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x6001, (i & 0x80) >> 7);
-              write_prg_byte(0xA000, 6);
-              write_prg_byte(0xC000, i);
-              dumpBankCHR(0x1000, 0x1400);
-            }
-            break;
-
-          case 117:
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xA000, i);
-              dumpBankCHR(0x0, 0x400);
-            }
-            break;
-
-          case 122:
-          case 184:  // 16K/32K
-            banks = OSCR::Util::power<2>(NES_CHR);
-            for (size_t i = 0; i < banks; i++) {  // 4K Banks
-              write_prg_byte(0x6000, i);          // CHR LOW (Bits 0-2) ($0000-$0FFF)
-              dumpBankCHR(0x0, 0x1000);           // 4K Banks ($0000-$0FFF)
-            }
-            break;
-
-          case 140:  // 32K/128K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {  // 8K Banks
-              write_prg_byte(0x6000, i);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 154:  // 128K
-            for (size_t i = 0; i < 64; i += 2) {
-              write_prg_byte(0x8000, 0);
-              write_prg_byte(0x8001, i);
-              dumpBankCHR(0x0, 0x800);
-            }
-            for (size_t i = 0; i < 64; i++) {
-              write_prg_byte(0x8000, 2);
-              write_prg_byte(0x8001, i);
-              dumpBankCHR(0x1000, 0x1400);
-            }
-            break;
-
-          case 165:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR);
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000, 0x02);
-              write_prg_byte(0x8001, i);
-              dumpBankCHR(0x1000, 0x2000);
-            }
-            break;
-
-          case 174:  // 64K
-            for (size_t i = 0; i < 8; i++) {
-              write_prg_byte(0xFF00 + (i << 1), 0);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 175:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xA000, i << 2);
-              write_prg_byte(0x8000, i);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 185:                           // 8K [READ 32K TO OVERRIDE LOCKOUT]
-            for (size_t i = 0; i < 4; i++)    // Read 32K to locate valid 8K
-            {
-              write_prg_byte(0x8000, i);
-
-              uint8_t chrcheck = read_chr_byte(0);
-
-              for (size_t address = 0x0; address < 0x2000; address += 512)
-              {
-                for (size_t x = 0; x < 512; x++)
-                {
-                  OSCR::Storage::Shared::buffer[x] = read_chr_byte(address + x);
-                }
-
-                if (chrcheck != 0xFF)
-                {
-                  OSCR::Storage::Shared::writeBuffer();
-
-                  OSCR::UI::ProgressBar::advance(512);
-                }
-              }
-            }
-            break;
-
-          case 200:
-          case 212:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 + (i & 0x07), 0);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 201:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 + (i & 0xFF), 0);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 202:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 | (i << 1), 0);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 203:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000, (i & 0x03));
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 210:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            write_prg_byte(0xE800, 0xC0);  // CHR RAM DISABLE (Bit 6 and 7) [WRITE NO RAM]
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000, i);  // CHR Bank 0
-              dumpBankCHR(0x0, 0x400);
-            }
-            break;
-
-          case 214:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 | (i << 2), 0);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 225:
-          case 255:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 + ((i & 0x40) << 8) + (i & 0x3F), i);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 228:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            write_prg_byte(0x8000, 0);
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 + ((i & 0x3C) >> 2), i & 0x03);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 229:
-            for (size_t i = 0; i < 32; i++) {
-              write_prg_byte(0x8000 + i, i);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 236:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 | (i & 0x0F), 0);  // A16-A13
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 240:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x5FFF, (i & 0xF));
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 246:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i += 4) {
-              write_prg_byte(0x6004, (i | 0));
-              write_prg_byte(0x6005, (i | 1));
-              write_prg_byte(0x6006, (i | 2));
-              write_prg_byte(0x6007, (i | 3));
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 252:
-          case 253:
-            banks = OSCR::Util::power<2>(NES_CHR) * 4;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xB000, i & 0x0F);
-              write_prg_byte(0xB004, ((i >> 4) & 0x0F) | ((i >> 8) << 4));
-              dumpBankCHR(0x0, 0x400);
-            }
-            break;
-
-          case 261:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xF000 + (i & 0x0F), i);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 286:
-            banks = OSCR::Util::power<2>(NES_CHR) * 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 + i, i);
-              dumpBankCHR(0x0, 0x800);
-            }
-            break;
-
-          case 288:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 + (i & 0x07), i);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 290:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000 | ((i << 5) & 0x300) | (i & 0x07), i);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 314: // 512K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_pulsem2(0x5000, ((i & 0x3) << 1)); // chr 8k bank (bits 0-1)
-              write_prg_pulsem2(0x5002, i >> 2); // chr 8k bank (bits 2-5)
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 319:  // 64K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x6000, i << 4);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
-
-          case 331:
-            banks = OSCR::Util::power<2>(NES_CHR);
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0xE000, i >> 3);
-              write_prg_byte(0xA000, i << 3);
-              dumpBankCHR(0x0, 0x1000);
-            }
-            break;
-
-          case 332:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              for (uint16_t address = 0x0; address < 0x2000; address += 512)
-              {
-                write_prg_pulsem2(0x6001, 0x30 | (i & 0x07));
-                write_prg_pulsem2(0x6000, (i & 0x08) << 3);
-                dumpCHR_pulsem2(address);
-              }
-            }
-            break;
-
-          case 519:
-            banks = OSCR::Util::power<2>(NES_CHR) / 2;
-            for (size_t i = 0; i < banks; i++) {
-              write_prg_byte(0x8000, i & 0x7F);
-              dumpBankCHR(0x0, 0x2000);
-            }
-            break;
+          m23reg = 0xB004;
         }
 
-        if (!readrom)
+        for (size_t i = 0; i < banks; i++)
         {
-          cartOff();
+          write_prg_byte(0xB000, i & 0xF);          // CHR Bank 0: Lower 4 bits
+          write_prg_byte(m23reg, (i >> 4) & 0x1F);  // CHR Bank 0: Upper 5 bits
+          dumpBankCHR(0x0, 0x400);
+        }
 
-          OSCR::Storage::Shared::close();
+        break;
+      }
+
+    case 24:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      write_prg_byte(0xB003, 0);  // PPU Banking Mode 0
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xD000, i);  // CHR Bank 0
+        dumpBankCHR(0x0, 0x400);    // 1K Banks
+      }
+      break;
+
+    case 25:  // 128K/256K
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xB000, i & 0xF);         // CHR Bank Lower 4 bits
+        write_prg_byte(0xB00A, (i >> 4) & 0xF);  // Combine VRC2c and VRC4b, VRC4d reg
+        dumpBankCHR(0x0, 0x400);
+      }
+      break;
+
+    case 26:  // 128K/256K
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      write_prg_byte(0xB003, 0);
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xD000, i);
+        dumpBankCHR(0x0, 0x400);
+      }
+      break;
+
+    case 27:
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xB000, i & 0x0F);
+        write_prg_byte(0xB001, i >> 4);
+        dumpBankCHR(0x0, 0x400);
+      }
+      break;
+
+    case 32:  // 128K
+    case 65:  // 128K/256K
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xB000, i);
+        dumpBankCHR(0x0, 0x400);
+      }
+      break;
+
+    case 33:  // 128K/256K
+    case 48:  // 256K
+      banks = OSCR::Util::power<2>(NES_CHR) * 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8002, i);
+        dumpBankCHR(0x0, 0x800);
+      }
+      break;
+
+    case 34:  // NINA
+      banks = OSCR::Util::power<2>(NES_CHR);
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x7FFE, i);  // Select 4 KB CHR bank at $0000
+        delay(200);                 // NINA seems slow to switch banks
+        dumpBankCHR(0x0, 0x1000);
+      }
+      break;
+
+    case 35:
+    case 90:
+    case 209:
+    case 211:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      write_prg_byte(0xD000, 0x02);
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xD003, ((i >> 3) & 0x18) | 0x20);
+        write_prg_byte(0x9000, (i & 0x3F));
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 36:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x4200, i);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 38:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x7000, i << 2);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 41:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x6004 + ((i & 0x0C) << 1), 0);
+        write_prg_byte(0x6004 + ((i & 0x0C) << 1), 0);
+        write_prg_byte(0xFFF0 + (i & 0x03), i & 0x03);
+        write_prg_byte(0xFFF0 + (i & 0x03), i & 0x03);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 42:
+      banks = OSCR::Util::power<2>(NES_CHR);
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000, i & 0x0F);
+        dumpBankCHR(0x0, 0x1000);
+      }
+      break;
+
+    case 45:  // 128K/256K/512K/1024K
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      write_prg_byte(0xA001, 0x80);  // Unlock Write Protection - not used by some carts
+      for (size_t i = 0; i < banks; i++) {
+        // set outer bank registers
+        write_prg_byte(0x6000, 0);                          // CHR-OR
+        write_prg_byte(0x6000, 0);                          // PRG-OR
+        write_prg_byte(0x6000, (((i / 256) << 4) | 0x0F));  // CHR-AND,CHR-OR/PRG-OR
+        write_prg_byte(0x6000, 0x80);                       // PRG-AND
+        // set inner bank registers
+        write_prg_byte(0x8000, 0x2);  // CHR Bank 2 ($1000-$13FF)
+        write_prg_byte(0x8001, i);
+        for (size_t address = 0x1000; address < 0x1200; address += 512) {
+          dumpCHR_M2(address);  // Read CHR with M2 Pulse
+        }
+        // set outer bank registers
+        write_prg_byte(0x6000, 0);                          // CHR-OR
+        write_prg_byte(0x6000, 0);                          // PRG-OR
+        write_prg_byte(0x6000, (((i / 256) << 4) | 0x0F));  // CHR-AND,CHR-OR/PRG-OR
+        write_prg_byte(0x6000, 0x80);                       // PRG-AND
+        // set inner bank registers
+        write_prg_byte(0x8000, 0x2);  // CHR Bank 2 ($1000-$13FF)
+        write_prg_byte(0x8001, i);
+        for (size_t address = 0x1200; address < 0x1400; address += 512) {
+          dumpCHR_M2(address);  // Read CHR with M2 Pulse
         }
       }
+      break;
+
+    case 46:
+      banks = OSCR::Util::power<2>(NES_CHR);  // 8k banks
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x6000, (i & 0x78) << 1);  // high bits
+        write_prg_byte(0x8000, (i & 0x07) << 4);  // low bits
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 56:
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xFC00, i);
+        dumpBankCHR(0x0, 0x400);
+      }
+      break;
+
+    case 57:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        for (uint16_t address = 0x0; address < 0x2000; address += 512)
+        {
+          write_prg_pulsem2(0x8800, i & 0x07);                  // A15-A13
+          write_prg_pulsem2(0x8000, 0x80 | ((i & 0x08) << 3));  // A16
+          dumpCHR_pulsem2(address);
+        }
+      }
+      break;
+
+    case 58:
+    case 213:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 + ((i & 0x07) << 3), 0);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 59:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_reg_m59(0x8000 + (i & 0x07));
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 60:
+      for (size_t i = 0; i < 4; i++) {
+        write_prg_byte(0x8D8D, i);
+        delay(500);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 61:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 | (i << 8), 0);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 62:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 + (i / 4), i & 3);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 67:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR) * 2;
+      for (size_t i = 0; i < banks; i++) {  // 2K Banks
+        write_prg_byte(0x8800, i);          // CHR Bank 0
+        dumpBankCHR(0x0, 0x800);
+      }
+      break;
+
+    case 68:  // 128K/256K
+      banks = OSCR::Util::power<2>(NES_CHR) * 2;
+      for (size_t i = 0; i < banks; i += 4) {  // 2K Banks
+        write_prg_byte(0x8000, i);             // CHR Bank 0
+        write_prg_byte(0x9000, i + 1);         // CHR Bank 1
+        write_prg_byte(0xA000, i + 2);         // CHR Bank 2
+        write_prg_byte(0xB000, i + 3);         // CHR Bank 3
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 69:  // 128K/256K
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000, 0);  // Command Register - CHR Bank 0
+        write_prg_byte(0xA000, i);  // Parameter Register - ($0000-$03FF)
+        dumpBankCHR(0x0, 0x400);    // 1K Banks
+      }
+      break;
+
+    case 72:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      write_prg_byte(0x8000, 0);            // Reset Register
+      for (size_t i = 0; i < banks; i++) {  // 8K Banks
+        write_prg_byte(0x8000, i | 0x40);   // CHR Command + Bank
+        write_prg_byte(0x8000, i);          // CHR Bank
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 75:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR);
+      for (size_t i = 0; i < banks; i++) {        // 4K Banks
+        write_reg_byte(0xE000, i);                // CHR Bank Low Bits [WRITE RAM SAFE]
+        write_prg_byte(0x9000, (i & 0x10) >> 3);  // High Bit
+        dumpBankCHR(0x0, 0x1000);
+      }
+      break;
+
+    case 76:
+      banks = OSCR::Util::power<2>(NES_CHR) * 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000, 2);
+        write_prg_byte(0x8001, i);
+        dumpBankCHR(0x0, 0x800);
+      }
+      break;
+
+    case 77:  // 32K
+      banks = OSCR::Util::power<2>(NES_CHR) * 2;
+      for (size_t i = 0; i < banks; i++) {  // 2K Banks
+        write_prg_byte(0x8000, i << 4);     // CHR Bank 0
+        dumpBankCHR(0x0, 0x800);
+      }
+      break;
+
+    case 78:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {  // 8K Banks
+        write_prg_byte(0x8000, i << 4);     // CHR Bank 0
+        dumpBankCHR(0x0, 0x2000);           // 8K Banks ($0000-$1FFF)
+      }
+      break;
+
+    case 79:
+    case 146:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x4100, i);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 80:   // 128K/256K
+    case 82:   // 128K/256K
+    case 207:  // 128K [CART SOMETIMES NEEDS POWERCYCLE]
+    case 552:
+      banks = OSCR::Util::power<2>(NES_CHR) * 2;
+      write_prg_byte(0x7EF6, 0);  // CHR mode [2x 2KiB banks at $0000-$0FFF]
+      for (size_t i = 0; i < banks; i += 2) {
+        write_prg_byte(0x7EF0, i << 1);
+        write_prg_byte(0x7EF1, (i + 1) << 1);
+        dumpBankCHR(0x0, 0x1000);
+      }
+      break;
+
+    case 85:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i += 8) {
+        write_prg_byte(0xA000, i);      // CHR Bank 0
+        write_prg_byte(0xA008, i + 1);  // CHR Bank 1
+        write_prg_byte(0xB000, i + 2);  // CHR Bank 2
+        write_prg_byte(0xB008, i + 3);  // CHR Bank 3
+        write_prg_byte(0xC000, i + 4);  // CHR Bank 4
+        write_prg_byte(0xC008, i + 5);  // CHR Bank 5
+        write_prg_byte(0xD000, i + 6);  // CHR Bank 6
+        write_prg_byte(0xD008, i + 7);  // CHR Bank 7
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 86:  // 64K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {  // 8K Banks
+        if (i < 4)
+          write_prg_byte(0x6000, i & 0x3);
+        else
+          write_prg_byte(0x6000, (i | 0x40) & 0x43);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 87:  // 16K/32K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {  // 16K/32K
+        write_prg_byte(0x6000, ((i & 0x1) << 1) | ((i & 0x2) >> 1));
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 88:
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      write_prg_byte(0xA001, 0x80);
+      for (size_t i = 0; i < banks; i += 2) {
+        if (i < 64) {
+          write_prg_byte(0x8000, 0);
+          write_prg_byte(0x8001, i);
+          dumpBankCHR(0x0, 0x800);
+        } else {
+          write_prg_byte(0x8000, 2);
+          write_prg_byte(0x8001, i);
+          write_prg_byte(0x8000, 3);
+          write_prg_byte(0x8001, i + 1);
+          dumpBankCHR(0x1000, 0x1800);
+        }
+      }
+      break;
+
+    case 89:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {  // 8K Banks
+        if (i < 8)
+          write_prg_byte(0x8000, i & 0x7);
+        else
+          write_prg_byte(0x8000, (i | 0x80) & 0x87);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 91:
+      banks = OSCR::Util::power<2>(NES_CHR) * 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 + ((i & 0x100) >> 8), i);  // CHR A19 (submapper 0 only)
+        write_prg_byte(0x6000, i);                       // CHR A18-A11
+        dumpBankCHR(0x0, 0x800);
+      }
+      break;
+
+    case 92:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      write_prg_byte(0x8000, 0);            // Reset Register
+      for (size_t i = 0; i < banks; i++) {  // 8K Banks
+        write_prg_byte(0x8000, i | 0x40);   // CHR Command + Bank
+        write_prg_byte(0x8000, i);          // CHR Bank
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 107:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xC000, i);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 112:
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000, 6);
+        write_prg_byte(0xA000, i);
+        dumpBankCHR(0x1000, 0x1400);
+      }
+      break;
+
+    case 113:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x4100, (i & 0x08) << 3 | (i & 0x07));
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 114:  // Submapper 0
+    case 182:
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x6001, (i & 0x80) >> 7);
+        write_prg_byte(0xA000, 6);
+        write_prg_byte(0xC000, i);
+        dumpBankCHR(0x1000, 0x1400);
+      }
+      break;
+
+    case 117:
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xA000, i);
+        dumpBankCHR(0x0, 0x400);
+      }
+      break;
+
+    case 122:
+    case 184:  // 16K/32K
+      banks = OSCR::Util::power<2>(NES_CHR);
+      for (size_t i = 0; i < banks; i++) {  // 4K Banks
+        write_prg_byte(0x6000, i);          // CHR LOW (Bits 0-2) ($0000-$0FFF)
+        dumpBankCHR(0x0, 0x1000);           // 4K Banks ($0000-$0FFF)
+      }
+      break;
+
+    case 140:  // 32K/128K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {  // 8K Banks
+        write_prg_byte(0x6000, i);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 154:  // 128K
+      for (size_t i = 0; i < 64; i += 2) {
+        write_prg_byte(0x8000, 0);
+        write_prg_byte(0x8001, i);
+        dumpBankCHR(0x0, 0x800);
+      }
+      for (size_t i = 0; i < 64; i++) {
+        write_prg_byte(0x8000, 2);
+        write_prg_byte(0x8001, i);
+        dumpBankCHR(0x1000, 0x1400);
+      }
+      break;
+
+    case 165:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR);
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000, 0x02);
+        write_prg_byte(0x8001, i);
+        dumpBankCHR(0x1000, 0x2000);
+      }
+      break;
+
+    case 174:  // 64K
+      for (size_t i = 0; i < 8; i++) {
+        write_prg_byte(0xFF00 + (i << 1), 0);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 175:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xA000, i << 2);
+        write_prg_byte(0x8000, i);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 185:                           // 8K [READ 32K TO OVERRIDE LOCKOUT]
+      for (size_t i = 0; i < 4; i++)    // Read 32K to locate valid 8K
+      {
+        write_prg_byte(0x8000, i);
+
+        uint8_t chrcheck = read_chr_byte(0);
+
+        for (size_t address = 0x0; address < 0x2000; address += 512)
+        {
+          for (size_t x = 0; x < 512; x++)
+          {
+            OSCR::Storage::Shared::buffer[x] = read_chr_byte(address + x);
+          }
+
+          if (chrcheck != 0xFF)
+          {
+            OSCR::Storage::Shared::writeBuffer();
+
+            OSCR::UI::ProgressBar::advance(512);
+          }
+        }
+      }
+      break;
+
+    case 200:
+    case 212:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 + (i & 0x07), 0);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 201:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 + (i & 0xFF), 0);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 202:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 | (i << 1), 0);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 203:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000, (i & 0x03));
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 210:  // 128K/256K
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      write_prg_byte(0xE800, 0xC0);  // CHR RAM DISABLE (Bit 6 and 7) [WRITE NO RAM]
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000, i);  // CHR Bank 0
+        dumpBankCHR(0x0, 0x400);
+      }
+      break;
+
+    case 214:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 | (i << 2), 0);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 225:
+    case 255:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 + ((i & 0x40) << 8) + (i & 0x3F), i);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 228:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      write_prg_byte(0x8000, 0);
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 + ((i & 0x3C) >> 2), i & 0x03);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 229:
+      for (size_t i = 0; i < 32; i++) {
+        write_prg_byte(0x8000 + i, i);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 236:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 | (i & 0x0F), 0);  // A16-A13
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 240:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x5FFF, (i & 0xF));
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 246:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i += 4) {
+        write_prg_byte(0x6004, (i | 0));
+        write_prg_byte(0x6005, (i | 1));
+        write_prg_byte(0x6006, (i | 2));
+        write_prg_byte(0x6007, (i | 3));
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 252:
+    case 253:
+      banks = OSCR::Util::power<2>(NES_CHR) * 4;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xB000, i & 0x0F);
+        write_prg_byte(0xB004, ((i >> 4) & 0x0F) | ((i >> 8) << 4));
+        dumpBankCHR(0x0, 0x400);
+      }
+      break;
+
+    case 261:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xF000 + (i & 0x0F), i);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 286:
+      banks = OSCR::Util::power<2>(NES_CHR) * 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 + i, i);
+        dumpBankCHR(0x0, 0x800);
+      }
+      break;
+
+    case 288:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 + (i & 0x07), i);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 290:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000 | ((i << 5) & 0x300) | (i & 0x07), i);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 314: // 512K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_pulsem2(0x5000, ((i & 0x3) << 1)); // chr 8k bank (bits 0-1)
+        write_prg_pulsem2(0x5002, i >> 2); // chr 8k bank (bits 2-5)
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 319:  // 64K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x6000, i << 4);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
+
+    case 331:
+      banks = OSCR::Util::power<2>(NES_CHR);
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0xE000, i >> 3);
+        write_prg_byte(0xA000, i << 3);
+        dumpBankCHR(0x0, 0x1000);
+      }
+      break;
+
+    case 332:  // 128K
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        for (uint16_t address = 0x0; address < 0x2000; address += 512)
+        {
+          write_prg_pulsem2(0x6001, 0x30 | (i & 0x07));
+          write_prg_pulsem2(0x6000, (i & 0x08) << 3);
+          dumpCHR_pulsem2(address);
+        }
+      }
+      break;
+
+    case 519:
+      banks = OSCR::Util::power<2>(NES_CHR) / 2;
+      for (size_t i = 0; i < banks; i++) {
+        write_prg_byte(0x8000, i & 0x7F);
+        dumpBankCHR(0x0, 0x2000);
+      }
+      break;
     }
+
+    if (!readrom)
+    {
+      cartOff();
+
+      OSCR::Storage::Shared::close();
+    }
+
     set_address(0);
     NES_PHI2_HI;
     NES_ROMSEL_HI;
