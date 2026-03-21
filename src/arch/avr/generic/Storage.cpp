@@ -11,7 +11,11 @@
 
 namespace
 {
+#if defined(__FILE_NAME__)
   constexpr char const PROGMEM ThisFilename[] = __FILE_NAME__;
+#else
+  constexpr char const PROGMEM ThisFilename[] = "Storage.cpp";
+#endif
 }
 
 namespace OSCR
