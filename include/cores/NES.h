@@ -80,10 +80,14 @@ namespace OSCR::Cores::NES
     uint16_t chrsize;
     uint16_t chr;
     uint16_t ramsize;
-    uint8_t ram;
+    uint16_t ram;
     uint8_t iNES[16];
     char name[101];
   };
+
+  extern uint16_t const prgSizes[];
+  extern uint16_t const chrSizes[];
+  extern uint8_t const ramSizes[];
 
   extern crdbNESRecord* romDetail;
   extern crdbNESMapperRecord* mapperDetail;

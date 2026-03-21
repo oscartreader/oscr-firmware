@@ -14,21 +14,6 @@
 
 namespace OSCR::Cores::NES
 {
-  //Line Content
-  //37   Supported Mappers
-  //185  Defines
-  //211  Variables
-  //242  Menus
-  //456  Setup
-  //486  No-Intro SD Database Functions
-  //803  Low Level Functions
-  //1012 File Functions
-  //1083 Config Functions
-  //1704 ROM Functions
-  //3534 RAM Functions
-  //3934 Eeprom Functions
-  //4122 NESmaker Flash Cart Functions
-
 # if HAS_FLASH
   using OSCR::Cores::Flash::flashid;
 # endif /* HAS_FLASH */
@@ -38,29 +23,29 @@ namespace OSCR::Cores::NES
     printHeader();
 
     OSCR::UI::printValue(OSCR::Strings::Common::Mapper, NES_MAPPER);
-    OSCR::UI::printSize(OSCR::Strings::Common::PRG, NES_PRG * 1024);
-    OSCR::UI::printSize(OSCR::Strings::Common::CHR, NES_CHR * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::PRG, ((uint32_t)NES_PRGSIZE) * 1024);
+    OSCR::UI::printSize(OSCR::Strings::Common::CHR, ((uint32_t)NES_CHRSIZE) * 1024);
 
     uint32_t _ramSize = 0;
 
     if (NES_MAPPER == 0)
     {
-      _ramSize = NES_RAM * 256;
+      _ramSize = NES_RAMSIZE * 256;
     }
     else if ((NES_MAPPER == 16) || (NES_MAPPER == 80) || (NES_MAPPER == 159))
     {
       if (NES_MAPPER == 16)
-        _ramSize = NES_RAM * 32;
+        _ramSize = NES_RAMSIZE * 32;
       else
-        _ramSize = NES_RAM * 16;
+        _ramSize = NES_RAMSIZE * 16;
     }
-    else if ((NES_MAPPER == 19) && (NES_RAMSIZE == 2))
+    else if ((NES_MAPPER == 19) && (NES_RAM == 2))
     {
       _ramSize = 128;
     }
     else
     {
-      _ramSize = NES_RAM * 1024;
+      _ramSize = NES_RAMSIZE * 1024;
     }
 
     OSCR::UI::printSize(OSCR::Strings::Common::RAM, _ramSize);
@@ -100,7 +85,7 @@ namespace OSCR::Cores::NES
     Variables
   *****************************************/
 
-  constexpr uint16_t const PRG[] = {
+  constexpr uint16_t const prgSizes[] = {
     16,
     32,
     64,
@@ -115,9 +100,9 @@ namespace OSCR::Cores::NES
     32768,
   };
   __constinit uint8_t prglo = 0;   // Lowest Entry
-  __constinit uint8_t prghi = sizeofarray(PRG) - 1;  // Highest Entry
+  __constinit uint8_t prghi = sizeofarray(prgSizes) - 1;  // Highest Entry
 
-  constexpr uint16_t const CHR[] = {
+  constexpr uint16_t const chrSizes[] = {
     0,
     8,
     16,
@@ -131,16 +116,16 @@ namespace OSCR::Cores::NES
     4096,
   };
   __constinit uint8_t chrlo = 0;   // Lowest Entry
-  __constinit uint8_t chrhi = sizeofarray(CHR) - 1;  // Highest Entry
+  __constinit uint8_t chrhi = sizeofarray(chrSizes) - 1;  // Highest Entry
 
-  constexpr uint8_t const RAM[] = {
+  constexpr uint8_t const ramSizes[] = {
     0,
     8,
     16,
     32,
   };
   __constinit uint8_t ramlo = 0;  // Lowest Entry
-  __constinit uint8_t ramhi = sizeofarray(RAM) - 1;  // Highest Entry
+  __constinit uint8_t ramhi = sizeofarray(ramSizes) - 1;  // Highest Entry
 
   bool flashfound = false;  // NESmaker 39SF040 Flash Cart
   bool mmc6 = false;
@@ -324,8 +309,7 @@ namespace OSCR::Cores::NES
     setOutName(BUFFN(romDetail->name));
 
 #   if CRDB_DEBUGGING
-    OSCR::Serial::print(FS(OSCR::Strings::Labels::Selected));
-    OSCR::Serial::printLine(romDetail->name);
+    OSCR::Serial::printValue(OSCR::Strings::Common::Selected, romDetail->name);
 
     romRecord->debug();
 #   endif /* CRDB_DEBUGGING */
@@ -552,7 +536,7 @@ namespace OSCR::Cores::NES
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::NES), FS(OSCR::Strings::Directory::ROM), fileName, FS(headered ? OSCR::Strings::FileType::NES : OSCR::Strings::FileType::Raw));
 
     //Initialize progress bar
-    OSCR::UI::ProgressBar::init(headerSize + (NES_PRGSIZE * 16 * 1024) + (NES_CHRSIZE * 4 * 1024));
+    OSCR::UI::ProgressBar::init(headerSize + (NES_PRG * 16 * 1024) + (NES_CHR * 4 * 1024));
 
     //Write header
     if (headered)
@@ -1101,11 +1085,11 @@ namespace OSCR::Cores::NES
   {
     if (prglo == prghi)
     {
-      NES_PRGSIZE = prglo;
+      NES_PRG = prglo;
     }
     else
     {
-      NES_PRGSIZE = OSCR::UI::menu(FS(OSCR::Strings::Headings::SelectCartSize), FS(OSCR::Strings::Templates::SizeK), PRG, sizeofarray(PRG));
+      NES_PRG = OSCR::UI::menu(FS(OSCR::Strings::Headings::SelectCartSize), FS(OSCR::Strings::Templates::SizeK), prgSizes, sizeofarray(prgSizes));
     }
   }
 
@@ -1113,11 +1097,11 @@ namespace OSCR::Cores::NES
   {
     if (chrlo == chrhi)
     {
-      NES_CHRSIZE = chrlo;
+      NES_CHR = chrlo;
     }
     else
     {
-      NES_CHRSIZE = OSCR::UI::menu(FS(OSCR::Strings::Headings::SelectCartSize), FS(OSCR::Strings::Templates::SizeK), CHR, sizeofarray(CHR));
+      NES_CHR = OSCR::UI::menu(FS(OSCR::Strings::Headings::SelectCartSize), FS(OSCR::Strings::Templates::SizeK), chrSizes, sizeofarray(chrSizes));
     }
   }
 
@@ -1125,11 +1109,11 @@ namespace OSCR::Cores::NES
   {
     if (ramlo == ramhi)
     {
-      NES_RAMSIZE = ramlo;
+      NES_RAM = ramlo;
     }
     else
     {
-      NES_RAMSIZE = OSCR::UI::menu(FS(OSCR::Strings::Headings::SelectCartSize), FS(OSCR::Strings::Templates::SizeK), RAM, sizeofarray(RAM));
+      NES_RAM = OSCR::UI::menu(FS(OSCR::Strings::Headings::SelectCartSize), FS(OSCR::Strings::Templates::SizeK), ramSizes, sizeofarray(ramSizes));
     }
   }
 
@@ -1154,28 +1138,28 @@ namespace OSCR::Cores::NES
 
   void checkStatus()
   {
-    NES_PRG = (OSCR::Util::power<2>(NES_PRGSIZE)) * 16;
+    NES_PRGSIZE = (OSCR::Util::power<2>(NES_PRG)) * 16;
 
-    if (NES_CHRSIZE == 0)
+    if (NES_CHR == 0)
     {
-      NES_CHR = 0;  // 0K
+      NES_CHRSIZE = 0;  // 0K
     }
     else
     {
-      NES_CHR = (OSCR::Util::power<2>(NES_CHRSIZE)) * 4;
+      NES_CHRSIZE = (OSCR::Util::power<2>(NES_CHR)) * 4;
     }
 
-    if (NES_RAMSIZE == 0)
+    if (NES_RAM == 0)
     {
-      NES_RAM = 0;  // 0K
+      NES_RAMSIZE = 0;  // 0K
     }
     else if (NES_MAPPER == 82)
     {
-      NES_RAM = 5;  // 5K
+      NES_RAMSIZE = 5;  // 5K
     }
     else
     {
-      NES_RAM = (OSCR::Util::power<2>(NES_RAMSIZE)) * 4;
+      NES_RAMSIZE = (OSCR::Util::power<2>(NES_RAM)) * 4;
     }
 
     // Mapper Variants
@@ -1183,8 +1167,8 @@ namespace OSCR::Cores::NES
     if (NES_MAPPER == 4) {  // Check for MMC6/MMC3
       checkMMC6();
       if (mmc6) {
-        NES_RAM = 1;      // 1K
-        NES_RAMSIZE = 1;  // Must be a non-zero value
+        NES_RAMSIZE = 1;      // 1K
+        NES_RAM = 1;  // Must be a non-zero value
       }
     }
 # if HAS_FLASH
@@ -1322,28 +1306,28 @@ namespace OSCR::Cores::NES
         }
         else
         {
-          banks = OSCR::Util::power<2>(NES_PRGSIZE);
+          banks = OSCR::Util::power<2>(NES_PRG);
           dumpBankPRG(0x0, 0x4000 * banks, base);
         }
         break;
 
       case 1:
       case 155:  // 32K/64K/128K/256K/512K
-        if (NES_PRGSIZE == 1)
+        if (NES_PRG == 1)
         {
           write_prg_byte(0x8000, 0x80);
           dumpBankPRG(0x0, 0x8000, base);
         }
         else
         {
-          banks = OSCR::Util::power<2>(NES_PRGSIZE);
+          banks = OSCR::Util::power<2>(NES_PRG);
 
           for (size_t i = 0; i < banks; i++) // 16K Banks ($8000-$BFFF)
           {
             write_prg_byte(0x8000, 0x80); // Clear Register
             write_mmc1_byte(0x8000, 0x0C); // Switch 16K Bank ($8000-$BFFF) + Fixed Last Bank ($C000-$FFFF)
 
-            if (NES_PRGSIZE > 4) // 512K
+            if (NES_PRG > 4) // 512K
             {
               // Reset 512K Flag for Lower 256K
               write_mmc1_byte(0xA000, 0);
@@ -1363,7 +1347,7 @@ namespace OSCR::Cores::NES
 
       case 2:   // bus conflicts - fixed last bank
       case 30:  // bus conflicts in non-flashable configuration
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         busConflict = true;
 
@@ -1427,13 +1411,13 @@ namespace OSCR::Cores::NES
       case 997:
       case 998:
       case 999:
-        if ((NES_MAPPER == 206) && (NES_PRGSIZE == 1))
+        if ((NES_MAPPER == 206) && (NES_PRG == 1))
         {
           dumpBankPRG(0x0, 0x8000, base);
         }
         else
         {
-          banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+          banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
           write_prg_byte(0xA001, 0x80);  // Block Register - PRG RAM Chip Enable, Writable
 
@@ -1618,7 +1602,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 5:  // 128K/256K/512K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         write_prg_byte(0x5100, 3);               // 8K PRG Banks
 
@@ -1637,7 +1621,7 @@ namespace OSCR::Cores::NES
       case 96:   // 128K
       case 177:  // up to 1024K
       case 241:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++) // 32K Banks
         {
@@ -1653,7 +1637,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 9:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2; // 8K banks
+        banks = OSCR::Util::power<2>(NES_PRG) * 2; // 8K banks
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -1663,7 +1647,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 10:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -1674,7 +1658,7 @@ namespace OSCR::Cores::NES
 
       case 11:
       case 144:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -1684,7 +1668,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 15:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i += 2)
         {
@@ -1695,7 +1679,7 @@ namespace OSCR::Cores::NES
 
       case 16:
       case 159:  // 128K/256K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -1706,7 +1690,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 18:  // 128K/256K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i += 2)
         {
@@ -1725,7 +1709,7 @@ namespace OSCR::Cores::NES
           write_ram_byte(0xE000, 0);       // PRG Bank 0 ($8000-$9FFF)
         }
 
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -1735,7 +1719,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 21:  // 256K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
         for (size_t i = 0; i < banks; i++)
         {
           write_prg_byte(0xA000, i);
@@ -1749,7 +1733,7 @@ namespace OSCR::Cores::NES
       case 65:
       case 75:  // 128K/256K
       case 272:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
         if (NES_MAPPER == 23)
         {
           write_prg_byte(0x9002, 0);
@@ -1778,7 +1762,7 @@ namespace OSCR::Cores::NES
       case 26:  // 256K
       case 29:
       case 78:  // 128K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -1788,7 +1772,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 27:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -1798,7 +1782,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 28:  // using 32k mode for inner and outer banks, switching only with outer
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         write_prg_byte(0x5000, 0x81);
         write_prg_byte(0x8000, 0);
@@ -1818,7 +1802,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 31:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 4;
+        banks = OSCR::Util::power<2>(NES_PRG) * 4;
 
         for (size_t i = 0; i < banks; i += 8)
         {
@@ -1835,7 +1819,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 32:  // 128K/256K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
         for (size_t i = 0; i < banks; i++) {  // 128K/256K
           write_prg_byte(0x9000, 1);          // PRG Mode 0 - Read $A000-$BFFF to avoid difference between Modes 0 and 1
           write_prg_byte(0xA000, i);          // PRG Bank
@@ -1845,7 +1829,7 @@ namespace OSCR::Cores::NES
 
       case 33:
       case 48:  // 128K/256K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i += 2)
         {
@@ -1859,7 +1843,7 @@ namespace OSCR::Cores::NES
       case 90:
       case 209:
       case 211:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         write_prg_byte(0xD000, 0x02);
 
@@ -1872,7 +1856,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 36:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -1888,7 +1872,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 38:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -1898,7 +1882,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 40:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -1906,7 +1890,7 @@ namespace OSCR::Cores::NES
           dumpBankPRG(0x4000, 0x6000, base);
         }
 
-        if (NES_PRGSIZE > 2)
+        if (NES_PRG > 2)
         {
           write_prg_byte(0xC018, 0);
           dumpBankPRG(0x0, 0x8000, base);
@@ -1916,7 +1900,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 41:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -1927,7 +1911,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 42:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
         base = 0x6000;  // 8k switchable PRG ROM bank at $6000-$7FFF
 
         for (size_t i = 0; i < banks - 4; i++)
@@ -1961,7 +1945,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 45:                                    // MMC3 Clone with Outer Registers
-        banks = ((OSCR::Util::power<2>(NES_PRGSIZE) * 2)) - 2;  // Set Number of Banks
+        banks = ((OSCR::Util::power<2>(NES_PRG) * 2)) - 2;  // Set Number of Banks
         for (size_t i = 0; i < banks; i += 2) // 128K/256K/512K/1024K
         {
           for (uint16_t address = 0x0; address < 0x2000; address += 512)
@@ -2006,7 +1990,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 46:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2; // 32k banks
+        banks = OSCR::Util::power<2>(NES_PRG) / 2; // 32k banks
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2017,7 +2001,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 50:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2038,7 +2022,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 56:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2049,7 +2033,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 57:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2064,7 +2048,7 @@ namespace OSCR::Cores::NES
 
       case 58:
       case 213:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i += 2)
         {
@@ -2074,7 +2058,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 59:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i += 2)
         {
@@ -2095,7 +2079,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 61:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2105,7 +2089,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 62:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2115,7 +2099,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 63:  // 3072K total
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < 192; i++)
         {
@@ -2125,7 +2109,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 66:  // 64K/128K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++) // 64K/128K
         {
@@ -2135,7 +2119,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 67:  // 128K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++) // 128K
         {
@@ -2146,7 +2130,7 @@ namespace OSCR::Cores::NES
 
       case 68:
       case 73:  // 128K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++) // 128K
         {
@@ -2156,7 +2140,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 69:  // 128K/256K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         write_prg_byte(0x8000, 8);            // Command Register - PRG Bank 0
         write_prg_byte(0xA000, 0);            // Parameter Register - PRG RAM Disabled, PRG ROM, Bank 0 to $6000-$7FFF
@@ -2172,7 +2156,7 @@ namespace OSCR::Cores::NES
       case 70:
       case 89:
       case 152:  // 64K/128K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++) // 128K
         {
@@ -2182,7 +2166,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 71:  // 64K/128K/256K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2192,7 +2176,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 72:  // 128K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         write_prg_byte(0x8000, 0);            // Reset Register
 
@@ -2206,7 +2190,7 @@ namespace OSCR::Cores::NES
 
       case 79:
       case 146:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2217,7 +2201,7 @@ namespace OSCR::Cores::NES
 
       case 80:   // 128K
       case 207:  // 256K [CART SOMETIMES NEEDS POWERCYCLE]
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2227,7 +2211,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 82:  // 128K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2238,7 +2222,7 @@ namespace OSCR::Cores::NES
 
       case 85:  // 128K/512K
       case 117:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2249,7 +2233,7 @@ namespace OSCR::Cores::NES
 
       case 86:
       case 140:  // 128K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++) // 128K
         {
@@ -2259,7 +2243,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 91:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2270,7 +2254,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 92:  // 256K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         write_prg_byte(0x8000, 0); // Reset Register
 
@@ -2283,7 +2267,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 93:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2294,7 +2278,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 94:  // bus conflicts - fixed last bank
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         busConflict = true;
 
@@ -2321,7 +2305,7 @@ namespace OSCR::Cores::NES
 
       case 97:   // fixed first bank
       case 180:  // bus conflicts - fixed fist bank
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         dumpBankPRG(0x0, 0x4000, base);
 
@@ -2362,7 +2346,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 107:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2372,7 +2356,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 111:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2382,7 +2366,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 112:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2393,7 +2377,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 113:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2404,7 +2388,7 @@ namespace OSCR::Cores::NES
 
       case 114:  // Submapper 0
       case 182:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         write_prg_byte(0x6000, 0);
 
@@ -2435,7 +2419,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 142:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
         base = 0x6000;  // 4x 8k switchable PRG ROM banks at $6000-$DFFF
         for (size_t i = 0; i < banks; i += 4) {
           write_prg_byte(0xE000, 4);  // Select 8 KB PRG bank at CPU $6000-$7FFF
@@ -2451,7 +2435,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 148:  // Sachen SA-008-A and Tengen 800008 -- Bus conflicts
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x8000, i << 3);
           dumpBankPRG(0x0, 0x8000, base);
@@ -2459,7 +2443,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 153:  // 512K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         for (size_t i = 0; i < banks; i++) {  // 512K
           write_prg_byte(0x8000, i >> 4);     // PRG Outer Bank (Documentation says duplicate over $8000-$8003 registers)
           write_prg_byte(0x8001, i >> 4);     // PRG Outer Bank
@@ -2471,7 +2455,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 157:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x8008, i);
           dumpBankPRG(0x0, 0x4000, base);
@@ -2479,7 +2463,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 162:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
         write_prg_byte(0x5300, 0x07);  // A16-A15 controlled by $5000
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x5200, (i & 0x30) >> 4);  // A20-A19
@@ -2489,7 +2473,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 163:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
         write_prg_byte(0x5300, 0x04);  // disable bit swap on writes to $5000-$5200
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x5200, (i & 0x30) >> 4);  // A20-A19
@@ -2499,7 +2483,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 168:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x8000, i << 6);
           dumpBankPRG(0x0, 0x4000, base);
@@ -2514,7 +2498,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 175:  // 256K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0xA000, i << 2);
           write_prg_byte(0x8000, i);
@@ -2523,7 +2507,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 178:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         write_prg_byte(0x4800, 0);  // NROM-256 mode
         write_prg_byte(0x4803, 0);  // set PRG-RAM
         for (size_t i = 0; i < banks; i += 2) {
@@ -2536,7 +2520,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 189:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x4132, (i << 4) & 0xF0);
           dumpBankPRG(0x0, 0x8000, base);
@@ -2545,7 +2529,7 @@ namespace OSCR::Cores::NES
 
       case 200:
       case 212:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x8000 + (i & 0x07), 0);
           dumpBankPRG(0x0, 0x4000, base);
@@ -2553,7 +2537,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 201:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x8000 + (i & 0xFF), 0);
           dumpBankPRG(0x0, 0x8000, base);
@@ -2561,7 +2545,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 202:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x8000 | (i << 1), 0);
           dumpBankPRG(0x0, 0x4000, base);
@@ -2569,7 +2553,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 203:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x8000, (i & 0x1F) << 2);
           dumpBankPRG(0x0, 0x4000, base);
@@ -2577,7 +2561,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 210:  // 128K/256K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
         for (size_t i = 0; i < banks; i += 2) {
           write_prg_byte(0xE000, i);      // PRG Bank 0 ($8000-$9FFF) [WRITE NO RAM]
           write_prg_byte(0xE800, i + 1);  // PRG Bank 1 ($A000-$BFFF) [WRITE NO RAM]
@@ -2586,7 +2570,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 214:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x8000 | (i << 2), 0);
           dumpBankPRG(0x0, 0x4000, base);
@@ -2594,7 +2578,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 221:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x8000 + ((i << 2) & 0xE0) + ((i << 3) & 0x200), 0);
           write_prg_byte(0xC000 + (i & 7), 0);
@@ -2604,7 +2588,7 @@ namespace OSCR::Cores::NES
 
       case 225:
       case 255:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x9000 + ((i & 0x40) << 8) + ((i & 0x3F) << 6), i);
           dumpBankPRG(0x0, 0x4000, base);
@@ -2616,7 +2600,7 @@ namespace OSCR::Cores::NES
       // WRITING DATA TO THE SD CARD BREAKS THE M2 PULSING SEQUENCE
       // SET THE BANK USING THE PULSING M2 CODE FOR EACH 512 BYTE BLOCK
       case 226:  // 1024K/2048K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         for (size_t i = 0; i < banks; i += 2) {
           for (uint16_t address = 0x0; address < 0x8000; address += 512) {
             write_prg_pulsem2(0x8001, (i & 0x40) >> 6);
@@ -2627,7 +2611,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 227:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
         for (size_t i = 0; i < banks; i++) {
           write_prg_byte(0x8083 + ((i & 0xF) << 3), 0);
           dumpBankPRG(0x0, 0x8000, base);
@@ -2635,13 +2619,13 @@ namespace OSCR::Cores::NES
         break;
 
       case 228:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
         write_prg_byte(0x8000, 0);
         for (size_t i = 0; i < banks; i += 2) {  // up to 1024k PRG
           write_prg_byte(0x8000 + ((i & 0x3F) << 6), 0);
           dumpBankPRG(0x0, 0x8000, base);
         }
-        if (NES_PRGSIZE > 5) {  // reading the 3rd 512k PRG chip (Action 52)
+        if (NES_PRG > 5) {  // reading the 3rd 512k PRG chip (Action 52)
           for (size_t i = 0; i < 32; i += 2) {
             write_prg_byte(0x9800 + ((i & 0x1F) << 6), 0);
             dumpBankPRG(0x0, 0x8000, base);
@@ -2672,7 +2656,7 @@ namespace OSCR::Cores::NES
         }
         else
         {
-          banks = OSCR::Util::power<2>(NES_PRGSIZE) / 4;
+          banks = OSCR::Util::power<2>(NES_PRG) / 4;
 
           for (size_t outerbank = 0; outerbank < 4; outerbank++)
           {
@@ -2697,7 +2681,7 @@ namespace OSCR::Cores::NES
       case 233:  // 1024K
         // BMC 22-in-1/20-in-1 (42-in-1)
         // POWER CYCLE TO SWITCH BETWEEN CHIPS
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;  // 512K/512K
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;  // 512K/512K
 
         // Check PRG Chip
         write_prg_byte(0x8000, 0);
@@ -2728,7 +2712,7 @@ namespace OSCR::Cores::NES
           dumpBankPRG(0x0, 0x8000, base);
         }
 
-        if (NES_PRGSIZE > 6)
+        if (NES_PRG > 6)
         {
           for (size_t i = 32; i < 64; i++)
           {
@@ -2736,7 +2720,7 @@ namespace OSCR::Cores::NES
             dumpBankPRG(0x0, 0x8000, base);
           }
 
-          if (NES_PRGSIZE > 7)
+          if (NES_PRG > 7)
           {
             for (size_t i = 64; i < 96; i++)
             {
@@ -2754,7 +2738,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 236:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2765,7 +2749,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 237:  // 1024K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2775,7 +2759,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 240:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2799,7 +2783,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 246:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i += 4)
         {
@@ -2813,7 +2797,7 @@ namespace OSCR::Cores::NES
 
       case 252:
       case 253:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2823,7 +2807,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 261:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2833,7 +2817,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 286:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2843,7 +2827,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 288:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2853,7 +2837,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 289:  // 512K/1024K/2048K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2867,7 +2851,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 290:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2877,7 +2861,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 312:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2887,7 +2871,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 314: // 1024K/2048K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2898,7 +2882,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 319:  // 128K
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2908,7 +2892,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 331:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2920,7 +2904,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 332:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2933,7 +2917,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 380:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2943,7 +2927,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 396:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2954,7 +2938,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 399:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2964,7 +2948,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 446:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         write_prg_byte(0x5003, 0);
         write_prg_byte(0x5005, 0);
@@ -2979,7 +2963,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 470:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) / 2;
+        banks = OSCR::Util::power<2>(NES_PRG) / 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -2990,7 +2974,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 519:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE);
+        banks = OSCR::Util::power<2>(NES_PRG);
 
         for (size_t i = 0; i < banks; i += 2)
         {
@@ -3000,7 +2984,7 @@ namespace OSCR::Cores::NES
         break;
 
       case 552:
-        banks = OSCR::Util::power<2>(NES_PRGSIZE) * 2;
+        banks = OSCR::Util::power<2>(NES_PRG) * 2;
 
         for (size_t i = 0; i < banks; i++)
         {
@@ -3038,7 +3022,7 @@ namespace OSCR::Cores::NES
     set_address(0);
     _delay_us(1);
 
-    if (NES_CHRSIZE == 0)
+    if (NES_CHR == 0)
     {
         OSCR::UI::printLineSync(FS(OSCR::Strings::Errors::NotSupportedByCart));
     }
@@ -3061,7 +3045,7 @@ namespace OSCR::Cores::NES
 
           case 1:
           case 155:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE);
+            banks = OSCR::Util::power<2>(NES_CHR);
             for (size_t i = 0; i < banks; i += 2) {  // 8K/16K/32K/64K/128K (Bank #s are based on 4K Banks)
               write_prg_byte(0x8000, 0x80);          // Clear Register
               write_mmc1_byte(0xA000, i);
@@ -3075,7 +3059,7 @@ namespace OSCR::Cores::NES
           case 70:
           case 148:  // Sachen SA-008-A and Tengen 800008 - Bus conflicts
           case 152:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             busConflict = true;
             for (size_t i = 0; i < banks; i++) {
               for (size_t x = 0; x < 0x8000; x++) {
@@ -3122,7 +3106,7 @@ namespace OSCR::Cores::NES
           case 366:
           case 422:
           case 534:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             write_prg_byte(0xA001, 0x80);
             if ((NES_MAPPER == 126) || (NES_MAPPER == 422) || (NES_MAPPER == 534)) {
               write_prg_byte(0x6803, 0);  // set MMC3 banking mode
@@ -3207,7 +3191,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 5:  // 128K/256K/512K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             write_prg_byte(0x5101, 0);  // 8K CHR Banks
             for (size_t i = 0; i < banks; i++) {
               if (i == 0)
@@ -3225,7 +3209,7 @@ namespace OSCR::Cores::NES
 
           case 9:
           case 10:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE);
+            banks = OSCR::Util::power<2>(NES_CHR);
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xB000, i);
               write_prg_byte(0xC000, i);
@@ -3235,7 +3219,7 @@ namespace OSCR::Cores::NES
 
           case 11:
           case 144:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xFFB0 + i, i << 4);
               dumpBankCHR(0x0, 0x2000);
@@ -3244,7 +3228,7 @@ namespace OSCR::Cores::NES
 
           case 16:
           case 159:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x6000, i);  // Submapper 4
               write_prg_byte(0x8000, i);  // Submapper 5
@@ -3253,7 +3237,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 18:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xA000, i & 0xF);         // CHR Bank Lower 4 bits
               write_prg_byte(0xA001, (i >> 4) & 0xF);  // CHR Bank Upper 4 bits
@@ -3266,7 +3250,7 @@ namespace OSCR::Cores::NES
             for (size_t j = 0; j < 64; j++) {  // Init Register
               write_ram_byte(0xE800, 0xC0);    // CHR RAM High/Low Disable (ROM Enable)
             }
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             write_ram_byte(0xE800, 0xC0);  // CHR RAM High/Low Disable (ROM Enable)
             for (size_t i = 0; i < banks; i += 8) {
               write_prg_byte(0x8000, i);      // CHR Bank 0
@@ -3282,10 +3266,10 @@ namespace OSCR::Cores::NES
             break;
 
           case 21:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xB000, i & 0xF);           // CHR Bank Lower 4 bits
-              if (NES_CHRSIZE == 5)                          // Check CHR Size to determine VRC4a (128K) or VRC4c (256K)
+              if (NES_CHR == 5)                          // Check CHR Size to determine VRC4a (128K) or VRC4c (256K)
                 write_prg_byte(0xB002, (i >> 4) & 0xF);  // CHR Bank Upper 4 bits VRC4a (Wai Wai World 2)
               else                                       // banks == 256
                 write_prg_byte(0xB040, (i >> 4) & 0xF);  // CHR Bank Upper 4 bits VRC4c (Ganbare Goemon Gaiden 2)
@@ -3295,7 +3279,7 @@ namespace OSCR::Cores::NES
 
 
           case 22:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xB000, (i << 1) & 0xF);  // CHR Bank Lower 4 bits
               write_prg_byte(0xB002, (i >> 3) & 0xF);  // CHR Bank Upper 4 bits
@@ -3306,7 +3290,7 @@ namespace OSCR::Cores::NES
           case 23:
           case 272:
             {
-              banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+              banks = OSCR::Util::power<2>(NES_CHR) * 4;
 
               // Detect VRC4e Carts - read PRG 0x1FFF6 (DATE)
               // Boku Dracula-kun = 890810, Tiny Toon = 910809, Crisis Force = 910701, Parodius Da! = 900916
@@ -3332,7 +3316,7 @@ namespace OSCR::Cores::NES
             }
 
           case 24:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             write_prg_byte(0xB003, 0);  // PPU Banking Mode 0
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xD000, i);  // CHR Bank 0
@@ -3341,7 +3325,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 25:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xB000, i & 0xF);         // CHR Bank Lower 4 bits
               write_prg_byte(0xB00A, (i >> 4) & 0xF);  // Combine VRC2c and VRC4b, VRC4d reg
@@ -3350,7 +3334,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 26:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             write_prg_byte(0xB003, 0);
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xD000, i);
@@ -3359,7 +3343,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 27:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xB000, i & 0x0F);
               write_prg_byte(0xB001, i >> 4);
@@ -3369,7 +3353,7 @@ namespace OSCR::Cores::NES
 
           case 32:  // 128K
           case 65:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xB000, i);
               dumpBankCHR(0x0, 0x400);
@@ -3378,7 +3362,7 @@ namespace OSCR::Cores::NES
 
           case 33:  // 128K/256K
           case 48:  // 256K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 2;
+            banks = OSCR::Util::power<2>(NES_CHR) * 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8002, i);
               dumpBankCHR(0x0, 0x800);
@@ -3386,7 +3370,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 34:  // NINA
-            banks = OSCR::Util::power<2>(NES_CHRSIZE);
+            banks = OSCR::Util::power<2>(NES_CHR);
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x7FFE, i);  // Select 4 KB CHR bank at $0000
               delay(200);                 // NINA seems slow to switch banks
@@ -3398,7 +3382,7 @@ namespace OSCR::Cores::NES
           case 90:
           case 209:
           case 211:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             write_prg_byte(0xD000, 0x02);
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xD003, ((i >> 3) & 0x18) | 0x20);
@@ -3408,7 +3392,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 36:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x4200, i);
               dumpBankCHR(0x0, 0x2000);
@@ -3416,7 +3400,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 38:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x7000, i << 2);
               dumpBankCHR(0x0, 0x2000);
@@ -3424,7 +3408,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 41:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x6004 + ((i & 0x0C) << 1), 0);
               write_prg_byte(0x6004 + ((i & 0x0C) << 1), 0);
@@ -3435,7 +3419,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 42:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE);
+            banks = OSCR::Util::power<2>(NES_CHR);
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000, i & 0x0F);
               dumpBankCHR(0x0, 0x1000);
@@ -3443,7 +3427,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 45:  // 128K/256K/512K/1024K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             write_prg_byte(0xA001, 0x80);  // Unlock Write Protection - not used by some carts
             for (size_t i = 0; i < banks; i++) {
               // set outer bank registers
@@ -3472,7 +3456,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 46:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE);  // 8k banks
+            banks = OSCR::Util::power<2>(NES_CHR);  // 8k banks
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x6000, (i & 0x78) << 1);  // high bits
               write_prg_byte(0x8000, (i & 0x07) << 4);  // low bits
@@ -3481,7 +3465,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 56:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xFC00, i);
               dumpBankCHR(0x0, 0x400);
@@ -3489,7 +3473,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 57:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               for (uint16_t address = 0x0; address < 0x2000; address += 512)
               {
@@ -3502,7 +3486,7 @@ namespace OSCR::Cores::NES
 
           case 58:
           case 213:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 + ((i & 0x07) << 3), 0);
               dumpBankCHR(0x0, 0x2000);
@@ -3510,7 +3494,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 59:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_reg_m59(0x8000 + (i & 0x07));
               dumpBankCHR(0x0, 0x2000);
@@ -3526,7 +3510,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 61:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 | (i << 8), 0);
               dumpBankCHR(0x0, 0x2000);
@@ -3534,7 +3518,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 62:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 + (i / 4), i & 3);
               dumpBankCHR(0x0, 0x2000);
@@ -3542,7 +3526,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 67:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 2;
+            banks = OSCR::Util::power<2>(NES_CHR) * 2;
             for (size_t i = 0; i < banks; i++) {  // 2K Banks
               write_prg_byte(0x8800, i);          // CHR Bank 0
               dumpBankCHR(0x0, 0x800);
@@ -3550,7 +3534,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 68:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 2;
+            banks = OSCR::Util::power<2>(NES_CHR) * 2;
             for (size_t i = 0; i < banks; i += 4) {  // 2K Banks
               write_prg_byte(0x8000, i);             // CHR Bank 0
               write_prg_byte(0x9000, i + 1);         // CHR Bank 1
@@ -3561,7 +3545,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 69:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000, 0);  // Command Register - CHR Bank 0
               write_prg_byte(0xA000, i);  // Parameter Register - ($0000-$03FF)
@@ -3570,7 +3554,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 72:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             write_prg_byte(0x8000, 0);            // Reset Register
             for (size_t i = 0; i < banks; i++) {  // 8K Banks
               write_prg_byte(0x8000, i | 0x40);   // CHR Command + Bank
@@ -3580,7 +3564,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 75:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE);
+            banks = OSCR::Util::power<2>(NES_CHR);
             for (size_t i = 0; i < banks; i++) {        // 4K Banks
               write_reg_byte(0xE000, i);                // CHR Bank Low Bits [WRITE RAM SAFE]
               write_prg_byte(0x9000, (i & 0x10) >> 3);  // High Bit
@@ -3589,7 +3573,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 76:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 2;
+            banks = OSCR::Util::power<2>(NES_CHR) * 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000, 2);
               write_prg_byte(0x8001, i);
@@ -3598,7 +3582,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 77:  // 32K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 2;
+            banks = OSCR::Util::power<2>(NES_CHR) * 2;
             for (size_t i = 0; i < banks; i++) {  // 2K Banks
               write_prg_byte(0x8000, i << 4);     // CHR Bank 0
               dumpBankCHR(0x0, 0x800);
@@ -3606,7 +3590,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 78:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {  // 8K Banks
               write_prg_byte(0x8000, i << 4);     // CHR Bank 0
               dumpBankCHR(0x0, 0x2000);           // 8K Banks ($0000-$1FFF)
@@ -3615,7 +3599,7 @@ namespace OSCR::Cores::NES
 
           case 79:
           case 146:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x4100, i);
               dumpBankCHR(0x0, 0x2000);
@@ -3626,7 +3610,7 @@ namespace OSCR::Cores::NES
           case 82:   // 128K/256K
           case 207:  // 128K [CART SOMETIMES NEEDS POWERCYCLE]
           case 552:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 2;
+            banks = OSCR::Util::power<2>(NES_CHR) * 2;
             write_prg_byte(0x7EF6, 0);  // CHR mode [2x 2KiB banks at $0000-$0FFF]
             for (size_t i = 0; i < banks; i += 2) {
               write_prg_byte(0x7EF0, i << 1);
@@ -3636,7 +3620,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 85:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i += 8) {
               write_prg_byte(0xA000, i);      // CHR Bank 0
               write_prg_byte(0xA008, i + 1);  // CHR Bank 1
@@ -3651,7 +3635,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 86:  // 64K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {  // 8K Banks
               if (i < 4)
                 write_prg_byte(0x6000, i & 0x3);
@@ -3662,7 +3646,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 87:  // 16K/32K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {  // 16K/32K
               write_prg_byte(0x6000, ((i & 0x1) << 1) | ((i & 0x2) >> 1));
               dumpBankCHR(0x0, 0x2000);
@@ -3670,7 +3654,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 88:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             write_prg_byte(0xA001, 0x80);
             for (size_t i = 0; i < banks; i += 2) {
               if (i < 64) {
@@ -3688,7 +3672,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 89:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {  // 8K Banks
               if (i < 8)
                 write_prg_byte(0x8000, i & 0x7);
@@ -3699,7 +3683,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 91:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 2;
+            banks = OSCR::Util::power<2>(NES_CHR) * 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 + ((i & 0x100) >> 8), i);  // CHR A19 (submapper 0 only)
               write_prg_byte(0x6000, i);                       // CHR A18-A11
@@ -3708,7 +3692,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 92:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             write_prg_byte(0x8000, 0);            // Reset Register
             for (size_t i = 0; i < banks; i++) {  // 8K Banks
               write_prg_byte(0x8000, i | 0x40);   // CHR Command + Bank
@@ -3718,7 +3702,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 107:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xC000, i);
               dumpBankCHR(0x0, 0x2000);
@@ -3726,7 +3710,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 112:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000, 6);
               write_prg_byte(0xA000, i);
@@ -3735,7 +3719,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 113:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x4100, (i & 0x08) << 3 | (i & 0x07));
               dumpBankCHR(0x0, 0x2000);
@@ -3744,7 +3728,7 @@ namespace OSCR::Cores::NES
 
           case 114:  // Submapper 0
           case 182:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x6001, (i & 0x80) >> 7);
               write_prg_byte(0xA000, 6);
@@ -3754,7 +3738,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 117:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xA000, i);
               dumpBankCHR(0x0, 0x400);
@@ -3763,7 +3747,7 @@ namespace OSCR::Cores::NES
 
           case 122:
           case 184:  // 16K/32K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE);
+            banks = OSCR::Util::power<2>(NES_CHR);
             for (size_t i = 0; i < banks; i++) {  // 4K Banks
               write_prg_byte(0x6000, i);          // CHR LOW (Bits 0-2) ($0000-$0FFF)
               dumpBankCHR(0x0, 0x1000);           // 4K Banks ($0000-$0FFF)
@@ -3771,7 +3755,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 140:  // 32K/128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {  // 8K Banks
               write_prg_byte(0x6000, i);
               dumpBankCHR(0x0, 0x2000);
@@ -3792,7 +3776,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 165:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE);
+            banks = OSCR::Util::power<2>(NES_CHR);
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000, 0x02);
               write_prg_byte(0x8001, i);
@@ -3808,7 +3792,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 175:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xA000, i << 2);
               write_prg_byte(0x8000, i);
@@ -3842,7 +3826,7 @@ namespace OSCR::Cores::NES
 
           case 200:
           case 212:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 + (i & 0x07), 0);
               dumpBankCHR(0x0, 0x2000);
@@ -3850,7 +3834,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 201:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 + (i & 0xFF), 0);
               dumpBankCHR(0x0, 0x2000);
@@ -3858,7 +3842,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 202:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 | (i << 1), 0);
               dumpBankCHR(0x0, 0x2000);
@@ -3866,7 +3850,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 203:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000, (i & 0x03));
               dumpBankCHR(0x0, 0x2000);
@@ -3874,7 +3858,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 210:  // 128K/256K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             write_prg_byte(0xE800, 0xC0);  // CHR RAM DISABLE (Bit 6 and 7) [WRITE NO RAM]
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000, i);  // CHR Bank 0
@@ -3883,7 +3867,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 214:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 | (i << 2), 0);
               dumpBankCHR(0x0, 0x2000);
@@ -3892,7 +3876,7 @@ namespace OSCR::Cores::NES
 
           case 225:
           case 255:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 + ((i & 0x40) << 8) + (i & 0x3F), i);
               dumpBankCHR(0x0, 0x2000);
@@ -3900,7 +3884,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 228:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             write_prg_byte(0x8000, 0);
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 + ((i & 0x3C) >> 2), i & 0x03);
@@ -3916,7 +3900,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 236:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 | (i & 0x0F), 0);  // A16-A13
               dumpBankCHR(0x0, 0x2000);
@@ -3924,7 +3908,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 240:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x5FFF, (i & 0xF));
               dumpBankCHR(0x0, 0x2000);
@@ -3932,7 +3916,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 246:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i += 4) {
               write_prg_byte(0x6004, (i | 0));
               write_prg_byte(0x6005, (i | 1));
@@ -3944,7 +3928,7 @@ namespace OSCR::Cores::NES
 
           case 252:
           case 253:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 4;
+            banks = OSCR::Util::power<2>(NES_CHR) * 4;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xB000, i & 0x0F);
               write_prg_byte(0xB004, ((i >> 4) & 0x0F) | ((i >> 8) << 4));
@@ -3953,7 +3937,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 261:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xF000 + (i & 0x0F), i);
               dumpBankCHR(0x0, 0x2000);
@@ -3961,7 +3945,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 286:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) * 2;
+            banks = OSCR::Util::power<2>(NES_CHR) * 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 + i, i);
               dumpBankCHR(0x0, 0x800);
@@ -3969,7 +3953,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 288:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 + (i & 0x07), i);
               dumpBankCHR(0x0, 0x2000);
@@ -3977,7 +3961,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 290:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000 | ((i << 5) & 0x300) | (i & 0x07), i);
               dumpBankCHR(0x0, 0x2000);
@@ -3985,7 +3969,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 314: // 512K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_pulsem2(0x5000, ((i & 0x3) << 1)); // chr 8k bank (bits 0-1)
               write_prg_pulsem2(0x5002, i >> 2); // chr 8k bank (bits 2-5)
@@ -3994,7 +3978,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 319:  // 64K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x6000, i << 4);
               dumpBankCHR(0x0, 0x2000);
@@ -4002,7 +3986,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 331:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE);
+            banks = OSCR::Util::power<2>(NES_CHR);
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0xE000, i >> 3);
               write_prg_byte(0xA000, i << 3);
@@ -4011,7 +3995,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 332:  // 128K
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               for (uint16_t address = 0x0; address < 0x2000; address += 512)
               {
@@ -4023,7 +4007,7 @@ namespace OSCR::Cores::NES
             break;
 
           case 519:
-            banks = OSCR::Util::power<2>(NES_CHRSIZE) / 2;
+            banks = OSCR::Util::power<2>(NES_CHR) / 2;
             for (size_t i = 0; i < banks; i++) {
               write_prg_byte(0x8000, i & 0x7F);
               dumpBankCHR(0x0, 0x2000);
@@ -4053,7 +4037,7 @@ namespace OSCR::Cores::NES
 
     set_address(0);
     _delay_us(1);
-    if (NES_RAMSIZE == 0)
+    if (NES_RAM == 0)
     {
         OSCR::UI::error(FS(OSCR::Strings::Errors::NotSupportedByCart));
     }
@@ -4067,12 +4051,12 @@ namespace OSCR::Cores::NES
         switch (NES_MAPPER)
         {
           case 0:                                       // 2K/4K
-            dumpBankPRG(0x0, (0x800 * NES_RAMSIZE), base);  // 2K/4K
+            dumpBankPRG(0x0, (0x800 * NES_RAM), base);  // 2K/4K
             break;                                      // SWITCH MUST BE IN OFF POSITION
 
           case 1:
           case 155:                               // 8K/16K/32K
-            banks = OSCR::Util::power<2>(NES_RAMSIZE) / 2;      // banks = 1,2,4
+            banks = OSCR::Util::power<2>(NES_RAM) / 2;      // banks = 1,2,4
             for (size_t i = 0; i < banks; i++) {  // 8K Banks ($6000-$7FFF)
               write_prg_byte(0x8000, 0x80);       // Clear Register
               write_mmc1_byte(0x8000, 1 << 3);
@@ -4106,7 +4090,7 @@ namespace OSCR::Cores::NES
 
           case 5:                                         // 8K/16K/32K
             write_prg_byte(0x5100, 3);                    // 8K PRG Banks
-            banks = OSCR::Util::power<2>(NES_RAMSIZE) / 2;              // banks = 1,2,4
+            banks = OSCR::Util::power<2>(NES_RAM) / 2;              // banks = 1,2,4
             if (banks == 2) {                             // 16K - Split SRAM Chips 8K/8K
               for (size_t i = 0; i < (banks / 2); i++) {  // Chip 1
                 write_prg_byte(0x5113, i);
@@ -4153,7 +4137,7 @@ namespace OSCR::Cores::NES
               break;
             }
           case 19:
-            if (NES_RAMSIZE == 2) // PRG RAM 128B
+            if (NES_RAM == 2) // PRG RAM 128B
             {
               for (size_t x = 0; x < 128; x++)
               {
@@ -4271,7 +4255,7 @@ namespace OSCR::Cores::NES
   {
     printHeader();
 
-    if (NES_RAMSIZE == 0)
+    if (NES_RAM == 0)
     {
       OSCR::UI::error(FS(OSCR::Strings::Errors::NotSupportedByCart));
       return;
@@ -4290,12 +4274,12 @@ namespace OSCR::Cores::NES
     switch (NES_MAPPER)
     {
     case 0: // 2K/4K
-      writeBankPRG(0x0, (0x800 * NES_RAMSIZE), base);
+      writeBankPRG(0x0, (0x800 * NES_RAM), base);
       break; // SWITCH MUST BE IN OFF POSITION
 
     case 1:
     case 155:
-      banks = OSCR::Util::power<2>(NES_RAMSIZE) / 2;    // banks = 1,2,4
+      banks = OSCR::Util::power<2>(NES_RAM) / 2;    // banks = 1,2,4
 
       for (size_t i = 0; i < banks; i++)      // 8K Banks ($6000-$7FFF)
       {
@@ -4339,7 +4323,7 @@ namespace OSCR::Cores::NES
 
     case 5:                                         // 8K/16K/32K
       write_prg_byte(0x5100, 3);                    // 8K PRG Banks
-      banks = OSCR::Util::power<2>(NES_RAMSIZE) / 2;          // banks = 1,2,4
+      banks = OSCR::Util::power<2>(NES_RAM) / 2;          // banks = 1,2,4
 
       if (banks == 2) // 16K - Split SRAM Chips 8K/8K [ETROM = 16K (ONLY 1ST 8K BATTERY BACKED)]
       {
@@ -4395,7 +4379,7 @@ namespace OSCR::Cores::NES
       break;
 
     case 19:
-      if (NES_RAMSIZE == 2) // PRG RAM 128B
+      if (NES_RAM == 2) // PRG RAM 128B
       {
         OSCR::Storage::Shared::readBuffer(128);
 
@@ -4845,7 +4829,7 @@ namespace OSCR::Cores::NES
 
     OSCR::UI::printLineSync(FS(OSCR::Strings::Status::Writing));
 
-    uint16_t banks = OSCR::Util::power<2>(NES_PRGSIZE); // 256K/512K
+    uint16_t banks = OSCR::Util::power<2>(NES_PRG); // 256K/512K
 
     for (size_t i = 0; i < banks; i++) // 16K Banks
     {

@@ -21,22 +21,11 @@ namespace OSCR::Databases
     {
 #   if CRDB_DEBUGGING
       OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugROM));
-
-      OSCR::Serial::printSync(FS(OSCR::Strings::Labels::NAME));
-      OSCR::Serial::printLineSync(_data.name);
-
-      OSCR::Serial::printSync(FS(OSCR::Strings::Labels::CRCSum));
-      OSCR::Serial::printLineSync(_data.crc32);
-
-      OSCR::Serial::printSync(FS(OSCR::Strings::Labels::ID));
-      OSCR::Serial::printLineSync(_data.serial);
-
-      OSCR::Serial::printSync(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::Serial::printLineSync(_data.size);
-
-      OSCR::Serial::printSync(FS(OSCR::Strings::Labels::SAVE));
-      OSCR::Serial::printLineSync(_data.saveType);
-
+      OSCR::Serial::printValue(OSCR::Strings::Common::Name, _data.name);
+      OSCR::Serial::printValue(OSCR::Strings::Common::CRCSum, _data.crc32);
+      OSCR::Serial::printValue(OSCR::Strings::Common::ID, _data.serial);
+      OSCR::Serial::printSize(OSCR::Strings::Common::ROM, _data.size);
+      OSCR::Serial::printValue(OSCR::Strings::Common::Save, _data.saveType);
       OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugEnd));
 #   endif /* CRDB_DEBUGGING */
     }

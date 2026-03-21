@@ -149,20 +149,12 @@ namespace OSCR::Databases::Basic
   void MapperRecord::debug() const
   {
 #   if CRDB_DEBUGGING
-    OSCR::Serial::printLine(FS(OSCR::Strings::Headings::CRDBDebugMapper));
-    OSCR::Serial::print(FS(OSCR::Strings::Labels::ID));
-    OSCR::Serial::printLine(_data.id);
-    OSCR::Serial::print(FS(OSCR::Strings::Labels::NAME));
-    OSCR::Serial::printLine(_data.name);
-    OSCR::Serial::print(FS(OSCR::Strings::Labels::SizeLow));
-    OSCR::Serial::printLine(_data.sizeLow);
-    OSCR::Serial::print(FS(OSCR::Strings::Labels::SizeHigh));
-    OSCR::Serial::printLine(_data.sizeHigh);
-    OSCR::Serial::print(F("Meta1: "));
-    OSCR::Serial::printLine(_data.meta1);
-    OSCR::Serial::print(F("Meta2: "));
-    OSCR::Serial::printLine(_data.meta2);
-    OSCR::Serial::printLine(FS(OSCR::Strings::Headings::CRDBDebugEnd));
+    OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugMapper));
+    OSCR::Serial::printValue(OSCR::Strings::Common::ID, _data.id);
+    OSCR::Serial::printValue(OSCR::Strings::Common::Name, _data.name);
+    OSCR::Serial::printValue(OSCR::Strings::Common::Size, _data.sizeLow, _data.sizeHigh);
+    OSCR::Serial::printValue(PSTR("Meta"), _data.meta1, _data.meta2);
+    OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugEnd));
 #   endif /* CRDB_DEBUGGING */
   }
 

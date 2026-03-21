@@ -20,27 +20,14 @@ namespace OSCR::Databases
     void debug() const
     {
 #   if CRDB_DEBUGGING
-      OSCR::Serial::printLine(F(" ===== ROM DEBUG INFO ===== "));
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::NAME));
-      OSCR::Serial::printLine(_data.name);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::CRCSum));
-      OSCR::Serial::printLine(_data.crc32);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::MAPPER));
-      OSCR::Serial::printLine(_data.mapper);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::Serial::printLine(_data.size);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::MAPPER));
-      OSCR::Serial::printLine(_data.gmapper);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::Serial::printLine(_data.gsize);
-
-      OSCR::Serial::printLine(F(" ========================== "));
+      OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugROM));
+      OSCR::Serial::printValue(OSCR::Strings::Common::Name, _data.name);
+      OSCR::Serial::printValue(OSCR::Strings::Common::CRCSum, _data.crc32);
+      OSCR::Serial::printValue(OSCR::Strings::Common::Mapper, _data.mapper);
+      OSCR::Serial::printValue(OSCR::Strings::Common::Size, _data.size);
+      OSCR::Serial::printValue(OSCR::Strings::Common::Mapper, _data.gmapper);
+      OSCR::Serial::printValue(OSCR::Strings::Common::Size, _data.gsize);
+      OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugEnd));
 #   endif /* CRDB_DEBUGGING */
     }
   };

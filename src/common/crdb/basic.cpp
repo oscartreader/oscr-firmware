@@ -19,15 +19,10 @@ namespace OSCR::Databases::Basic
   void BasicRecord::debug()
   {
 #   if CRDB_DEBUGGING
-    OSCR::Serial::printLine(F(" ===== ROM DEBUG INFO ===== "));
-
-    OSCR::Serial::print(FS(OSCR::Strings::Labels::NAME));
-    OSCR::Serial::printLine(_data.name);
-
-    OSCR::Serial::print(FS(OSCR::Strings::Labels::CRCSum));
-    OSCR::Serial::printLine(_data.crc32);
-
-    OSCR::Serial::printLine(F(" ========================== "));
+    OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugROM));
+    OSCR::Serial::printValue(OSCR::Strings::Common::Name, _data.name);
+    OSCR::Serial::printValue(OSCR::Strings::Common::CRCSum, _data.crc32);
+    OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugEnd));
 #   endif /* CRDB_DEBUGGING */
   }
 
@@ -61,7 +56,7 @@ namespace OSCR::Databases::Basic
     if (!crdb->findRecord(*crc32ptr))
     {
       OSCR::UI::printLine();
-      OSCR::UI::printLineSync(F("CRC not found in database"));
+      OSCR::UI::printLineSync(FS(OSCR::Strings::Errors::NotFoundDB));
 
       return false;
     }

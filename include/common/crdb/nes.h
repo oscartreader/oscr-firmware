@@ -17,45 +17,13 @@ namespace OSCR::Databases
       void debug()
       {
 #   if CRDB_DEBUGGING
-        OSCR::Serial::printLine(F(" ===== ROM DEBUG INFO ===== "));
-
-        OSCR::Serial::print(FS(OSCR::Strings::Labels::MAPPER));
-        OSCR::Serial::printLine(_data.mapper);
-
-        OSCR::Serial::print(FS(OSCR::Strings::Labels::SUBMAPPER));
-        OSCR::Serial::printLine(_data.submapper);
-
-        OSCR::Serial::print(FS(OSCR::Strings::Common::Lower));
-        OSCR::Serial::print(FS(OSCR::Strings::Common::PRG));
-        OSCR::Serial::print(FS(OSCR::Strings::Symbol::LabelEnd));
-        OSCR::Serial::printLine(_data.prglo);
-
-        OSCR::Serial::print(FS(OSCR::Strings::Common::Upper));
-        OSCR::Serial::print(FS(OSCR::Strings::Common::PRG));
-        OSCR::Serial::print(FS(OSCR::Strings::Symbol::LabelEnd));
-        OSCR::Serial::printLine(_data.prghi);
-
-        OSCR::Serial::print(FS(OSCR::Strings::Common::Lower));
-        OSCR::Serial::print(FS(OSCR::Strings::Common::CHR));
-        OSCR::Serial::print(FS(OSCR::Strings::Symbol::LabelEnd));
-        OSCR::Serial::printLine(_data.chrlo);
-
-        OSCR::Serial::print(FS(OSCR::Strings::Common::Upper));
-        OSCR::Serial::print(FS(OSCR::Strings::Common::CHR));
-        OSCR::Serial::print(FS(OSCR::Strings::Symbol::LabelEnd));
-        OSCR::Serial::printLine(_data.chrhi);
-
-        OSCR::Serial::print(FS(OSCR::Strings::Common::Lower));
-        OSCR::Serial::print(FS(OSCR::Strings::Common::RAM));
-        OSCR::Serial::print(FS(OSCR::Strings::Symbol::LabelEnd));
-        OSCR::Serial::printLine(_data.ramlo);
-
-        OSCR::Serial::print(FS(OSCR::Strings::Common::Upper));
-        OSCR::Serial::print(FS(OSCR::Strings::Common::RAM));
-        OSCR::Serial::print(FS(OSCR::Strings::Symbol::LabelEnd));
-        OSCR::Serial::printLine(_data.ramhi);
-
-        OSCR::Serial::printLine(F(" ========================== "));
+        OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugMapper));
+        OSCR::Serial::printValue(OSCR::Strings::Common::Mapper, _data.mapper);
+        OSCR::Serial::printValue(OSCR::Strings::Common::Submapper, _data.submapper);
+        OSCR::Serial::printValue(OSCR::Strings::Common::PRG, _data.prglo, _data.prghi);
+        OSCR::Serial::printValue(OSCR::Strings::Common::CHR, _data.chrlo, _data.chrhi);
+        OSCR::Serial::printValue(OSCR::Strings::Common::Lower, _data.ramlo, _data.ramhi);
+        OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugEnd));
 #   endif /* CRDB_DEBUGGING */
       }
   };
@@ -86,45 +54,24 @@ namespace OSCR::Databases
     void debug()
     {
 #   if CRDB_DEBUGGING
-      OSCR::Serial::printLine(F(" ===== ROM DEBUG INFO ===== "));
+      OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugROM));
 
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::NAME));
-      OSCR::Serial::printLine(_data.name);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::MAPPER));
-      OSCR::Serial::printLine(_data.mapper);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::SUBMAPPER));
-      OSCR::Serial::printLine(_data.submapper);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Common::PRG));
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::Serial::printLine(_data.prgsize);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Common::PRG));
-      OSCR::Serial::print(FS(OSCR::Strings::Symbol::LabelEnd));
-      OSCR::Serial::printLine(_data.prg);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Common::CHR));
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::Serial::printLine(_data.chrsize);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Common::CHR));
-      OSCR::Serial::print(FS(OSCR::Strings::Symbol::LabelEnd));
-      OSCR::Serial::printLine(_data.chr);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::RAM_SIZE));
-      OSCR::Serial::printLine(_data.ramsize);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::RAM));
-      OSCR::Serial::printLine(_data.ram);
+      OSCR::Serial::printValue(OSCR::Strings::Common::Name, _data.name);
+      OSCR::Serial::printValue(OSCR::Strings::Common::Mapper, _data.mapper);
+      OSCR::Serial::printValue(OSCR::Strings::Common::Submapper, _data.submapper);
+      //OSCR::Serial::printSize(OSCR::Strings::Common::PRG, _data.prgsize);
+      OSCR::Serial::printValue(OSCR::Strings::Common::PRG, _data.prg);
+      //OSCR::Serial::printSize(OSCR::Strings::Common::CHR, _data.chrsize);
+      OSCR::Serial::printValue(OSCR::Strings::Common::CHR, _data.chr);
+      //OSCR::Serial::printSize(OSCR::Strings::Common::RAM, _data.ramsize);
+      OSCR::Serial::printValue(OSCR::Strings::Common::RAM, _data.ram);
 
       OSCR::Serial::print(F("iNES: "));
       char buffer[9];
       snprintf_P(buffer, 9, PSTR("%02X%02X%02X%02X"), _data.iNES[0], _data.iNES[1], _data.iNES[2], _data.iNES[3]);
       OSCR::Serial::printLine(buffer);
 
-      OSCR::Serial::printLine(F(" ========================== "));
+      OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugEnd));
 #   endif /* CRDB_DEBUGGING */
     }
   };
@@ -141,8 +88,8 @@ namespace OSCR::Databases
       readNum32(currentRecord->data()->id32b);
       readNum16(&currentRecord->data()->mapper);
       readNum16(&currentRecord->data()->submapper);
-      readNum16(&currentRecord->data()->prgsize);
-      readNum16(&currentRecord->data()->chrsize);
+      readNum16(&currentRecord->data()->prg);
+      readNum16(&currentRecord->data()->chr);
       readNum16(&currentRecord->data()->ramsize);
       readBytes(&currentRecord->data()->iNES, 16);
       readBytes(&currentRecord->data()->name, 100);

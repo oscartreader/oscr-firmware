@@ -25,27 +25,14 @@ namespace OSCR::Databases
     void debug()
     {
 #   if CRDB_DEBUGGING
-      OSCR::Serial::printLine(F(" ===== ROM DEBUG INFO ===== "));
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::NAME));
-      OSCR::Serial::printLine(_data.name);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::CRCSum));
-      OSCR::Serial::printLine(_data.crc32);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::ID));
-      OSCR::Serial::printLine(_data.id32);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::CHECKSUM));
-      OSCR::Serial::printLine(_data.chksum);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::SIZE));
-      OSCR::Serial::printLine(_data.size);
-
-      OSCR::Serial::print(FS(OSCR::Strings::Labels::BANKS));
-      OSCR::Serial::printLine(_data.banks);
-
-      OSCR::Serial::printLine(F(" ========================== "));
+      OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugROM));
+      OSCR::Serial::printValue(OSCR::Strings::Common::Name, _data.name);
+      OSCR::Serial::printValue(OSCR::Strings::Common::CRCSum, _data.crc32);
+      OSCR::Serial::printValue(OSCR::Strings::Common::ID, _data.id32);
+      OSCR::Serial::printValue(OSCR::Strings::Common::Checksum, _data.chksum);
+      OSCR::Serial::printValue(OSCR::Strings::Common::Size, _data.size);
+      OSCR::Serial::printValue(OSCR::Strings::Common::Banks, _data.banks);
+      OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugEnd));
 #   endif /* CRDB_DEBUGGING */
     }
   };
