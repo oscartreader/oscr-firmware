@@ -483,7 +483,11 @@ namespace OSCR::Cores::NES
       OSCR::UI::printLine();
       OSCR::UI::printLineSync(FS(OSCR::Strings::Status::SearchingDatabase));
 
+#if OPTION_CRDB_STRICT_MATCHING
+      if (nesCRDB->findEitherRecord(oldcrc32, oldcrc32MMC3, 4))
+#else
       if (nesCRDB->findEitherRecord(oldcrc32, oldcrc32MMC3, 8))
+#endif /* OPTION_CRDB_STRICT_MATCHING */
       {
         record = nesCRDB->record();
 

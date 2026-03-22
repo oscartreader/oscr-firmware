@@ -505,13 +505,24 @@ namespace OSCR::CRDB
 
     for (uint_fast32_t i = 0; gotoRecordIndex(i) && file.seekCur(offset); ++i)
     {
-      crc32_t crc32;
+#if OPTION_CRDB_STRICT_MATCHING
+      crc32_t id32a;
+      crc32_t id32b;
 
-      uint_fast8_t const readLen = readNum32(crc32);
+      if (readNum32(id32a) != 4) break;
+      if (readNum32(id32b) != 4) break;
 
-      if (readLen != 4) break;
+      if (
+        ((id32a == crc32search1) && (id32b == crc32search2)) || // Testing a/1 and b/2
+        ((id32b == crc32search1) && (id32a == crc32search2))    // Testing b/1 and a/2
+      )
+#else
+      crc32_t id32;
 
-      if (crc32 == crc32search1 || crc32 == crc32search2)
+      if (readNum32(id32) != 4) break;
+
+      if (id32 == crc32search1 || id32 == crc32search2)         // If either match
+#endif
       {
         loadRecordIndex(i);
 

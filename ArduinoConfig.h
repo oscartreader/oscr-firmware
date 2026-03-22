@@ -615,6 +615,16 @@
 
 /****/
 
+/* [ CRDB: Strict Matching ---------------------------------------- ]
+ *  When enabled, this will require both identification checksums to
+ *  match for an entry to be considered a match. When disabled, if
+ *  either entry matches, it will be considered a match.
+ */
+
+#define OPTION_CRDB_STRICT_MATCHING true
+
+/****/
+
 /* [ LCD: Background Color ---------------------------------------- ]
  *  Set the backlight color of the LCD if you have one.
  *

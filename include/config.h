@@ -1282,6 +1282,16 @@
 
 #pragma region Core Sanity Checks
 
+// NES
+# if defined(ENABLE_NES)
+#   if !defined(OPTION_CRDB_STRICT_MATCHING)
+#     define OPTION_CRDB_STRICT_MATCHING false
+#   elif ((OPTION_CRDB_STRICT_MATCHING != true) && (OPTION_CRDB_STRICT_MATCHING != false))
+#     undef OPTION_CRDB_STRICT_MATCHING
+#     define OPTION_CRDB_STRICT_MATCHING true
+#   endif
+# endif /* ENABLE_NES */
+
 // SMS
 # if defined(ENABLE_SMS)
 
