@@ -316,7 +316,9 @@ namespace OSCR
       PORTG |= (1 << 1);
 # endif /* ENABLE_ONBOARD_ATMEGA */
 
+# if defined(ENABLE_VSELECT)
       OSCR::Power::setVoltage(OSCR::Voltage::Default);
+# endif
     }
 
 # if !defined(ENABLE_VSELECT)

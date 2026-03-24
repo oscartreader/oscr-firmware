@@ -140,7 +140,9 @@ void setup()
   // Reset pin states
   OSCR::Power::disableCartridge();
 
+#if defined(ENABLE_VSELECT)
   OSCR::Power::setVoltage(OSCR::Voltage::Default);
+#endif
 
   // ClockGen init
   OSCR::ClockGen::initialize();
