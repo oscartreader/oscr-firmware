@@ -61,6 +61,9 @@ namespace OSCR::Cores
   {
     cartCRDB = nullptr;
     fromCRDB = false;
+
+    OSCR::Databases::Flash::resetFlash();
+    OSCR::Databases::Basic::resetMapper();
   }
 
   void resetGlobals()

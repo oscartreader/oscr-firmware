@@ -11,6 +11,9 @@ sd/
 # Doxygen
 docs/
 
+# Python
+__pycache__
+
 # Backups
 *.old
 *.old.*

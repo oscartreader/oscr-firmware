@@ -17,6 +17,24 @@ namespace OSCR::Cores::Flash
   extern uint8_t const kMenuOptionFlashMax;
 # endif /* HAS_FLASH */
 
+  /**
+   * Flash type IDs.
+   *
+   * @warning Do not change the IDs!
+   */
+  enum class FlashType: uint8_t
+  {
+    Unknown = 0,
+    IC_29F032 = 1,
+    IC_29F1610 = 2,
+    IC_LH28F0XX = 3,
+    IC_29F1601 = 4,
+    IC_29LV640 = 5,
+    IC_29F800 = 6,
+    IC_29GL = 7,
+    IC_E28FXXXJ3A = 8,
+  };
+
   extern uint16_t flashid;
   extern uint32_t flashSize;
   extern uint32_t blank;
@@ -26,7 +44,7 @@ namespace OSCR::Cores::Flash
   extern uint32_t flashBanks;
   extern bool flashX16Mode;
   extern bool flashSwitchLastBits;
-  extern uint8_t flashromType;
+  extern FlashType flashromType;
   extern uint8_t secondID;
   extern uint32_t time;
   extern uint32_t sectorSize;

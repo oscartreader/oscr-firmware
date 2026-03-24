@@ -20,6 +20,7 @@
 # include "common/crdb/snes.h"
 # include "common/crdb/gba.h"
 # include "common/crdb/ti99.h"
+# include "common/crdb/flash.h"
 # include "ui.h"
 
 namespace OSCR
@@ -80,6 +81,8 @@ namespace OSCR
   void crdbBrowser(__FlashStringHelper const * title, OSCR::Databases::Basic::CRMapperDatabase * crdbTarget);
   void crdbBrowser(__FlashStringHelper const * title, OSCR::Databases::Standard::CRDatabase * crdbTarget);
   void crdbBrowser(__FlashStringHelper const * title, OSCR::Databases::Extended::CRDatabase * crdbTarget);
+
+  void crdbBrowser(__FlashStringHelper const * title, OSCR::Databases::Flash::Flash * crdbTarget);
 
 # if HAS_NES
   void crdbBrowser(__FlashStringHelper const * title, OSCR::Databases::NES * crdbTarget);

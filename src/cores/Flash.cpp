@@ -10,7 +10,8 @@
 # include "cores/include.h"
 #endif
 
-# include "cores/Flash.h"
+#include "common/crdb/flash.h"
+#include "cores/Flash.h"
 
 namespace OSCR::Strings::Cores::Flash
 {
@@ -43,8 +44,8 @@ namespace OSCR::Cores::Flash
   uint32_t blank;
 
 #if defined(ENABLE_FLASH8) || defined(ENABLE_FLASH16) || defined(NEEDS_FLASH8) || defined(NEEDS_FLASH16)
-  using OSCR::Databases::Basic::mapperDetail;
-  using OSCR::Databases::Basic::mapperRecord;
+  using OSCR::Databases::Flash::flashDetail;
+  using OSCR::Databases::Flash::flashRecord;
 
   enum class MenuOptionMain : uint8_t
   {
@@ -125,7 +126,7 @@ namespace OSCR::Cores::Flash
   bool flashSwitchLastBits;
 
   // Flashrom
-  uint8_t flashromType;
+  FlashType flashromType;
   uint32_t sectorSize;
   uint16_t bufferSize;
   uint8_t mapping = 0;
@@ -200,7 +201,7 @@ namespace OSCR::Cores::Flash
         break;
 
       case MenuOptionFlash::Erase:
-        if (flashromType == 0)
+        if (flashromType == FlashType::Unknown)
         {
           OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CartridgeError));
           OSCR::UI::error(FS(OSCR::Strings::Errors::NotSupportedByCart));
@@ -213,16 +214,25 @@ namespace OSCR::Cores::Flash
 
         switch (flashromType)
         {
-        case 1:
+        case FlashType::IC_29F032:
           eraseFlash29F032();
           break;
 
-        case 2:
+        case FlashType::IC_29F1601:
+        case FlashType::IC_29LV640:
+        case FlashType::IC_29F800:
+        case FlashType::IC_29GL:
+        case FlashType::IC_29F1610:
           eraseFlash29F1610();
           break;
 
-        case 3:
+        case FlashType::IC_E28FXXXJ3A:
+        case FlashType::IC_LH28F0XX:
           eraseFlash28FXXX();
+          break;
+
+        case FlashType::Unknown:
+          eraseFlash29F1610();
           break;
         }
 
@@ -235,7 +245,7 @@ namespace OSCR::Cores::Flash
         break;
 
       case MenuOptionFlash::Write:
-        if (flashromType == 0)
+        if (flashromType == FlashType::Unknown)
         {
           OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CartridgeError));
           OSCR::UI::error(FS(OSCR::Strings::Errors::NotSupportedByCart));
@@ -246,27 +256,37 @@ namespace OSCR::Cores::Flash
 
         switch (flashromType)
         {
-        case 1:
+        case FlashType::IC_29F032:
           writeFlash29F032();
           break;
 
-        case 2:
-          if (flashid == 0xC2F3)
-            writeFlash29F1601();
-          else if ((flashid == 0xC2F1) || (flashid == 0xC2F9))
-            writeFlash29F1610();
-          else if ((flashid == 0xC2C4) || (flashid == 0xC249) || (flashid == 0xC2A7) || (flashid == 0xC2A8) || (flashid == 0xC2C9) || (flashid == 0xC2CB) || (flashid == 0x0149) || (flashid == 0x01C4) || (flashid == 0x01F9) || (flashid == 0x01F6) || (flashid == 0x01D7))
-            writeFlash29LV640();
-          else if (flashid == 0x017E)
-            writeFlash29GL(sectorSize, bufferSize);
-          else if ((flashid == 0x0458) || (flashid == 0x0158) || (flashid == 0x01AB) || (flashid == 0x0422) || (flashid == 0x0423))
-            writeFlash29F800();
-          else if (flashid == 0x0)  // Manual flash config, pick most common type
-            writeFlash29LV640();
+        case FlashType::IC_29F1601:
+          writeFlash29F1601();
           break;
 
-        case 3:
+        case FlashType::IC_29F800:
+          writeFlash29F800();
+          break;
+
+        case FlashType::IC_29GL:
+          writeFlash29GL(sectorSize, bufferSize);
+          break;
+
+        case FlashType::IC_29F1610:
+          writeFlash29F1610();
+          break;
+
+        case FlashType::IC_29LV640:
+          writeFlash29LV640();
+          break;
+
+        case FlashType::IC_E28FXXXJ3A:
+        case FlashType::IC_LH28F0XX:
           writeFlash28FXXX();
+          break;
+
+        case FlashType::Unknown: // Manual flash config, pick most common type
+          writeFlash29LV640();
           break;
         }
 
@@ -287,19 +307,25 @@ namespace OSCR::Cores::Flash
 
         switch (flashromType)
         {
-        case 1:
+        case FlashType::IC_29F032:
           idFlash29F032();
           break;
 
-        case 2:
+        case FlashType::IC_29F1601:
+        case FlashType::IC_29LV640:
+        case FlashType::IC_29F800:
+        case FlashType::IC_29GL:
+        case FlashType::IC_29F1610:
           idFlash29F1610();
           break;
 
-        case 3:
+        case FlashType::IC_E28FXXXJ3A:
+        case FlashType::IC_LH28F0XX:
           idFlash28FXXX();
           break;
 
-        default:
+        case FlashType::Unknown:
+          idFlash29F1610();
           break;
         }
 
@@ -471,7 +497,7 @@ namespace OSCR::Cores::Flash
 
   void openCRDB()
   {
-    OSCR::Databases::Basic::setupMapper(FS(OSCR::Strings::FileType::Flash));
+    OSCR::Databases::Flash::setupFlash(FS(OSCR::Strings::FileType::Flash));
   }
 
   void closeCRDB()
@@ -488,21 +514,22 @@ namespace OSCR::Cores::Flash
   /******************************************
      Flash ID
   *****************************************/\
-  uint8_t selectFlashtype(bool option)
+  FlashType selectFlashType()
   {
-    uint8_t selectionByte;
+    FlashType selectionByte = static_cast<FlashType>(OSCR::UI::rangeSelect(FS(OSCR::Strings::Headings::SelectFlash), 0, 3));
 
-    if (option) selectionByte = OSCR::UI::rangeSelect(FS(OSCR::Strings::Headings::SelectMapper), 0, 3);
-    else selectionByte = OSCR::UI::rangeSelect(FS(OSCR::Strings::Headings::SelectCartSize), 1, 8);
+    OSCR::UI::printType(OSCR::Strings::Common::Flash, static_cast<uint8_t>(selectionByte));
 
-    if (option)
-    {
-      OSCR::UI::printType(OSCR::Strings::Common::Flash, selectionByte);
-    }
-    else
-    {
-      OSCR::UI::printSize(OSCR::Strings::Common::Flash, selectionByte * 1024 * 1024);
-    }
+    delay(200);
+
+    return selectionByte;
+  }
+
+  uint8_t selectFlashSize()
+  {
+    uint8_t selectionByte = OSCR::UI::rangeSelect(FS(OSCR::Strings::Headings::SelectCartSize), 1, 8);
+
+    OSCR::UI::printSize(OSCR::Strings::Common::Flash, selectionByte * 1024 * 1024);
 
     delay(200);
 
@@ -511,10 +538,10 @@ namespace OSCR::Cores::Flash
 
   bool getFlashDetail()
   {
-    if (!OSCR::Databases::Basic::matchMapper(flashid)) return false;
+    if (!OSCR::Databases::Flash::matchFlash(flashid)) return false;
 
-    flashSize = mapperDetail->sizeLow;
-    flashromType = mapperDetail->meta1;
+    flashSize = flashDetail->size;
+    flashromType = flashDetail->type;
 
     return true;
   }
@@ -559,7 +586,7 @@ namespace OSCR::Cores::Flash
         resetFlash8();
 
         printHeader();
-        OSCR::UI::printValue(OSCR::Strings::Common::Name, mapperDetail->name);
+        OSCR::UI::printValue(OSCR::Strings::Common::Name, flashDetail->name);
         OSCR::UI::waitButton();
 
         return;
@@ -578,8 +605,8 @@ namespace OSCR::Cores::Flash
     OSCR::UI::waitButton();
 
     // Select flashrom config manually
-    flashSize = selectFlashtype(0) * 1024UL * 1024UL;
-    flashromType = selectFlashtype(1);
+    flashSize = selectFlashSize() * 1024UL * 1024UL;
+    flashromType = selectFlashType();
     flashid = 0;
 
     // print first 40 bytes of flash
@@ -606,7 +633,7 @@ namespace OSCR::Cores::Flash
     }
 
     printHeader();
-    OSCR::UI::printValue(OSCR::Strings::Common::Name, mapperDetail->name);
+    OSCR::UI::printValue(OSCR::Strings::Common::Name, flashDetail->name);
     OSCR::UI::waitButton();
   }
 # endif
@@ -2077,9 +2104,26 @@ namespace OSCR::Cores::Flash
   {
     switch (flashromType)
     {
-      case 1: resetFlash29F032(); break;
-      case 2: resetFlash29F1610(); break;
-      case 3: resetFlash28FXXX(); break;
+    case FlashType::IC_29F032:
+      resetFlash29F032();
+      break;
+
+    case FlashType::IC_29F1601:
+    case FlashType::IC_29LV640:
+    case FlashType::IC_29F800:
+    case FlashType::IC_29GL:
+    case FlashType::IC_29F1610:
+      resetFlash29F1610();
+      break;
+
+    case FlashType::IC_E28FXXXJ3A:
+    case FlashType::IC_LH28F0XX:
+      resetFlash28FXXX();
+      break;
+
+    case FlashType::Unknown:
+      resetFlash29F1610();
+      break;
     }
   }
 

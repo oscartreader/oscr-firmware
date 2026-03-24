@@ -107,6 +107,13 @@ namespace OSCR
     browser.select();
   }
 
+  void crdbBrowser(__FlashStringHelper const * title, OSCR::Databases::Flash::Flash * crdbTarget)
+  {
+    Apps::CRDBBrowser browser = Apps::CRDBBrowser<OSCR::Databases::Flash::Flash, OSCR::Databases::Flash::FlashRecord, CRDB_RECORD_SIZE_FLASH>(title, crdbTarget);
+
+    browser.select();
+  }
+
 # if HAS_NES
   void crdbBrowser(__FlashStringHelper const * title, OSCR::Databases::NES * crdbTarget)
   {

@@ -141,6 +141,9 @@ namespace OSCR
       extern char const PROGMEM Cart[];
       extern char const PROGMEM Size[];
       extern char const PROGMEM Vendor[];
+      extern char const PROGMEM Sectors[];
+      extern char const PROGMEM Buffer[];
+      extern char const PROGMEM Variant[];
       extern char const PROGMEM Chips[];
 
       extern char const PROGMEM Selected[];
@@ -244,6 +247,9 @@ namespace OSCR
       extern char const PROGMEM KB[];
       extern char const PROGMEM MB[];
       extern char const PROGMEM GB[];
+
+      extern char const PROGMEM Bits[];
+      extern char const PROGMEM Bytes[];
     }
 
     // Symbols
@@ -305,6 +311,7 @@ namespace OSCR
       extern char const PROGMEM SelectBufferSize[];
       extern char const PROGMEM SelectSectorSize[];
       extern char const PROGMEM SelectMapper[];
+      extern char const PROGMEM SelectFlash[];
       extern char const PROGMEM SelectType[];
       extern char const PROGMEM SelectOne[];
       extern char const PROGMEM SelectCRDBEntry[];
@@ -321,6 +328,7 @@ namespace OSCR
 
       extern char const PROGMEM CRDBDebugROM[];
       extern char const PROGMEM CRDBDebugMapper[];
+      extern char const PROGMEM CRDBDebugFlash[];
       extern char const PROGMEM CRDBDebugEnd[];
     }
 

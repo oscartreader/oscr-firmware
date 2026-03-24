@@ -53,6 +53,9 @@ namespace OSCR::Strings
     constexpr char const PROGMEM Cart[]             = "Cart";
     constexpr char const PROGMEM Size[]             = "Size";
     constexpr char const PROGMEM Vendor[]           = "Vendor";
+    constexpr char const PROGMEM Sectors[]          = "Sectors";
+    constexpr char const PROGMEM Buffer[]           = "Buffer";
+    constexpr char const PROGMEM Variant[]          = "Variant";
     constexpr char const PROGMEM Chips[]            = "Chips";
 
     constexpr char const PROGMEM Selected[]         = "Selected";
@@ -133,6 +136,7 @@ namespace OSCR::Strings
     constexpr char const PROGMEM SelectBufferSize[] = "Select Buffer Size";
     constexpr char const PROGMEM SelectSectorSize[] = "Select Sector Size";
     constexpr char const PROGMEM SelectMapper[]     = "Select Mapper";
+    constexpr char const PROGMEM SelectFlash[]      = "Select Flash";
     constexpr char const PROGMEM SelectType[]       = "Select Type";
     constexpr char const PROGMEM SelectOne[]        = "Select One";
 
@@ -150,6 +154,7 @@ namespace OSCR::Strings
 
     constexpr char const PROGMEM CRDBDebugROM[]     = " ===== ROM DEBUG INFO ===== ";
     constexpr char const PROGMEM CRDBDebugMapper[]  = " === MAPPER  DEBUG INFO === ";
+    constexpr char const PROGMEM CRDBDebugFlash[]   = " ==== FLASH DEBUG INFO ==== ";
     constexpr char const PROGMEM CRDBDebugEnd[]     = " ========================== ";
   }
 

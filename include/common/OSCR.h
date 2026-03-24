@@ -164,6 +164,7 @@ namespace OSCR
 #define CRDB_RECORD_SIZE_A5200          108
 #define CRDB_RECORD_SIZE_JAG            108
 #define CRDB_RECORD_SIZE_TI99           112
+#define CRDB_RECORD_SIZE_FLASH          125
 
 enum PIXEL: uint8_t
 {

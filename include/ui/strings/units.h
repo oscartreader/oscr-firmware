@@ -66,6 +66,9 @@ namespace OSCR::Strings
     constexpr char const PROGMEM KB[] = OSCR_UNIT_KILOBYTE;
     constexpr char const PROGMEM MB[] = OSCR_UNIT_MEGABYTE;
     constexpr char const PROGMEM GB[] = OSCR_UNIT_GIGABYTE;
+
+    constexpr char const PROGMEM Bits[]   = "Bits";
+    constexpr char const PROGMEM Bytes[]  = "Bytes";
   } /* namespace Units */
 
   // (Unit) Templates
