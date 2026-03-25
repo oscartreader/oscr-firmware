@@ -1,0 +1,32 @@
+{
+  "name": "avr-gcc",
+  "versions": {
+    "avr-gcc": "15.2.0",
+    "avr-binutils": "2.45",
+    "avr-libc": "2.2.1",
+    "avr-gdb": "16.3",
+    "avrdude": "8.1",
+    "make": "4.2.1"
+  },
+  "mirrors": [],
+  "archives": {
+    "win32": {
+      "filename": "avr-gcc-15.2.0-x86-windows.zip",
+      "directory": "avr-gcc-15.2.0-x86-windows",
+      "url": "https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.2.0-1/avr-gcc-15.2.0-x86-windows.zip",
+      "checksum": "61da9f3ecbbf1148c922717aaf5d1a355d566201fb180af66099f4f8ae96a900"
+    },
+    "win64": {
+      "filename": "avr-gcc-15.2.0-x64-windows.zip",
+      "directory": "avr-gcc-15.2.0-x64-windows",
+      "url": "https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.2.0-1/avr-gcc-15.2.0-x64-windows.zip",
+      "checksum": "3bcfdbdbff6e3576ef0bef9e119b16f7012657d30f002d6d9d4848a7efd4f8b7"
+    },
+    "lin64": {
+      "filename": "avr-gcc-15.2.0-x64-linux.tar.bz2",
+      "directory": "avr-gcc-15.2.0-x64-linux",
+      "url": "https://github.com/ZakKemble/avr-gcc-build/releases/download/v15.2.0-1/avr-gcc-15.2.0-x64-linux.tar.bz2",
+      "checksum": "d90765e6d975950afa235aa998122f97aae8b00504399068b6c9d0bf4994b0fe"
+    }
+  }
+}

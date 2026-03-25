@@ -1,0 +1,26 @@
+{
+  "name": "toolchain-atmelavr",
+  "version": "15.2.0-oscr",
+  "description": "GCC Toolchain for Microchip AVR microcontrollers",
+  "keywords": [
+    "toolchain",
+    "build tools",
+    "compiler",
+    "assembler",
+    "linker",
+    "preprocessor",
+    "microchip",
+    "avr"
+  ],
+  "homepage": "https://gcc.gnu.org/wiki/avr-gcc",
+  "license": "GPL-2.0-or-later",
+  "scripts": {
+    "postinstall": "download.py"
+  },
+  "system": [
+    "windows",
+    "windows_amd64",
+    "windows_x86",
+    "linux_x86_64"
+  ]
+}

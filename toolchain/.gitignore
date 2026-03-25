@@ -1,0 +1,7 @@
+__pycache__/
+avr-gcc/
+*.zip
+*.bz2
+*.gz
+*.tgz
+*.tar.*
