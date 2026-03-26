@@ -4,7 +4,7 @@
 
 # include "config.h"
 
-# if HAS_WSV
+# if HAS_SUPERVISION
 #   include "syslibinc.h"
 #   include "common/Types.h"
 
@@ -34,5 +34,5 @@ namespace OSCR::Cores::Supervision
   void setCart();
 } /* namespace OSCR::Cores::Supervision */
 
-# endif /* HAS_WSV */
+# endif /* HAS_SUPERVISION */
 #endif /* OSCR_CORE_SUPERVISION_H_ */

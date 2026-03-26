@@ -183,7 +183,7 @@
 /**
  * [Core] %SMS - SG-1000 Adapter Types
  */
-#define SMSOPT_GG_ADAPTER_ALL        0
-#define SMSOPT_GG_ADAPTER_RAPHNET    1
+#define SMSOPT_SG_ADAPTER_ALL        0
+#define SMSOPT_SG_ADAPTER_RAPHNET    1
 
 #endif /* OSCR_FLAGS_H_ */

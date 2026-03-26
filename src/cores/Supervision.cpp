@@ -3,7 +3,7 @@
 //******************************************
 #include "config.h"
 
-#if HAS_WSV
+#if HAS_SUPERVISION
 # include "cores/include.h"
 # include "cores/Supervision.h"
 
@@ -285,4 +285,4 @@ namespace OSCR::Cores::Supervision
   }
 } /* namespace OSCR::Cores::Supervision */
 
-#endif /* HAS_WSV */
+#endif /* HAS_SUPERVISION */

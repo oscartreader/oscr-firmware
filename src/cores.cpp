@@ -120,7 +120,7 @@ namespace OSCR::Menus
     },
 # endif
 
-# if defined(ENABLE_WSV)
+# if defined(ENABLE_SUPERVISION)
     {
       .id = CoreID::WSV,
       .title = OSCR::Strings::Cores::Supervision,

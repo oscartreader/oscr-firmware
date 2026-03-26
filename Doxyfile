@@ -2546,7 +2546,7 @@ PREDEFINED             = DOXYGEN=1 \
                          ENABLE_FLASH16 \
                          ENABLE_MD \
                          ENABLE_PCE \
-                         ENABLE_SV \
+                         ENABLE_SATELLAVIEW \
                          ENABLE_NES \
                          ENABLE_SMS \
                          ENABLE_WS \
@@ -2554,7 +2554,7 @@ PREDEFINED             = DOXYGEN=1 \
                          ENABLE_INTV \
                          ENABLE_COLV \
                          ENABLE_VBOY \
-                         ENABLE_WSV \
+                         ENABLE_SUPERVISION \
                          ENABLE_PCW \
                          ENABLE_ODY2 \
                          ENABLE_ARC \

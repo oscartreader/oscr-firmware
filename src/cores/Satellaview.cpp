@@ -5,7 +5,7 @@
 //******************************************
 #include "config.h"
 
-#if HAS_SV
+#if HAS_SATELLAVIEW
 # include "cores/include.h"
 # include "cores/Satellaview.h"
 
@@ -569,4 +569,4 @@ namespace OSCR::Cores::Satellaview
   }
 } /* namespace OSCR::Cores::Satellaview */
 
-#endif /* HAS_SV */
+#endif /* HAS_SATELLAVIEW */

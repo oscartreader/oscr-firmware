@@ -1,8 +1,8 @@
 import click # pyright: ignore[reportMissingImports]
-from os.path import isfile, join
-# from SCons.Script import DefaultEnvironment # pyright: ignore[reportMissingImports]
+from os.path import join
 from SCons.Script import ARGUMENTS # pyright: ignore[reportMissingImports]
 from SCons.Errors import UserError # pyright: ignore[reportMissingImports]
+import crutils
 
 envs = []
 
@@ -31,15 +31,16 @@ envs.append(envglobal)
 
 platform = env.PioPlatform()
 
+coreConfig = crutils.CRConfig(env)
+
+confDefines = coreConfig.getCoreFlags() + coreConfig.getHardwareFlags() + coreConfig.getFeatureFlags() + coreConfig.getOutputFlags() + coreConfig.getInputFlags() + coreConfig.getOptionFlags()
+
 TOOLCHAIN_ROOT = platform.get_package_dir("toolchain-atmelavr")
 AVRGGC_DIR = join(TOOLCHAIN_ROOT, "avr-gcc")
 AVRGGC_BINDIR = join(AVRGGC_DIR, "bin")
 
 cpp_standard = env.GetProjectOption("cppstd");
 c_standard = env.GetProjectOption("cstd");
-fastSD = env.GetProjectOption("lib.sd.fast") == "true";
-minSD = env.GetProjectOption("lib.sd.min") == "true";
-dedicatedSD = env.GetProjectOption("lib.sd.dedicated") == "true";
 
 flags = {
     "CC": [ # C and C++ flags
@@ -66,21 +67,8 @@ flags = {
         "-Wl,--gc-sections",
         "-Wl,--relax",
     ],
-    "CPPDEFINES": [ # Build flags
-    ],
+    "CPPDEFINES": confDefines, # Build flags
 }
-
-if fastSD:
-    flags['CPPDEFINES'].append(("CHECK_FLASH_PROGRAMMING", 0))
-
-if minSD:
-    flags['CPPDEFINES'].append(("SDFAT_FILE_TYPE", 1))
-    flags['CPPDEFINES'].append(("USE_FAT_FILE_FLAG_CONTIGUOUS", 0))
-
-if dedicatedSD:
-    flags['CPPDEFINES'].append(("ENABLE_DEDICATED_SPI", 1))
-else:
-    flags['CPPDEFINES'].append(("ENABLE_DEDICATED_SPI", 0))
 
 for _env in envs:
     _env.AppendUnique(CCFLAGS=flags['CC'])
@@ -114,22 +102,10 @@ if VERBOSE:
     click.echo("+ CXX flags: " + env['CXXFLAGS'])
     click.echo("+ Linker flags: " + env['LINKFLAGS'])
     click.echo("")
-
-    click.echo("+ SD: ", nl=False)
-
-    if fastSD:
-        click.echo("[Fast SD]", nl=False)
-    else:
-        click.echo("[Safe SD]", nl=False)
-
-    if minSD:
-        click.echo("[Minimal SD lib size]", nl=False)
-    else:
-        click.echo("[Standard SD lib size]", nl=False)
-
-    if dedicatedSD:
-        click.echo("[Dedicated SPI]")
-    else:
-        click.echo("[Shared SPI]")
-
+    click.echo("+ Defines")
+    for define in confDefines:
+        if (isinstance(define, str)):
+            click.echo("  - {}".format(define))
+        else:
+            click.echo("  - {}: {}".format(define[0], define[1]))
     click.echo("")

@@ -383,7 +383,7 @@
 /* [ Super Famicom Satellaview ------------------------------------ ]
  */
 
-//#define ENABLE_SV
+//#define ENABLE_SATELLAVIEW
 
 /****/
 
@@ -453,7 +453,7 @@
 /* [ Watara Supervision ------------------------------------------- ]
  */
 
-//#define ENABLE_WSV
+//#define ENABLE_SUPERVISION
 
 /****/
 
@@ -754,7 +754,7 @@
  *  Tests for shorts and other issues in your OSCR build.
  */
 
-//#define ENABLE_SELFTEST
+#define ENABLE_SELFTEST
 
 /****/
 
@@ -822,7 +822,7 @@
 
 // == SMS Adapters
 // - SMSOPT_SMS_ADAPTER_ALL     : Show all SMS adapters [default for HW <= 3]
-// - SMSOPT_SMS_ADAPTER_RAPHNET : Reaphnet adapter [default for HW >= 4]
+// - SMSOPT_SMS_ADAPTER_RAPHNET : Raphnet adapter [default for HW >= 4]
 // - SMSOPT_SMS_ADAPTER_HW5     : OSCR six-slot top-PCB. Internally the same as RAPHNET.
 // - SMSOPT_SMS_ADAPTER_RETRODE : Retrode adapter
 // - SMSOPT_SMS_ADAPTER_RETRON  : Retron3in1 adapter

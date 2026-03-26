@@ -174,8 +174,8 @@ namespace OSCR
 
   namespace Power
   {
-    constexpr uint16_t const kIdleDrowsy  = OPTION_POWERSAVING_IDLE_DIM;
-    constexpr uint16_t const kIdleSleep   = OPTION_POWERSAVING_IDLE_SLEEP;
+    constexpr uint32_t const kIdleDrowsy  = OPTION_POWERSAVING_IDLE_DIM;
+    constexpr uint32_t const kIdleSleep   = OPTION_POWERSAVING_IDLE_SLEEP;
 
 # if defined(ENABLE_ONBOARD_ATMEGA)
     Voltage getVoltage()

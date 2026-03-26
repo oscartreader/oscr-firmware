@@ -4,7 +4,7 @@
 
 # include "config.h"
 
-# if HAS_SV
+# if HAS_SATELLAVIEW
 #   include "syslibinc.h"
 #   include "common/Types.h"
 
@@ -37,5 +37,5 @@ namespace OSCR::Cores::Satellaview
   void eraseAll(void);
 } /* namespace OSCR::Cores::Satellaview */
 
-# endif /* HAS_SV */
+# endif /* HAS_SATELLAVIEW */
 #endif /* OSCR_CORE_SATELLAVIEW_H_ */

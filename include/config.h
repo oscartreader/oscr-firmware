@@ -85,270 +85,13 @@
 #define MAJOR_VERSION 20
 #define MINOR_VERSION 0
 #define PATCH_VERSION 1
-//
-//
-//
-
-
-#pragma region PIO Flags
-
-// [Cores] Support using lower-case auto/true/false in platformio.ini
-#define CORE_ENABLE_auto  2
-#define CORE_ENABLE_true  1
-#define CORE_ENABLE_false 0
-
-// [Cores] Support using upper-case auto/true/false in platformio.ini
-#define CORE_ENABLE_AUTO  2
-#define CORE_ENABLE_TRUE  1
-#define CORE_ENABLE_FALSE 0
-
-// [Feature] Do we want power saving?
-#if (defined(WANT_POWERSAVING) && (WANT_POWERSAVING == true))
-#   define ENABLE_POWERSAVING
-#endif
-
-// [Feature] Do we want updater support?
-#if (defined(WANT_UPDATER) && (WANT_UPDATER == true))
-#   define ENABLE_UPDATER
-#endif
-
-// [Feature] Do we want NeoPixel support?
-#if (defined(WANT_NEOPIXEL) && (WANT_NEOPIXEL == true))
-#   define ENABLE_NEOPIXEL
-#endif
-
-// [Feature] Do we want debugging support?
-#if (defined(WANT_DEBUGGING) && (WANT_DEBUGGING == true))
-# define ENABLE_DEBUG
-# define ENABLE_CRDB_DEBUG
-#endif
-
-/* [ PIO Core Flags ----------------------------------------------- ]
- *  Turn the `CORE_*` flags into `ENABLE_*` flags if enabled.
- */
-
-#if (CORE_ARC == CORE_ENABLE_TRUE) || ((CORE_ARC == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_ARC
-#endif
-
-#if (CORE_2600 == CORE_ENABLE_TRUE) || ((CORE_2600 == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_2600
-#endif
-
-#if (CORE_5200 == CORE_ENABLE_TRUE) || ((CORE_5200 == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_5200
-#endif
-
-#if (CORE_7800 == CORE_ENABLE_TRUE) || ((CORE_7800 == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_7800
-#endif
-
-#if (CORE_ATARI8 == CORE_ENABLE_TRUE) || ((CORE_ATARI8 == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_ATARI8
-#endif
-
-#if (CORE_JAGUAR == CORE_ENABLE_TRUE) || ((CORE_JAGUAR == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_JAGUAR
-#endif
-
-#if (CORE_LYNX == CORE_ENABLE_TRUE) || ((CORE_LYNX == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_LYNX
-#endif
-
-#if (CORE_BALLY == CORE_ENABLE_TRUE) || ((CORE_BALLY == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_BALLY
-#endif
-
-#if (CORE_C64 == CORE_ENABLE_TRUE) || ((CORE_C64 == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_C64
-#endif
-
-#if (CORE_COLV == CORE_ENABLE_TRUE) || ((CORE_COLV == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_COLV
-#endif
-
-#if (CORE_CPS3 == CORE_ENABLE_TRUE) || ((CORE_CPS3 == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_CPS3
-#endif
-
-#if (CORE_FAIRCHILD == CORE_ENABLE_TRUE) || ((CORE_FAIRCHILD == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_FAIRCHILD
-#endif
-
-#if (CORE_FLASH == CORE_ENABLE_TRUE) || ((CORE_FLASH == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_FLASH
-#endif
-
-#if (CORE_FLASH16 == CORE_ENABLE_TRUE) || ((CORE_FLASH16 == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_FLASH16
-#endif
-
-#if (CORE_GBX == CORE_ENABLE_TRUE) || (CORE_GBX == CORE_ENABLE_AUTO)
-# define ENABLE_GBX
-#endif
-
-#if (CORE_GPC == CORE_ENABLE_TRUE) || (CORE_GPC == CORE_ENABLE_AUTO)
-# define ENABLE_GPC
-#endif
-
-#if (CORE_INTV == CORE_ENABLE_TRUE) || ((CORE_INTV == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_INTV
-#endif
-
-#if (CORE_LEAP == CORE_ENABLE_TRUE) || ((CORE_LEAP == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_LEAP
-#endif
-
-#if (CORE_LJ == CORE_ENABLE_TRUE) || ((CORE_LJ == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_LJ
-#endif
-
-#if (CORE_LJPRO == CORE_ENABLE_TRUE) || ((CORE_LJPRO == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_LJPRO
-#endif
-
-#if (CORE_LOOPY == CORE_ENABLE_TRUE) || ((CORE_LOOPY == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_LOOPY
-#endif
-
-#if (CORE_MD == CORE_ENABLE_TRUE) || (CORE_MD == CORE_ENABLE_AUTO)
-# define ENABLE_MD
-#endif
-
-#if (CORE_MSX == CORE_ENABLE_TRUE) || ((CORE_MSX == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_MSX
-#endif
-
-#if (CORE_N64 == CORE_ENABLE_TRUE) || (CORE_N64 == CORE_ENABLE_AUTO)
-# define ENABLE_N64
-#endif
-
-#if (CORE_NES == CORE_ENABLE_TRUE) || (CORE_NES == CORE_ENABLE_AUTO)
-# define ENABLE_NES
-#endif
-
-#if (CORE_NGP == CORE_ENABLE_TRUE) || ((CORE_NGP == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_NGP
-#endif
-
-#if (CORE_ODY2 == CORE_ENABLE_TRUE) || ((CORE_ODY2 == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_ODY2
-#endif
-
-#if (CORE_PCE == CORE_ENABLE_TRUE) || ((CORE_PCE == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_PCE
-#endif
-
-#if (CORE_PCW == CORE_ENABLE_TRUE) || ((CORE_PCW == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_PCW
-#endif
-
-#if (CORE_POKE == CORE_ENABLE_TRUE) || ((CORE_POKE == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_POKE
-#endif
-
-#if (CORE_PV1000 == CORE_ENABLE_TRUE) || ((CORE_PV1000 == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_PV1000
-#endif
-
-#if (CORE_RCA == CORE_ENABLE_TRUE) || ((CORE_RCA == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_RCA
-#endif
-
-#if (CORE_SFM == CORE_ENABLE_TRUE) || ((CORE_SFM == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_SFM
-#endif
-
-#if (CORE_SMS == CORE_ENABLE_TRUE) || (CORE_SMS == CORE_ENABLE_AUTO)
-# define ENABLE_SMS
-#endif
-
-#if (CORE_SNES == CORE_ENABLE_TRUE) || (CORE_SNES == CORE_ENABLE_AUTO)
-# define ENABLE_SNES
-#endif
-
-#if (CORE_ST == CORE_ENABLE_TRUE) || (CORE_ST == CORE_ENABLE_AUTO)
-# define ENABLE_ST
-#endif
-
-#if (CORE_SUPERACAN == CORE_ENABLE_TRUE) || ((CORE_SUPERACAN == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_SUPERACAN
-#endif
-
-#if (CORE_WSV == CORE_ENABLE_TRUE) || ((CORE_WSV == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_WSV
-#endif
-
-#if (CORE_SV == CORE_ENABLE_TRUE) || ((CORE_SV == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_SV
-#endif
-
-#if (CORE_TI99 == CORE_ENABLE_TRUE) || ((CORE_TI99 == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_TI99
-#endif
-
-#if (CORE_PYUUTA == CORE_ENABLE_TRUE) || ((CORE_PYUUTA == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_PYUUTA
-#endif
-
-#if (CORE_TRS80 == CORE_ENABLE_TRUE) || ((CORE_TRS80 == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_TRS80
-#endif
-
-#if (CORE_VECTREX == CORE_ENABLE_TRUE) || ((CORE_VECTREX == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_VECTREX
-#endif
-
-#if (CORE_VIC20 == CORE_ENABLE_TRUE) || ((CORE_VIC20 == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_VIC20
-#endif
-
-#if (CORE_VBOY == CORE_ENABLE_TRUE) || ((CORE_VBOY == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_VBOY
-#endif
-
-#if (CORE_VSMILE == CORE_ENABLE_TRUE) || ((CORE_VSMILE == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_VSMILE
-#endif
-
-#if (CORE_WONDERSWAN == CORE_ENABLE_TRUE) || ((CORE_WONDERSWAN == CORE_ENABLE_AUTO) && (HW_VERSION > 6))
-# define ENABLE_WS
-#endif
-
-#if (CORE_SELFTEST == CORE_ENABLE_TRUE) || (CORE_SELFTEST == CORE_ENABLE_AUTO)
-# define ENABLE_SELFTEST
-#endif
-
-/* [ PIO Core Flags ----------------------------------------------- ]
- *  Turn the `WANT_*` flags into `ENABLE_*` flags if enabled.
- */
-
-# if (WANT_VSELECT == true)
-#   define ENABLE_VSELECT
-#endif
-
-# if (WANT_3V3FIX == true)
-#   define ENABLE_3V3FIX
-# endif
-
-# if (WANT_RTC == true)
-#   define ENABLE_RTC
-# endif
-
-# if (WANT_RTC == true)
-#   define ENABLE_CONFIG
-# endif
-
-# if (WANT_CLOCKGEN == true)
-#   define ENABLE_CLOCKGEN
-# endif
-
-# if (USING_ONBOARD_ATMEGA == true)
-#   define ENABLE_ONBOARD_ATMEGA
-# endif
 
 // Create the version string
 #define VERSION_STRING NUM2STR(MAJOR_VERSION) "." NUM2STR(MINOR_VERSION) "." NUM2STR(PATCH_VERSION)
+//
+//
+//
+
 
 #pragma region Dependencies
 
@@ -404,7 +147,7 @@
 /**
  * SFM, SV, ST, and GPC need SNES
  */
-# if defined(ENABLE_SFM) || defined(ENABLE_SV) || defined(ENABLE_ST) || defined(ENABLE_GPC)
+# if defined(ENABLE_SFM) || defined(ENABLE_SATELLAVIEW) || defined(ENABLE_ST) || defined(ENABLE_GPC)
 #   if !defined(NEEDS_FLASH8)
 #     define NEEDS_SNES
 #   endif
@@ -507,11 +250,11 @@
 #   define HAS_PCE 0
 # endif /* ENABLE_PCE || NEEDS_PCE */
 
-# if defined(ENABLE_SV) || defined(NEEDS_SV)
-#   define HAS_SV 1
+# if defined(ENABLE_SATELLAVIEW) || defined(NEEDS_SATELLAVIEW)
+#   define HAS_SATELLAVIEW 1
 # else
-#   define HAS_SV 0
-# endif /* ENABLE_SV || NEEDS_SV */
+#   define HAS_SATELLAVIEW 0
+# endif /* ENABLE_SATELLAVIEW || NEEDS_SATELLAVIEW */
 
 # if defined(ENABLE_NES) || defined(NEEDS_NES)
 #   define HAS_NES 1
@@ -555,11 +298,11 @@
 #   define HAS_VBOY 0
 # endif /* ENABLE_VBOY || NEEDS_VBOY */
 
-# if defined(ENABLE_WSV) || defined(NEEDS_WSV)
-#   define HAS_WSV 1
+# if defined(ENABLE_SUPERVISION) || defined(NEEDS_SUPERVISION)
+#   define HAS_SUPERVISION 1
 # else
-#   define HAS_WSV 0
-# endif /* ENABLE_WSV || NEEDS_WSV */
+#   define HAS_SUPERVISION 0
+# endif /* ENABLE_SUPERVISION || NEEDS_SUPERVISION */
 
 # if defined(ENABLE_PCW) || defined(NEEDS_PCW)
 #   define HAS_PCW 1
@@ -873,7 +616,7 @@
 
 /****/
 
-// Unique Directory Method
+// Unique Directory
 
 # if !defined(OPTION_UNIQUE_DIRECTORY_METHOD)
 #   define OPTION_UNIQUE_DIRECTORY_METHOD UNQDIR_AUTO
@@ -889,6 +632,14 @@
 #   else
 #     define OPTION_UNIQUE_DIRECTORY_METHOD UNQDIR_INCREMENT
 #   endif
+# endif
+
+# if !defined(OPTION_UNIQUE_DIRECTORY_PADDING)
+#   define OPTION_UNIQUE_DIRECTORY_PADDING 4
+# endif
+
+# if !defined(OPTION_UNIQUE_DIRECTORY_FULLYEAR)
+#   define OPTION_UNIQUE_DIRECTORY_FULLYEAR false
 # endif
 
 /****/

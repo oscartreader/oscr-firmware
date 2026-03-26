@@ -1,22 +1,33 @@
 #include "arch/avr/syslibinc.h"
 
 #if defined(OSCR_ARCH_AVR)
-
-#include "macros.h"
-#include "ui.h"
-#include "api/Time.h"
-#include "api/Storage.h"
-#include "apps/Logger.h"
-#include "hardware/outputs/Serial.h"
+# include "macros.h"
+# include "ui.h"
+# include "api/Time.h"
+# include "api/Storage.h"
+# include "apps/Logger.h"
+# include "hardware/outputs/Serial.h"
 
 namespace
 {
-#if defined(__FILE_NAME__)
+# if defined(__FILE_NAME__)
   constexpr char const PROGMEM ThisFilename[] = __FILE_NAME__;
-#else
+# else
   constexpr char const PROGMEM ThisFilename[] = "Storage.cpp";
-#endif
+# endif
 }
+
+# if OPTION_UNIQUE_DIRECTORY_PADDING > 0
+#   define INCREMENT_TEMPLATE "0" NUM2STR(OPTION_UNIQUE_DIRECTORY_PADDING) PRIu16
+# else
+#   define INCREMENT_TEMPLATE PRIu16
+# endif
+
+# if (OPTION_UNIQUE_DIRECTORY_FULLYEAR)
+#   define YEAR_TEMPLATE "04" PRIu16
+# else
+#   define YEAR_TEMPLATE "02" PRIu8
+# endif
 
 namespace OSCR
 {
@@ -38,30 +49,42 @@ namespace OSCR
 
     void updatedFolderIncrement()
     {
-#if (OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_INCREMENT)
-      snprintf_P(BUFFN(OSCR::Storage::Shared::folderIncrementStr), PSTR("%04" PRIu16), Shared::folderIncrement);
-#elif (OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_RTC)
+# if (OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_INCREMENT)
+      snprintf_P(BUFFN(OSCR::Storage::Shared::folderIncrementStr), PSTR("%" INCREMENT_TEMPLATE), Shared::folderIncrement);
+# elif (OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_RTC)
       DateTime now = OSCR::Time::now();
-      uint8_t year = now.year() - 2000;
 
-      snprintf_P(BUFFN(OSCR::Storage::Shared::folderIncrementStr), PSTR("%02" PRIu8 "%02" PRIu8 "%02" PRIu8 "%02" PRIu8 "%02" PRIu8), year, now.month(), now.day(), now.hour(), now.minute());
-#elif (OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_BOTH)
+#   if (OPTION_UNIQUE_DIRECTORY_FULLYEAR)
+      uint16_t const year = now.year();
+#   else
+      uint8_t const year = now.year() - 2000;
+#   endif /* OPTION_UNIQUE_DIRECTORY_FULLYEAR */
+
+      snprintf_P(
+        BUFFN(OSCR::Storage::Shared::folderIncrementStr),
+        PSTR("%" YEAR_TEMPLATE "%02" PRIu8 "%02" PRIu8 "%02" PRIu8 "%02" PRIu8), year, now.month(), now.day(), now.hour(), now.minute());
+# elif (OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_BOTH)
       DateTime now = OSCR::Time::now();
-      uint8_t year = now.year() - 2000;
 
-      snprintf_P(BUFFN(OSCR::Storage::Shared::folderIncrementStr), PSTR("%02" PRIu8 "%02" PRIu8 "%02" PRIu8 "%02" PRIu8 "%02" PRIu8 "%04" PRIu16), year, now.month(), now.day(), now.hour(), now.minute(), Shared::folderIncrement);
-#else
-# error Invalid OPTION_UNIQUE_DIRECTORY_METHOD
-#endif
+#   if (OPTION_UNIQUE_DIRECTORY_FULLYEAR)
+      uint16_t const year = now.year();
+#   else
+      uint8_t const year = now.year() - 2000;
+#   endif /* OPTION_UNIQUE_DIRECTORY_FULLYEAR */
+
+      snprintf_P(BUFFN(OSCR::Storage::Shared::folderIncrementStr), PSTR("%" YEAR_TEMPLATE "%02" PRIu8 "%02" PRIu8 "%02" PRIu8 "%02" PRIu8 "%" INCREMENT_TEMPLATE), year, now.month(), now.day(), now.hour(), now.minute(), Shared::folderIncrement);
+# else
+#   error Invalid OPTION_UNIQUE_DIRECTORY_METHOD
+# endif
     }
 
-#define SPI_CLOCK SD_SCK_MHZ(8)
+# define SPI_CLOCK SD_SCK_MHZ(8)
 
-#if (HARDWARE_OUTPUT_TYPE == OUTPUT_SERIAL) && defined(ENABLE_DEDICATED_SPI) && (ENABLE_DEDICATED_SPI)
-# define SD_CONFIG SdSpiConfig(SS, DEDICATED_SPI)
-#else
-# define SD_CONFIG SdSpiConfig(SS, SHARED_SPI)
-#endif
+# if (HARDWARE_OUTPUT_TYPE == OUTPUT_SERIAL) && defined(ENABLE_DEDICATED_SPI) && (ENABLE_DEDICATED_SPI)
+#   define SD_CONFIG SdSpiConfig(SS, DEDICATED_SPI)
+# else
+#   define SD_CONFIG SdSpiConfig(SS, SHARED_SPI)
+# endif
 
     void setup()
     {
@@ -75,11 +98,11 @@ namespace OSCR
         OSCR::UI::fatalErrorStorage();
       }
 
-#if ((OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_INCREMENT) || (OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_BOTH))
+# if ((OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_INCREMENT) || (OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_BOTH))
       // Get folder increment
       EEPROM_readAnything(0, Shared::folderIncrement);
       if (Shared::folderIncrement < 0) Shared::folderIncrement = 0;
-#endif
+# endif
 
       updatedFolderIncrement();
     }
@@ -1090,10 +1113,10 @@ namespace OSCR
 
       void incrementFolder()
       {
-#if ((OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_INCREMENT) || (OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_BOTH))
+# if ((OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_INCREMENT) || (OPTION_UNIQUE_DIRECTORY_METHOD == UNQDIR_BOTH))
         folderIncrement = folderIncrement + 1;
         EEPROM_writeAnything(0, folderIncrement);
-#endif
+# endif
         updatedFolderIncrement();
       }
 
@@ -1290,4 +1313,4 @@ namespace OSCR
   }
 }
 
-# endif /* OSCR_ARCH_AVR  */
+#endif /* OSCR_ARCH_AVR  */

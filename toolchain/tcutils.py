@@ -7,7 +7,7 @@ from platform import system, machine
 from platformio.util import get_systype # pyright: ignore[reportMissingImports]
 
 def Dir():
-    return dirname(__file__);
+    return dirname(__file__)
 
 def IsEven(num):
     if num % 2 == 0:

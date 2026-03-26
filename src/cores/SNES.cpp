@@ -82,9 +82,9 @@ namespace OSCR::Cores::SNES
 # if defined(ENABLE_SFM)
     SFM,
 # endif /* ENABLE_SFM */
-# if defined(ENABLE_SV)
+# if defined(ENABLE_SATELLAVIEW)
     SV,
-# endif /* ENABLE_SV */
+# endif /* ENABLE_SATELLAVIEW */
 # if defined(ENABLE_ST)
     ST,
 # endif /* ENABLE_ST */
@@ -105,9 +105,9 @@ namespace OSCR::Cores::SNES
 # if defined(ENABLE_SFM)
     menuOption02,
 # endif /* ENABLE_SFM */
-# if defined(ENABLE_SV)
+# if defined(ENABLE_SATELLAVIEW)
     menuOption03,
-# endif /* ENABLE_SV */
+# endif /* ENABLE_SATELLAVIEW */
 # if defined(ENABLE_ST)
     menuOption04,
 # endif /* ENABLE_ST */
@@ -388,11 +388,11 @@ namespace OSCR::Cores::SNES
         continue;
 # endif /* ENABLE_SFM */
 
-# if defined(ENABLE_SV)
+# if defined(ENABLE_SATELLAVIEW)
       case MenuOption::SV:
         OSCR::Cores::Satellaview::menu();
         continue;
-# endif /* ENABLE_SV */
+# endif /* ENABLE_SATELLAVIEW */
 
 # if defined(ENABLE_ST)
       case MenuOption::ST:

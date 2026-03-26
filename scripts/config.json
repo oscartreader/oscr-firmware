@@ -1,0 +1,997 @@
+{
+  "flow": {
+    "quick": {
+      "name": "Quick",
+      "description": "Quick configuration of options, accepting most defaults.",
+      "steps": [
+        "flag:hardware.version",
+        "flag:hardware.atmega",
+        "@section:ui",
+        "@section:module",
+        "flag:output.lcd_type"
+      ]
+    },
+    "standard": {
+      "name": "Standard",
+      "description": "Standard configuration of options, prompting for the most commonly changed options.",
+      "steps": [
+        "flag:hardware.version",
+        "flag:hardware.atmega",
+        "section:ui",
+        "@section:module",
+        "flag:output.lcd_type"
+      ]
+    },
+    "advanced": {
+      "name": "Advanced",
+      "description": "Advanced configuration of options, includes asking for some internal flags.",
+      "steps": [
+        "flag:hardware.version",
+        "flag:hardware.atmega",
+        "section:ui",
+        "section:module",
+        "flag:output.lcd_type",
+        "flag:output.serial_type"
+      ]
+    },
+    "expert": {
+      "name": "Expert",
+      "description": "Hand-configure every option allowed.",
+      "sections": [
+        "flag:hardware.version",
+        "flag:hardware.atmega",
+        "section:ui",
+        "section:module",
+        "flag:output.type",
+        "flag:output.lcd_type",
+        "flag:output.serial_type",
+        "flag:input.type"
+      ]
+    }
+  },
+  "sections": {
+    "module": {
+      "name": "Display Module",
+      "advanced": true,
+      "requires": [{ "ui": "module" }],
+      "sets": "module",
+      "type": "prompt",
+      "enum": {
+        "lcd": {
+          "name": "LCD",
+          "sets": {
+            "output": "os12864",
+            "input": "rotary",
+            "neopixel": true
+          }
+        },
+        "oled1": {
+          "name": "OLED + 1 button",
+          "sets": {
+            "output": "ssd1306",
+            "input": "button1",
+            "neopixel": false
+          }
+        },
+        "oled2": {
+          "name": "OLED + 2 buttons",
+          "sets": {
+            "output": "ssd1306",
+            "input": "button2",
+            "neopixel": false
+          }
+        }
+      }
+    },
+    "ui": {
+      "name": "User Interface",
+      "advanced": true,
+      "type": "prompt",
+      "sets": "ui",
+      "enum": {
+        "module": {
+          "name": "Display Module",
+          "sets": {
+            "ui": "module"
+          }
+        },
+        "serial": {
+          "name": "Serial Only",
+          "sets": {
+            "ui": "serial",
+            "output": "serial",
+            "input": "serial",
+            "module": "serial",
+            "neopixel": false
+          }
+        }
+      }
+    }
+  },
+  "flags": {
+    "hardware": {
+      "version": {
+        "name": "Hardware Version",
+        "define": "HW_VERSION",
+        "sets": "hardware",
+        "type": "enum",
+        "enum": {
+          "hw1": { "name": "Hardware V1", "value": 1, "uses": "hardware.hw1" },
+          "hw2": { "name": "Hardware V2", "value": 2, "uses": "hardware.hw2" },
+          "hw3": { "name": "Hardware V3", "value": 3, "uses": "hardware.hw3" },
+          "hw4": { "name": "Hardware V4", "value": 4, "uses": "hardware.hw4" },
+          "hw5": { "name": "Hardware V5", "value": 5, "uses": "hardware.hw5" }
+        }
+      },
+      "neopixel": {
+        "name": "NeoPixel",
+        "requires": [
+          { "module": "lcd" },
+          { "module": "serial", "hardware": 5 }
+        ],
+        "define": "ENABLE_NEOPIXEL",
+        "sets": "neopixel",
+        "type": "ifdef",
+        "ifdef": {
+          "yes": {
+            "name": "Yes",
+            "value": true
+          },
+          "no": {
+            "name": "No",
+            "value": false
+          }
+        }
+      },
+      "neopixel_order": {
+        "name": "NeoPixel Order",
+        "requires": [{ "neopixel": true }],
+        "define": "OPTION_NEOPIXEL_ORDER",
+        "sets": "neopixel:order",
+        "type": "enum",
+        "enum": {
+          "auto": {
+            "name": "Auto",
+            "value": "NPXL_AUTO"
+          },
+          "normal": {
+            "name": "Normal",
+            "value": "NPXL_NORMAL"
+          },
+          "reverse": {
+            "name": "Reverse",
+            "value": "NPXL_REVERSE"
+          }
+        }
+      },
+      "atmega": {
+        "name": "ATmega2560 Type",
+        "define": "ENABLE_ONBOARD_ATMEGA",
+        "requires": [{ "hardware": 5 }],
+        "type": "ifdef",
+        "ifdef": {
+          "module": {
+            "name": "ATmega2560 Module",
+            "value": false,
+            "sets": { "atmega2560": "integrated" }
+          },
+          "integrated": {
+            "name": "On-Board ATmega2560",
+            "value": true,
+            "sets": { "atmega2560": "module" }
+          }
+        }
+      },
+      "clockgen": {
+        "name": "Adafruit Clock Generator (or clone) [CLOCKGEN]",
+        "define": "ENABLE_CLOCKGEN",
+        "sets": "clockgen",
+        "type": "ifdef",
+        "ifdef": {
+          "yes": {
+            "name": "Yes",
+            "value": true
+          },
+          "no": {
+            "name": "No",
+            "value": false
+          }
+        }
+      },
+      "vselect": {
+        "name": "Automatic Voltage Select [VSELECT]",
+        "define": "ENABLE_VSELECT",
+        "requires": [{ "hardware": 5 }],
+        "sets": "vselect",
+        "type": "ifdef",
+        "ifdef": {
+          "yes": {
+            "name": "Yes",
+            "value": true
+          },
+          "no": {
+            "name": "No",
+            "value": false
+          }
+        }
+      },
+      "rtc": {
+        "name": "Real Time Clock [RTC]",
+        "define": "ENABLE_RTC",
+        "sets": "rtc",
+        "type": "ifdef",
+        "ifdef": {
+          "yes": {
+            "name": "Yes",
+            "value": true
+          },
+          "no": {
+            "name": "No",
+            "value": false
+          }
+        }
+      },
+      "rtc_type": {
+        "name": "RTC Type",
+        "requires": [{ "rtc": true }],
+        "define": "RTC_TYPE",
+        "sets": "rtc:ic",
+        "type": "enum",
+        "enum": {
+          "ds3231": {
+            "name": "DS3231",
+            "value": "RTCOPT_DS3231"
+          },
+          "ds1307": {
+            "name": "DS1307",
+            "value": "RTCOPT_DS1307"
+          }
+        }
+      }
+    },
+    "output": {
+      "type": {
+        "name": "Output Device",
+        "define": "HARDWARE_OUTPUT_TYPE",
+        "sets": "output",
+        "advanced": true,
+        "type": "enum",
+        "enum": {
+          "serial": {
+            "name": "Serial",
+            "value": "OUTPUT_SERIAL"
+          },
+          "ssd1306": {
+            "name": "OLED (SSD1306)",
+            "value": "OUTPUT_SSD1306"
+          },
+          "os12864": {
+            "name": "LCD (OS12864)",
+            "value": "OUTPUT_OS12864"
+          }
+        }
+      },
+      "lcd_type": {
+        "name": "LCD Module Type",
+        "define": "OPTION_LCD_TYPE",
+        "sets": "module:lcd",
+        "requires": [{ "module": "lcd" }],
+        "type": "enum",
+        "enum": {
+          "mks": {
+            "name": "MKS MINI 12864",
+            "value": "LCD_MKS"
+          },
+          "btt": {
+            "name": "BTT MINI 12864",
+            "value": "LCD_BTT"
+          },
+          "starshade": {
+            "name": "StarshadeRETRO OSCR 12864",
+            "value": "LCD_SSRETRO"
+          }
+        }
+      },
+      "serial_type": {
+        "name": "Serial Type",
+        "define": "OPTION_SERIAL_OUTPUT",
+        "sets": "io:serial",
+        "advanced": true,
+        "requires": [{ "output": "serial" }],
+        "type": "enum",
+        "enum": {
+          "ascii": {
+            "name": "ASCII Serial",
+            "value": "SERIAL_ASCII"
+          },
+          "ansi": {
+            "name": "ANSI Serial",
+            "value": "SERIAL_ANSI"
+          }
+        }
+      }
+    },
+    "input": {
+      "type": {
+        "name": "Input Type",
+        "define": "HARDWARE_INPUT_TYPE",
+        "sets": "input",
+        "advanced": true,
+        "type": "enum",
+        "enum": {
+          "serial": {
+            "name": "Serial",
+            "value": "OUTPUT_SERIAL",
+            "requires": [{ "output": "serial" }]
+          },
+          "button1": {
+            "name": "1-button",
+            "value": "INPUT_1BUTTON"
+          },
+          "button2": {
+            "name": "2-button",
+            "value": "INPUT_2BUTTON"
+          },
+          "rotary": {
+            "name": "Rotary dial + button",
+            "value": "INPUT_ROTARY"
+          }
+        }
+      }
+    },
+    "features": {
+      "language": {
+        "name": "Language",
+        "define": "OSCR_LANGUAGE",
+        "type": "enum",
+        "enum": {
+          "en": {
+            "name": "English",
+            "value": "LANG_EN"
+          }
+        }
+      },
+      "region": {
+        "name": "Region",
+        "define": "OSCR_REGION",
+        "type": "enum",
+        "enum": {
+          "auto": {
+            "name": "Global",
+            "value": "REGN_AUTO"
+          },
+          "na": {
+            "name": "North America",
+            "value": "REGN_NA"
+          },
+          "eu": {
+            "name": "Europe",
+            "value": "REGN_EU"
+          },
+          "as": {
+            "name": "Asia (Japan)",
+            "value": "REGN_AS"
+          }
+        }
+      },
+      "config": {
+        "name": "Enable Configuration File",
+        "define": "ENABLE_CONFIG",
+        "type": "ifdef",
+        "ifdef": {
+          "yes": {
+            "name": "Yes",
+            "value": true
+          },
+          "no": {
+            "name": "No",
+            "value": false
+          }
+        }
+      },
+      "updater": {
+        "name": "Enable Updater",
+        "define": "ENABLE_UPDATER",
+        "requires": [{ "hardware": [3, 5] }],
+        "type": "ifdef",
+        "ifdef": {
+          "yes": {
+            "name": "Yes",
+            "value": true
+          },
+          "no": {
+            "name": "No",
+            "value": false
+          }
+        }
+      },
+      "powersaving": {
+        "name": "Enable Powersaving",
+        "define": "ENABLE_POWERSAVING",
+        "type": "ifdef",
+        "ifdef": {
+          "yes": {
+            "name": "Yes",
+            "value": true
+          },
+          "no": {
+            "name": "No",
+            "value": false
+          }
+        }
+      },
+      "debugging": {
+        "name": "Enable Debugging",
+        "define": ["ENABLE_DEBUG", "ENABLE_CRDB_DEBUG"],
+        "type": "ifdef",
+        "ifdef": {
+          "yes": {
+            "name": "Yes",
+            "value": true
+          },
+          "no": {
+            "name": "No",
+            "value": false
+          }
+        }
+      }
+    },
+    "options": {
+      "lib.sd.fast": {
+        "name": "Fast SD (increased idle power)",
+        "define": "",
+        "type": "def",
+        "def": {
+          "yes": {
+            "name": "Yes",
+            "values": {
+              "CHECK_FLASH_PROGRAMMING": false
+            }
+          },
+          "no": {
+            "name": "No"
+          }
+        }
+      },
+      "lib.sd.min": {
+        "name": "Minimal SD lib",
+        "type": "def",
+        "def": {
+          "yes": {
+            "name": "Yes",
+            "values": {
+              "SDFAT_FILE_TYPE": 1,
+              "USE_FAT_FILE_FLAG_CONTIGUOUS": 0
+            }
+          },
+          "no": {
+            "name": "No"
+          }
+        }
+      },
+      "lib.sd.utf8": {
+        "name": "UTF8 Filenames",
+        "define": "USE_UTF8_LONG_NAMES",
+        "type": "bool",
+        "bool": {
+          "yes": {
+            "name": "Enable",
+            "value": true
+          },
+          "no": {
+            "name": "Disable",
+            "value": false
+          }
+        }
+      },
+      "lib.sd.dedicated": {
+        "name": "SPI Dedicated to SD",
+        "define": "ENABLE_DEDICATED_SPI",
+        "type": "bool",
+        "bool": {
+          "yes": {
+            "name": "Yes",
+            "value": true
+          },
+          "no": {
+            "name": "No",
+            "value": false
+          }
+        }
+      },
+      "powersaving.methods": {
+        "name": "Powersaving Methods",
+        "define": "OPTION_POWERSAVING_METHOD",
+        "type": "bitflag",
+        "bitflags": {
+          "display-dim": {
+            "name": "Dim Display",
+            "flag": "POWERSAVING_DISPLAY_DIM"
+          },
+          "display-off": {
+            "name": "Turn Display Off",
+            "flag": "POWERSAVING_DISPLAY_OFF"
+          },
+          "clock-slow": {
+            "name": "Reduce Clock Speed",
+            "flag": "POWERSAVING_SLOWCLOCK"
+          }
+        }
+      },
+      "powersaving.idle.drowse": {
+        "name": "Drowse Time (ms)",
+        "define": "OPTION_POWERSAVING_IDLE_DIM",
+        "type": "int",
+        "int": {
+          "min": 30000,
+          "max": 120000
+        }
+      },
+      "powersaving.idle.sleep": {
+        "name": "Sleep Time (ms)",
+        "define": "OPTION_POWERSAVING_IDLE_SLEEP",
+        "type": "int",
+        "int": {
+          "min": 30000,
+          "max": 120000
+        }
+      },
+      "unique.method": {
+        "name": "Directory Naming Method",
+        "define": "OPTION_UNIQUE_DIRECTORY_METHOD",
+        "type": "enum",
+        "enum": {
+          "auto": {
+            "name": "Let the firmware decide",
+            "value": "UNQDIR_AUTO"
+          },
+          "increment": {
+            "name": "Use an incrementing numeric value",
+            "value": "UNQDIR_INCREMENT"
+          },
+          "rtc": {
+            "name": "Use the date/time",
+            "value": "UNQDIR_RTC",
+            "requires": [{ "rtc": true }]
+          },
+          "both": {
+            "name": "Use the date/time and an incrementing numeric value",
+            "value": "UNQDIR_BOTH",
+            "requires": [{ "rtc": true }]
+          }
+        }
+      },
+      "core.sms.adapter": {
+        "name": "Sega Master System Adapter",
+        "define": "OPTION_SMS_ADAPTER",
+        "requires": [{ "cores": ["sms"] }],
+        "type": "enum",
+        "enum": {
+          "all": {
+            "name": "Show All",
+            "value": "SMSOPT_SMS_ADAPTER_ALL"
+          },
+          "hw5": {
+            "name": "Built-in (OSCR Hardware 5 Top PCB)",
+            "value": "SMSOPT_SMS_ADAPTER_HW5",
+            "requires": [{ "hardware": 5 }]
+          },
+          "hw4": {
+            "name": "Built-in (OSCR Hardware 4 Top PCB)",
+            "value": "SMSOPT_SMS_ADAPTER_HW5",
+            "requires": [{ "hardware": 4 }]
+          },
+          "raphnet": {
+            "name": "Raphnet",
+            "value": "SMSOPT_SMS_ADAPTER_RAPHNET"
+          },
+          "retrode": {
+            "name": "Retrode",
+            "value": "SMSOPT_SMS_ADAPTER_RETRODE"
+          },
+          "retron": {
+            "name": "Retron 3in1",
+            "value": "SMSOPT_SMS_ADAPTER_RETRON"
+          }
+        }
+      },
+      "core.gg.adapter": {
+        "name": "Game Gear Adapter",
+        "define": "OPTION_GG_ADAPTER",
+        "requires": [{ "cores": ["sms"] }],
+        "type": "enum",
+        "enum": {
+          "all": {
+            "name": "Show All",
+            "value": "SMSOPT_GG_ADAPTER_ALL"
+          },
+          "hw5": {
+            "name": "Built-in (OSCR Hardware 5 Seven-Slot top PCB)",
+            "value": "SMSOPT_GG_ADAPTER_HW5",
+            "requires": [{ "hardware": 5 }]
+          },
+          "retrode": {
+            "name": "Retrode",
+            "value": "SMSOPT_GG_ADAPTER_RETRODE"
+          },
+          "retron": {
+            "name": "Retron 3in1",
+            "value": "SMSOPT_GG_ADAPTER_RETRON"
+          },
+          "starshade": {
+            "name": "StarshadeRETRO SMS-to-GG adapter",
+            "value": "SMSOPT_GG_ADAPTER_STARSHADE"
+          }
+        }
+      },
+      "core.sg1000.adapter": {
+        "name": "SG-1000 Adapter",
+        "define": "OPTION_SG1000_ADAPTER",
+        "requires": [{ "cores": ["sms"] }],
+        "type": "enum",
+        "enum": {
+          "all": {
+            "name": "Show All",
+            "value": "SMSOPT_SG_ADAPTER_ALL"
+          },
+          "raphnet": {
+            "name": "Raphnet",
+            "value": "SMSOPT_SG_ADAPTER_RAPHNET"
+          }
+        }
+      },
+      "core.nes.strict_matching": {
+        "name": "NES ID32 Strict Matching",
+        "define": "OPTION_CRDB_STRICT_MATCHING",
+        "requires": [{ "cores": ["nes"] }],
+        "type": "bool",
+        "bool": {
+          "yes": {
+            "name": "Yes",
+            "value": true
+          },
+          "no": {
+            "name": "No",
+            "value": false
+          }
+        }
+      }
+    }
+  },
+  "cores": {
+    "arc": {
+      "name": "Emerson Arcadia 2001",
+      "define": "ENABLE_ARC",
+      "crdb": ["arc"]
+    },
+    "atari2600": {
+      "name": "Atari 2600",
+      "define": "ENABLE_2600",
+      "crdb": ["a26", "a26-mappers"]
+    },
+    "atari5200": {
+      "name": "Atari 5200",
+      "define": "ENABLE_5200",
+      "crdb": ["a52", "a52-mappers"]
+    },
+    "atari7800": {
+      "name": "Atari 7800",
+      "define": "ENABLE_7800",
+      "crdb": ["a78", "a78-mappers"]
+    },
+    "atari8": {
+      "name": "Atari 8-bit",
+      "define": "ENABLE_ATARI8",
+      "crdb": ["at8bit"]
+    },
+    "atarijaguar": {
+      "name": "Atari Jaguar",
+      "define": "ENABLE_JAGUAR",
+      "crdb": ["j64"]
+    },
+    "atarilynx": {
+      "name": "Atari Lynx",
+      "define": "ENABLE_LYNX",
+      "crdb": ["lnx"]
+    },
+    "bally": {
+      "name": "Bally Astrocade",
+      "define": "ENABLE_BALLY",
+      "crdb": ["bally"]
+    },
+    "c64": {
+      "name": "Commodore 64",
+      "define": "ENABLE_C64",
+      "crdb": ["c64"]
+    },
+    "colv": {
+      "name": "Coleco ColecoVision",
+      "define": "ENABLE_COLV",
+      "crdb": ["col"]
+    },
+    "cps3": {
+      "name": "CP System III",
+      "define": "ENABLE_CPS3",
+      "crdb": ["cps3"]
+    },
+    "fairchild": {
+      "name": "Fairchild Channel F",
+      "define": "ENABLE_FAIRCHILD",
+      "crdb": ["chf"]
+    },
+    "flash": {
+      "name": "Flash (8-bit)",
+      "define": "ENABLE_FLASH",
+      "crdb": ["flash"]
+    },
+    "flash16": {
+      "name": "Flash (16-bit)",
+      "define": "ENABLE_FLASH16",
+      "crdb": ["flash"]
+    },
+    "gbx": {
+      "name": "Game Boy, Game Boy Color, Game Boy Advance",
+      "define": "ENABLE_GBX",
+      "crdb": ["gba"],
+      "auto": ["avr.atmega2560"]
+    },
+    "gpc": {
+      "name": "Super Famicom Game Processor RAM Cassette",
+      "define": "ENABLE_GPC",
+      "crdb": []
+    },
+    "intv": {
+      "name": "Mattel Intellivision",
+      "define": "ENABLE_INTV",
+      "crdb": ["int"]
+    },
+    "leapster": {
+      "name": "LeapFrog Leapster",
+      "define": "ENABLE_LEAP",
+      "crdb": ["leap"]
+    },
+    "littlejammer": {
+      "name": "Bandai Little Jammer",
+      "define": "ENABLE_LJ",
+      "crdb": ["lj"]
+    },
+    "littlejammerpro": {
+      "name": "Bandai Little Jammer Pro",
+      "define": "ENABLE_LJPRO",
+      "crdb": ["lj"]
+    },
+    "loopy": {
+      "name": "Casio Loopy",
+      "define": "ENABLE_LOOPY",
+      "crdb": ["loopy"]
+    },
+    "md": {
+      "name": "Sega Mega Drive / Genesis",
+      "define": "ENABLE_MD",
+      "crdb": ["md", "32x"],
+      "auto": ["avr.atmega2560"]
+    },
+    "msx": {
+      "name": "MSX",
+      "define": "ENABLE_MSX",
+      "crdb": ["msx"]
+    },
+    "n64": {
+      "name": "Nintendo 64",
+      "define": "ENABLE_N64",
+      "crdb": ["n64"],
+      "auto": ["avr.atmega2560"]
+    },
+    "nes": {
+      "name": "NES",
+      "define": "ENABLE_NES",
+      "crdb": ["nes", "nes-mappers"],
+      "auto": ["avr.atmega2560"]
+    },
+    "ngp": {
+      "name": "Neo Geo Pocket",
+      "define": "ENABLE_NGP",
+      "crdb": []
+    },
+    "ody2": {
+      "name": "Magnavox Odyssey 2",
+      "define": "ENABLE_ODY2",
+      "crdb": ["ody2"]
+    },
+    "pce": {
+      "name": "PC Engine/TurboGrafx 16",
+      "define": "ENABLE_PCE",
+      "crdb": ["pce"]
+    },
+    "pcw": {
+      "name": "Benesse Pocket Challenge W",
+      "define": "ENABLE_PCW",
+      "crdb": ["pcw"]
+    },
+    "poke": {
+      "name": "Nintendo Pokemon Mini",
+      "define": "ENABLE_POKE",
+      "crdb": ["pkmn"]
+    },
+    "pv1000": {
+      "name": "Casio PV-1000",
+      "define": "ENABLE_PV1000",
+      "crdb": ["pv1k"]
+    },
+    "rcastudio2": {
+      "name": "RCA Studio II",
+      "define": "ENABLE_RCA",
+      "crdb": ["rca2"]
+    },
+    "sfm": {
+      "name": "Super Famicom SF Memory Cassette",
+      "define": "ENABLE_SFM",
+      "crdb": []
+    },
+    "sms": {
+      "name": "Sega Master System, Game Gear, SG-1000",
+      "define": "ENABLE_SMS",
+      "crdb": ["sms", "gg", "sg"],
+      "auto": ["avr.atmega2560"]
+    },
+    "snes": {
+      "name": "SNES",
+      "define": "ENABLE_SNES",
+      "crdb": ["snes"],
+      "auto": ["avr.atmega2560"]
+    },
+    "st": {
+      "name": "Super Famicom Sufami Turbo",
+      "define": "ENABLE_ST",
+      "crdb": ["st"]
+    },
+    "superacan": {
+      "name": "Super A'can",
+      "define": "ENABLE_SUPERACAN",
+      "crdb": []
+    },
+    "supervision": {
+      "name": "Watara Supervision",
+      "define": "ENABLE_SUPERVISION",
+      "crdb": ["sv"]
+    },
+    "satellaview": {
+      "name": "Super Famicom Satellaview",
+      "define": "ENABLE_SATELLAVIEW",
+      "crdb": []
+    },
+    "ti99": {
+      "name": "Texas Instruments TI-99",
+      "define": "ENABLE_TI99",
+      "crdb": []
+    },
+    "tommypyuuta": {
+      "name": "Tomy Pyuuta",
+      "define": "ENABLE_PYUUTA",
+      "crdb": ["pyuuta"]
+    },
+    "trs80": {
+      "name": "TRS-80 Color Computer",
+      "define": "ENABLE_TRS80",
+      "crdb": ["trs"]
+    },
+    "vectrex": {
+      "name": "Vectrex",
+      "define": "ENABLE_VECTREX",
+      "crdb": ["vec"]
+    },
+    "vic20": {
+      "name": "Commodore VIC-20",
+      "define": "ENABLE_VIC20",
+      "crdb": ["vic20"]
+    },
+    "vboy": {
+      "name": "Nintendo Virtual Boy",
+      "define": "ENABLE_VBOY",
+      "crdb": ["vb"]
+    },
+    "vsmile": {
+      "name": "Vtech V.Smile",
+      "define": "ENABLE_VSMILE",
+      "crdb": ["vsmile"]
+    },
+    "wonderswan": {
+      "name": "WonderSwan, Benesse Pocket Challenge v2",
+      "define": "ENABLE_WS",
+      "crdb": ["ws"]
+    },
+    "selftest": {
+      "name": "OSCR Self Test",
+      "define": "ENABLE_SELFTEST",
+      "crdb": [],
+      "auto": ["avr.atmega2560"]
+    }
+  },
+  "hardware": {
+    "hw1": {
+      "arch": "avr",
+      "board": "atmega2560",
+      "sets": { "arch": "avr", "board": "atmega2560" },
+      "defaults": {
+        "sections": {
+          "module": "oled1"
+        },
+        "flags": {
+          "options": {
+            "core.sms.adapter": "all",
+            "core.gg.adapter": "all",
+            "core.sg.adapter": "all"
+          }
+        }
+      }
+    },
+    "hw2": {
+      "arch": "avr",
+      "board": "atmega2560",
+      "sets": { "arch": "avr", "board": "atmega2560" },
+      "defaults": {
+        "sections": {
+          "module": "oled2"
+        },
+        "flags": {
+          "options": {
+            "core.sms.adapter": "all",
+            "core.gg.adapter": "all",
+            "core.sg.adapter": "all"
+          }
+        }
+      }
+    },
+    "hw3": {
+      "arch": "avr",
+      "board": "atmega2560",
+      "sets": { "arch": "avr", "board": "atmega2560" },
+      "defaults": {
+        "sections": {
+          "module": "oled2"
+        },
+        "flags": {
+          "options": {
+            "core.sms.adapter": "all",
+            "core.gg.adapter": "all",
+            "core.sg.adapter": "all"
+          }
+        }
+      }
+    },
+    "hw4": {
+      "arch": "avr",
+      "board": "atmega2560",
+      "sets": { "arch": "avr", "board": "atmega2560" },
+      "defaults": {
+        "sections": {
+          "module": "lcd"
+        },
+        "flags": {
+          "options": {
+            "core.sms.adapter": "hw4",
+            "core.gg.adapter": "all",
+            "core.sg.adapter": "all"
+          }
+        }
+      }
+    },
+    "hw5": {
+      "arch": "avr",
+      "board": "atmega2560",
+      "sets": { "arch": "avr", "board": "atmega2560" },
+      "defaults": {
+        "sections": {
+          "module": "lcd"
+        },
+        "flags": {
+          "options": {
+            "core.sms.adapter": "hw5",
+            "core.gg.adapter": "all",
+            "core.sg.adapter": "all"
+          }
+        }
+      }
+    }
+  }
+}
