@@ -536,6 +536,37 @@
           "max": 120000
         }
       },
+      "performance.flags": {
+        "name": "Performance Flags",
+        "define": "OPTION_PERFORMANCE_FLAGS",
+        "type": "bitflag",
+        "bitflags": {
+          "inline-crc32": {
+            "name": "Fast CRC32",
+            "flag": "PRFOPT_CRC32"
+          },
+          "file-write": {
+            "name": "File Write",
+            "flag": "PRFOPT_FILEWR"
+          },
+          "file-read": {
+            "name": "File Read",
+            "flag": "PRFOPT_FILERD"
+          },
+          "shared-file": {
+            "name": "Shared File Functions",
+            "flag": "PRFOPT_SHRDFILE"
+          },
+          "inline-n64": {
+            "name": "N64 Optimizations",
+            "flag": "PRFOPT_FAST64"
+          },
+          "speed-or-death": {
+            "name": "GIVE ME SPEED OR GIVE ME DEATH!",
+            "flag": "PRFOPT_SPEEDORDEATH"
+          }
+        }
+      },
       "unique.method": {
         "name": "Directory Naming Method",
         "define": "OPTION_UNIQUE_DIRECTORY_METHOD",

@@ -1083,6 +1083,7 @@
 #   endif
 #   if (OPTION_PERFORMANCE_FLAGS & PRFOPT_SPEEDORDEATH)
 #     define OPTION_CRC32_LUT 1
+#     define OPTION_SPEEDORDEATH 1
 #   endif
 # endif
 
@@ -1100,6 +1101,9 @@
 # endif
 # if !defined(OPTION_CRC32_LUT)
 #   define OPTION_CRC32_LUT 0
+# endif
+# if !defined(OPTION_SPEEDORDEATH)
+#   define OPTION_SPEEDORDEATH 0
 # endif
 
 #endif /* OSCR_CONFIG_H_ */

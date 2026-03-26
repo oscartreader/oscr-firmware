@@ -101,7 +101,7 @@ namespace OSCR
 # endif
 
 # if OPTION_PERFORMANCE_FLAGS
-      flagValue(PSTR("PERF"), (uint8_t)OPTION_PERFORMANCE_FLAGS);
+      flagValue(PSTR("PERF"), static_cast<uint8_t>(OPTION_PERFORMANCE_FLAGS));
 # endif
 
 # if OPTION_VOLTAGE_MONITOR_METHOD

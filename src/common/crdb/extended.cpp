@@ -38,6 +38,7 @@ namespace OSCR::Databases::Extended
     readNum32(currentRecord->data()->id32);
     readNum32(&currentRecord->data()->mapper);
     readNum32(&currentRecord->data()->size);
+    readNum32(&currentRecord->data()->save);
     readBytes(&currentRecord->data()->name, 100);
   }
 
@@ -55,6 +56,19 @@ namespace OSCR::Databases::Extended
     ready = true;
   }
 
+  bool _updateRecord()
+  {
+    if (crdb->hasError())
+    {
+      return false;
+    }
+
+    romRecord = crdb->record();
+    romDetail = romRecord->data();
+
+    return true;
+  }
+
   bool searchDatabase(crc32_t * crc32ptr)
   {
     OSCR::UI::print(F("Find "));
@@ -69,32 +83,19 @@ namespace OSCR::Databases::Extended
       return false;
     }
 
-    ExtendedRecord * record = crdb->record();
-
-    if (crdb->hasError())
-    {
-      return false;
-    }
-
-    romRecord = record;
-    romDetail = record->data();
-
-    return true;
+    return _updateRecord();
   }
 
   bool browseDatabase()
   {
     OSCR::crdbBrowser(FS(OSCR::Strings::Headings::SelectCRDBEntry), crdb);
-
-    romRecord = crdb->record();
-    romDetail = crdb->record()->data();
-
-    return true;
+    return _updateRecord();
   }
 
   bool matchCRC(crc32_t * crc32ptr, uint8_t offset)
   {
-    return crdb->matchCRC(crc32ptr, offset);
+    if (!crdb->matchCRC(crc32ptr, offset)) return false;
+    return _updateRecord();
   }
 
   bool compareCRC(char const * databasePath, crc32_t * crc32ptr, uint8_t offset)

@@ -26,6 +26,8 @@ namespace OSCR::Time
 #if defined(ENABLE_RTC)
   bool rtcStarted = false;
   DateTime eventStarted;
+  DateTime eventEnded;
+  bool eventTiming = false;
 #else
   constexpr bool const rtcStarted = false;
   uint32_t eventStarted = 0;
@@ -166,7 +168,14 @@ namespace OSCR::Time
 
   void startMeasure()
   {
+    eventTiming = true;
     eventStarted = rtc.now();
+  }
+
+  void endMeasure()
+  {
+    eventEnded = rtc.now();
+    eventTiming = false;
   }
 
   char * getDifference(char * diffStr, size_t length)
@@ -177,7 +186,9 @@ namespace OSCR::Time
       return diffStr;
     }
 
-    TimeSpan difference = rtc.now() - eventStarted;
+    if (!eventTiming) endMeasure();
+
+    TimeSpan difference = eventEnded - eventStarted;
 
     uint8_t days = difference.days();
     uint8_t hours = difference.hours();

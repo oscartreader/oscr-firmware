@@ -36,6 +36,8 @@ namespace OSCR::Serial
     extern char const PROGMEM C_MOVE_FORWARD[];
     extern char const PROGMEM C_MOVE_BACKWARD[];
 
+    extern char const PROGMEM CR[];
+
     // Escape sequence prefix for input events (arrow keys)
     inline constexpr uint8_t const inputEsc[2] = { 0x1B, 0x5B };
 

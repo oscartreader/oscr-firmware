@@ -41,6 +41,11 @@ namespace OSCR
       Serial::ANSI::hideCursor();
     }
 
+    void gotoLineStart()
+    {
+      printSync(FS(OSCR::Serial::ANSI::CR));
+    }
+
     void setWindowTitle(char const * title)
     {
       char windowTitle[100];
@@ -64,15 +69,16 @@ namespace OSCR
 
     void setLineRel(int8_t numLines)
     {
-      if (numLines == 0) return;
-
       if (numLines < 0)
       {
         OSCR::Serial::ANSI::moveCursorUp(-numLines);
-        return;
+      }
+      else if (numLines > 0)
+      {
+        OSCR::Serial::ANSI::moveCursorDown(numLines);
       }
 
-      OSCR::Serial::ANSI::moveCursorDown(numLines);
+      gotoLineStart();
     }
 
     void update()
@@ -90,6 +96,7 @@ namespace OSCR
     void clearLine()
     {
       OSCR::Serial::ANSI::eraseLine();
+      gotoLineStart();
     }
 
     UserInput checkButton()
@@ -635,12 +642,15 @@ namespace OSCR
       uint32_t progressUnit = 0;
       uint32_t displayed = 0;
       uint32_t nextUpdate = 0;
+      uint16_t lineOffset = 0;
 
       void init(uint32_t maxProgress)
       {
         total = maxProgress;
-        current = 0;
+
         displayed = 0;
+        current = 0;
+        nextUpdate = 0;
 
         if (total <= kSteps)
         {
@@ -654,11 +664,10 @@ namespace OSCR
         }
       }
 
-      void init(uint32_t maxProgress, uint8_t lineOffset)
+      void init(uint32_t maxProgress, uint8_t linesToOffset)
       {
-        OSCR::UI::setLineRel(lineOffset);
+        lineOffset = linesToOffset;
         init(maxProgress);
-        OSCR::UI::setLineRel(-lineOffset);
       }
 
       void advance(uint32_t steps)
@@ -680,6 +689,7 @@ namespace OSCR
       {
         current = total;
         render(true);
+        lineOffset = 0;
       }
 
       void render(bool end)
@@ -687,11 +697,12 @@ namespace OSCR
         uint32_t progress = floor(current / progressUnit) * stepSize;
 
         OSCR::Serial::ANSI::saveCursorPos();
-        OSCR::Serial::ANSI::eraseLine();
+        if (!end) OSCR::UI::setLineRel(lineOffset);
+        clearLine();
 
         OSCR::UI::print(FS(OSCR::Strings::Symbol::ProgressBarOpen));
 
-        for (uint8_t i = 0; i < kSteps; i++)
+        for (uint16_t i = 0; i < kSteps; i++)
         {
           if (!total && (i == progress))
           {
@@ -727,14 +738,17 @@ namespace OSCR
         if (end)
         {
           OSCR::UI::printLine();
+
+          nextUpdate = current + 1;
         }
         else
         {
           OSCR::Serial::ANSI::restoreCursorPos();
+
+          nextUpdate = displayed + progressUnit;
         }
 
         displayed = current;
-        nextUpdate = displayed + progressUnit;
 
         OSCR::UI::update();
       }

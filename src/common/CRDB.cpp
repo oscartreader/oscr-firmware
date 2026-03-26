@@ -470,7 +470,7 @@ namespace OSCR::CRDB
 
       if (crc32 == crc32search)
       {
-        loadRecordIndex(i);
+        if (!loadRecordIndex(i)) break;
 
 #if CRDB_DEBUGGING
         OSCR::Serial::print(F("<CRDB> "));

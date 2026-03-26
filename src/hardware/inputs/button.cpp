@@ -21,7 +21,7 @@ namespace OSCR::UI
     }
 
     uint32_t buttonDown = millis();
-    while (state()) nop;
+    while (state()) AVR_ASM(AVR_INS("nop"));
     uint32_t buttonDownTime = millis() - buttonDown;
 
     if (buttonDownTime > kDebounceDelay)

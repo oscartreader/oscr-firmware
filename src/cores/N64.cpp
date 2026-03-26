@@ -152,6 +152,8 @@ namespace OSCR::Cores::N64
       return;
     }
 
+    OSCR::UI::waitButton();
+
     do
     {
       switch (static_cast<MenuOption>(OSCR::UI::menu(FS(OSCR::Strings::Cores::N64), menuOptions, sizeofarray(menuOptions))))
@@ -1826,7 +1828,7 @@ namespace OSCR::Cores::N64
         case OSCR::Prompts::AbortRetryContinue::Continue: break;
         }
 
-        strcpy_P(fileName, PSTR("GPERROR"));
+        useDefaultName();
 
         OSCR::UI::error(FS(OSCR::Strings::Errors::UnknownType));
 
@@ -1904,7 +1906,6 @@ namespace OSCR::Cores::N64
 
     OSCR::UI::printLineSync(FS(OSCR::Strings::Status::SearchingDatabase));
 
-    // Loop through file
     if (OSCR::Databases::Extended::matchCRC(&crc1, 4))
     {
 #   if CRDB_DEBUGGING
@@ -2695,16 +2696,17 @@ namespace OSCR::Cores::N64
     uint32_t realSize = (cartSize * 1024 * 1024);
     uint32_t offsetSize = romBase + realSize;
 
-    OSCR::Time::startMeasure();
-
     cartOn();
 
     printHeader();
 
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::N64F), FS(OSCR::Strings::Directory::ROM), fileName, FS(OSCR::Strings::FileType::N64));
 
-    //Initialize progress bar
-    OSCR::UI::ProgressBar::init(realSize);
+    OSCR::UI::ProgressBar::init(realSize, 1);
+
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
+
+    OSCR::Time::startMeasure();
 
     for (uint32_t currByte = romBase; currByte < offsetSize; currByte += 512)
     {
@@ -2738,11 +2740,15 @@ namespace OSCR::Cores::N64
       OSCR::UI::ProgressBar::advance(512);
     }
 
+    OSCR::Time::endMeasure();
+
     cartOff();
 
-    OSCR::UI::ProgressBar::finish();
-
     OSCR::Storage::Shared::close();
+
+    OSCR::UI::printLineSync(FS(OSCR::Strings::Common::DONE));
+
+    OSCR::UI::ProgressBar::finish();
 
     OSCR::Time::printDifference();
 

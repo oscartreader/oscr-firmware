@@ -9,6 +9,11 @@ MYCONF = join(MYDIR, "config.json")
 def isnumber(i):
     return isinstance(i, (int, float, complex)) and not isinstance(i, bool)
 
+def convifbool(v):
+    if (isinstance(v, bool)):
+        return "true" if v else "false"
+    return v
+
 class CRConfig:
     env = None
     envName = None
@@ -350,7 +355,9 @@ class CROptionBase:
                         flags.append(feature.value)
                         continue
                     for k, v in feature.value.items(): # append each value from lists
-                        flags.append((k, v))
+                        flags.append((k, convifbool(v)))
+                case "bool":
+                    flags.append((feature.define, convifbool(feature.enabled)))
                 #
                 # everything else
                 #

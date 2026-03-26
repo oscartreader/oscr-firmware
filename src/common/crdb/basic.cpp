@@ -47,6 +47,19 @@ namespace OSCR::Databases::Basic
     ready = true;
   }
 
+  bool _updateRecord()
+  {
+    if (crdb->hasError())
+    {
+      return false;
+    }
+
+    romRecord = crdb->record();
+    romDetail = romRecord->data();
+
+    return true;
+  }
+
   bool searchDatabase(crc32_t * crc32ptr)
   {
     OSCR::UI::print(F("Find "));
@@ -61,21 +74,18 @@ namespace OSCR::Databases::Basic
       return false;
     }
 
-    BasicRecord * record = crdb->record();
-
-    if (crdb->hasError())
-    {
-      return false;
-    }
-
-    romRecord = record;
-    romDetail = record->data();
-
-    return true;
+    return _updateRecord();
   }
 
   bool matchCRC(crc32_t * crc32ptr, uint8_t offset)
   {
+    if (!crdb->matchCRC(crc32ptr, offset)) return false;
+
+    if (!_updateRecord())
+    {
+      return false;
+    }
+
     return crdb->matchCRC(crc32ptr, offset);
   }
 

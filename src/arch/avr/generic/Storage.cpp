@@ -136,7 +136,7 @@ namespace OSCR
       // Trim symbols from the end of the file name (and leave room for at least 1 NUL)
       while (((destLen > 0) && __allowedSymbol(dest[destLen - 1])) || ((destLen + 1) == destMaxLen))
       {
-        dest[destLen--] = '\0';
+        dest[--destLen] = '\0';
       }
 
       return destLen;

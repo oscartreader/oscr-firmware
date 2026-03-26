@@ -63,6 +63,7 @@ namespace OSCR
 # endif /* ENABLE_RTC */
 
     extern void startMeasure();
+    extern void endMeasure();
     extern char * getDifference(char * diffStr, size_t length);
     extern void printDifference();
   } /* namespace Time */

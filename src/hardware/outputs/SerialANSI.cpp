@@ -27,6 +27,8 @@ namespace OSCR::Serial::ANSI
   constexpr char const PROGMEM C_MOVE_FORWARD[]   = "C";
   constexpr char const PROGMEM C_MOVE_BACKWARD[]  = "D";
 
+  constexpr char const PROGMEM CR[]               = "\r";
+
   Foreground foreground = Foreground::Default;
   Background background = Background::Default;
   Cursor cursor = Cursor::Show;
@@ -229,7 +231,7 @@ namespace OSCR::Serial::ANSI
     void boldUpperLine(char const * str)
     {
       boldUpper(str);
-      OSCR::Serial::printLine();
+      OSCR::Serial::printLineSync();
     }
 }
 
