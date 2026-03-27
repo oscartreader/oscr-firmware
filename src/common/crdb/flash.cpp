@@ -5,7 +5,7 @@
 #include "common/crdb/flash.h"
 #include "apps/CRDBBrowser.h"
 #include "cores/include.h"
-#include "cores/flash.h"
+#include "cores/Flash.h"
 
 namespace
 {
