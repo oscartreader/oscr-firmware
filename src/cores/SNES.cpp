@@ -701,7 +701,7 @@ namespace OSCR::Cores::SNES
 
   void openCRDB()
   {
-    cartCRDB = new OSCR::Databases::SNES(FS(OSCR::Strings::FileType::SNES));
+    cartCRDB = new OSCR::Databases::SNES(FS(OSCR::Strings::FileType::SNESD));
   }
 
   void closeCRDB()
@@ -846,8 +846,7 @@ namespace OSCR::Cores::SNES
     uint8_t buffer[1024] = { 0 };
     uint16_t currByte = 32768;
 
-    // Initialize progress bar
-    OSCR::UI::ProgressBar::init((total - start) * 1024);
+    OSCR::UI::ProgressBar::init((total - start) * 1024, 1);
 
     for (uint16_t currBank = start; currBank < total; currBank++)
     {
@@ -892,8 +891,7 @@ namespace OSCR::Cores::SNES
     uint8_t buffer[1024] = { 0 };
     uint16_t currByte = 0;
 
-    //Initialize progress bar
-    OSCR::UI::ProgressBar::init((total - start) * 1024);
+    OSCR::UI::ProgressBar::init((total - start) * 1024, 1);
 
     for (uint16_t currBank = start; currBank < total; currBank++)
     {
@@ -926,7 +924,6 @@ namespace OSCR::Cores::SNES
       }
       while (currByte != 0);
 
-      // update progress bar
       OSCR::UI::ProgressBar::advance(1024);
     }
 
@@ -988,8 +985,6 @@ namespace OSCR::Cores::SNES
     printHeader();
 
     OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
-
-    OSCR::UI::printValue(OSCR::Strings::Common::Revision, romVersion);
 
     char const * romTypePSTR = OSCR::Strings::Common::Unknown;
     char const * romSpeedPSTR = OSCR::Strings::Common::Unknown;
@@ -1109,14 +1104,7 @@ namespace OSCR::Cores::SNES
 
     OSCR::UI::printSize(OSCR::Strings::Common::ROM, displaySize);
 
-    OSCR::UI::printValue(OSCR::Strings::Common::Banks, numBanks);
-
-    //OSCR::UI::print(F("Chips: "));
-    //OSCR::UI::printLine(romChips);
-
     OSCR::UI::printSize(OSCR::Strings::Common::Save, (sramSize >> 3) * 1024);
-
-    OSCR::UI::print(FS(OSCR::Strings::Symbol::MenuSpaces));
 
     OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
     OSCR::UI::printHex(checksum);
@@ -1597,15 +1585,16 @@ namespace OSCR::Cores::SNES
   // Read rom to SD card
   void readROM()
   {
+    printHeader();
+
+    OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::SNESD), FS(OSCR::Strings::Directory::ROM), fileName, FS(OSCR::Strings::FileType::SNES));
+
     cartOn();
 
     dataIn();
     controlIn();
 
-    printHeader();
-
-    // Get name, add extension and convert to char array for sd lib
-    OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::SNESD), FS(OSCR::Strings::Directory::ROM), fileName, FS(OSCR::Strings::FileType::SNES));
+    OSCR::UI::printLineSync(FS(OSCR::Strings::Status::Reading));
 
     //Dump Derby Stallion '96 (Japan) and Sound Novel Tsukuru (Japan) - Actual Size is 24Mb
     if ((romType == LO) && (numBanks == 96) && ((0xCC86 == checksum) || (0xA77B == checksum)))
@@ -1685,8 +1674,6 @@ namespace OSCR::Cores::SNES
     }
     else if ((romType == HI) && (romChips == 69 || romChips == 67)) // Dump SDD1 High-type ROM
     {
-      OSCR::UI::printLineSync(FS(OSCR::Strings::Status::Reading));
-
       controlIn();
       uint8_t initialSOMap = readBank(0, 18439);
 
@@ -1701,9 +1688,12 @@ namespace OSCR::Cores::SNES
         dataIn();
         controlIn();
 
-        readHiRomBanks(240, 256, &OSCR::Storage::Shared::sharedFile);
+        if (currMemmap > 0)
+        {
+          OSCR::UI::setLineRel(-1); // overwrite previous progress bar
+        }
 
-        if (currMemmap == 2) printHeader();  // need more space for the progress bars
+        readHiRomBanks(240, 256, &OSCR::Storage::Shared::sharedFile);
       }
 
       dataOut();
@@ -1716,11 +1706,6 @@ namespace OSCR::Cores::SNES
     }
     else if ((romType == HI) && ((romChips == 245) || (romChips == 249))) // Dump SPC7110 High-type ROM
     {
-      OSCR::UI::printLineSync(FS(OSCR::Strings::Status::Reading));
-
-      // 0xC00000-0xDFFFFF
-      //OSCR::UI::printSync(F("Part 1"));
-
       readHiRomBanks(192, 224, &OSCR::Storage::Shared::sharedFile);
 
       if (numBanks > 32)
@@ -1734,15 +1719,13 @@ namespace OSCR::Cores::SNES
         controlIn();
 
         // 0xE00000-0xEFFFFF
-        //OSCR::UI::printSync(F(" 2"));
-
+        OSCR::UI::setLineRel(-1); // overwrite previous progress bar
         readHiRomBanks(224, 240, &OSCR::Storage::Shared::sharedFile);
 
         if (numBanks > 48)
         {
           // 0xF00000-0xFFFFFF
-          //OSCR::UI::printSync(F(" 3"));
-
+          OSCR::UI::setLineRel(-1); // overwrite previous progress bar
           readHiRomBanks(240, 256, &OSCR::Storage::Shared::sharedFile);
 
           dataOut();
@@ -1755,13 +1738,9 @@ namespace OSCR::Cores::SNES
           controlIn();
 
           // 0xF00000-0xFFFFFF
-          //OSCR::UI::printSync(F(" 4"));
-
+          OSCR::UI::setLineRel(-1); // overwrite previous progress bar
           readHiRomBanks(240, 256, &OSCR::Storage::Shared::sharedFile);
         }
-        //OSCR::UI::printLine();
-
-        printHeader();  // need more space due to the 4 progress bars
 
         // Return mapping registers to initial settings...
         dataOut();
@@ -1776,12 +1755,11 @@ namespace OSCR::Cores::SNES
     }
     else if ((romType == HI) || (romType == SA) || (romType == EX)) // Dump standard High-type ROM
     {
-      OSCR::UI::printLineSync(FS(OSCR::Strings::Status::Reading));
-
       if (romChips == 85)
       {
         // Daikaijuu Monogatari 2, keeps out S-RTC register area
         readHiRomBanks(192, 192 + 64, &OSCR::Storage::Shared::sharedFile);
+        OSCR::UI::setLineRel(-1); // overwrite previous progress bar
         readHiRomBanks(64, numBanks, &OSCR::Storage::Shared::sharedFile);  // (64 + (numBanks - 64))
       }
       else
@@ -1792,7 +1770,6 @@ namespace OSCR::Cores::SNES
 
     cartOff();
 
-    // Close the file:
     OSCR::Storage::Shared::close();
   }
 
@@ -2020,12 +1997,13 @@ namespace OSCR::Cores::SNES
   {
     printHeader();
 
+    OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::SNESD), FS(OSCR::Strings::Directory::Save), fileName, FS(OSCR::Strings::FileType::SaveRAM));
+
     cartOn();
 
     controlIn(); // set control
 
-    // Get name, add extension and convert to char array for sd lib
-    OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::SNESD), FS(OSCR::Strings::Directory::Save), fileName, FS(OSCR::Strings::FileType::SaveRAM));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
     uint16_t sramBanks = 0;
     uint32_t lastByte = 0;
@@ -2195,6 +2173,8 @@ namespace OSCR::Cores::SNES
     cartOff();
 
     OSCR::Storage::Shared::close();
+
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::Done));
   }
 
   // Check if the SRAM was written without any error
