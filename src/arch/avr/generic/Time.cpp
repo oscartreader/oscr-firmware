@@ -323,7 +323,7 @@ namespace OSCR::Time
 
     if (eventTiming) endMeasure();
 
-    uint32_t difference = millis() - eventStarted;
+    uint32_t difference = floor((eventEnded - eventStarted) / 1000.0);
 
     uint8_t days = floor(difference / kSecondsDay);
     if (days > 0) difference -= days * kSecondsDay;
