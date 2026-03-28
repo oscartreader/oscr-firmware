@@ -28,6 +28,7 @@ namespace OSCR
       NamedByCRC32, // Search by CRC32, has Name
       ByID, // Search by ID (uint16_t), unnamed
       NamedByID, // Search by ID (uint16_t), has Name
+      NamedByMapperSub,
     };
 
     using OSCR::Storage::sd;
@@ -211,6 +212,56 @@ namespace OSCR
       RecordType * currentRecord = new RecordType();
     };
 
+    class CRDBByMapperSubmapperBase : public CRDBBase
+    {
+    public:
+      CRDBByMapperSubmapperBase(char const * crdb_filename, uint_fast32_t crdb_recordsize)
+        : CRDBBase(crdb_filename, crdb_recordsize)
+      {
+        // ...
+      }
+
+      CRDBByMapperSubmapperBase(__FlashStringHelper const * crdb_filename, uint_fast32_t crdb_recordsize)
+       : CRDBBase(crdb_filename, crdb_recordsize)
+      {
+        // ...
+      }
+
+      bool findRecord(uint32_t const mapperSearch, uint32_t const submapperSearch, uint16_t const offset = 0);
+    };
+
+    template <typename RecordType>
+    class CRDBNamedByMapperSubmapper : public CRDBByMapperSubmapperBase
+    {
+    public:
+      CRDBNamedByMapperSubmapper(char const * crdb_filename, uint_fast32_t crdb_recordsize)
+       : CRDBByMapperSubmapperBase(crdb_filename, crdb_recordsize)
+      {
+        // ...
+      }
+
+      CRDBNamedByMapperSubmapper(__FlashStringHelper const * crdb_filename, uint_fast32_t crdb_recordsize)
+       : CRDBByMapperSubmapperBase(crdb_filename, crdb_recordsize)
+      {
+        // ...
+      }
+
+      inline
+      RecordType * record()
+      {
+        return currentRecord;
+      }
+
+      inline
+      char const * const getRecordName() const
+      {
+        return currentRecord->data()->name;
+      }
+
+    protected:
+      RecordType * currentRecord = new RecordType();
+    };
+
     class CRDBNamedByCRC32Base : public CRDBBase
     {
     public:
@@ -294,6 +345,7 @@ namespace OSCR
     template <typename RecordType> struct get_crdb_class <RecordType, CRDBType::NamedByCRC32> { typedef CRDBNamedByCRC32<RecordType> type; };
     template <typename RecordType> struct get_crdb_class <RecordType, CRDBType::NamedByID> { typedef CRDBNamedByID<RecordType> type; };
     template <typename RecordType> struct get_crdb_class <RecordType, CRDBType::ByID> { typedef CRDBByID<RecordType> type; };
+    template <typename RecordType> struct get_crdb_class <RecordType, CRDBType::NamedByMapperSub> { typedef CRDBNamedByMapperSubmapper<RecordType> type; };
 
     /*C******************************************************************
     * NAME :            CRDB

@@ -336,6 +336,53 @@ namespace OSCR::CRDB
     return false;
   }
 
+# pragma region ByMapper
+
+bool CRDBByMapperSubmapperBase::findRecord(uint32_t const mapperSearch, uint32_t const submapperSearch, uint16_t const offset)
+  {
+    clearError();
+
+#if CRDB_DEBUGGING
+    OSCR::Serial::printLine(F("<CRDB> Searching..."));
+
+    OSCR::Serial::print(F("<CRDB> Mapper Search: "));
+    OSCR::Serial::printLine(mapperSearch);
+    OSCR::Serial::print(F("<CRDB> Submapper Search: "));
+    OSCR::Serial::printLine(submapperSearch);
+#endif /* CRDB_DEBUGGING */
+
+    for (uint_fast32_t i = 0; gotoRecordIndex(i) && file.seekCur(offset); ++i)
+    {
+      uint32_t mapper;
+      uint32_t submapper;
+      int_fast8_t readLen = 0;
+
+      readLen += readNum32(&mapper);
+      readLen += readNum32(&submapper);
+
+      if (readLen != 8) break;
+
+      if ((mapper == mapperSearch) && (submapper == submapperSearch))
+      {
+        loadRecordIndex(i);
+
+#if CRDB_DEBUGGING
+        OSCR::Serial::print(F("<CRDB> "));
+        OSCR::Serial::printLine(FS(OSCR::Strings::Common::OK));
+#endif /* CRDB_DEBUGGING */
+
+        return true;
+      }
+    }
+
+#if CRDB_DEBUGGING
+    OSCR::Serial::printLine(F("<CRDB> NOT FOUND"));
+#endif /* CRDB_DEBUGGING */
+
+    gotoRecordIndex(0);
+    return false;
+  }
+
 
 # pragma region NamedByCRC32
 

@@ -1051,32 +1051,14 @@ namespace OSCR::Cores::NES
   *****************************************/
   bool setMapper()
   {
-    uint16_t currentMapper = 0;
+    crdbBrowser(FS(OSCR::Strings::Headings::SelectMapper), nesMapperCRDB);
 
-    if (mapperDetail != nullptr)
+    if (nesMapperCRDB->hasError())
     {
-      currentMapper = mapperDetail->mapper;
+      return false;
     }
 
-    if (currentMapper > 220)
-    {
-      currentMapper = 0;
-    }
-
-    currentMapper = OSCR::UI::rangeSelect(FS(OSCR::Strings::Headings::SelectMapper), 0, 3);
-
-    // Check if valid
-    bool validMapper = false;
-
-    for (uint8_t currMaplist = 0; currMaplist < nesMapperCRDB->numRecords(); currMaplist++)
-    {
-      if (mapperDetail->mapper == currentMapper)
-      {
-        validMapper = true;
-      }
-    }
-
-    if (!validMapper) return false;
+    mapperDetail = nesMapperCRDB->record()->data();
 
     NES_MAPPER = mapperDetail->mapper;
     NES_SUBMAPPER = mapperDetail->submapper;

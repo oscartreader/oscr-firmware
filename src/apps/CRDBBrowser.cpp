@@ -7,7 +7,8 @@ template < \
   uint_fast32_t dbRecordSize, \
   typename OSCR::Util::enable_if_t<( \
     OSCR::Util::is_base_of_template<OSCR::CRDB::CRDBNamedByCRC32, CRDBType>::value || \
-    OSCR::Util::is_base_of_template<OSCR::CRDB::CRDBNamedByID, CRDBType>::value \
+    OSCR::Util::is_base_of_template<OSCR::CRDB::CRDBNamedByID, CRDBType>::value || \
+    OSCR::Util::is_base_of_template<OSCR::CRDB::CRDBNamedByMapperSubmapper, CRDBType>::value \
   ), bool> EnableDB \
 >
 
@@ -46,7 +47,7 @@ namespace OSCR
       {
         uint16_t entryIndex = indexOffset + menuIndex + 1;
 
-        crdb->gotoRecordIndex(entryIndex);
+        crdb->loadRecordIndex(entryIndex);
 
         strlcpy(pageEntries[menuIndex], crdb->record()->data()->name, UI_PAGE_ENTRY_LENTH_MAX);
       }
@@ -55,7 +56,7 @@ namespace OSCR
     CRDB_BROWSER_TEMPLATE
     bool OSCR::Apps::CRDBBrowser<CRDBType, RecordType, dbRecordSize, EnableDB>::onConfirm()
     {
-      crdb->gotoRecordIndex(getEntryIndex() + 1);
+      crdb->loadRecordIndex(getEntryIndex() + 1);
 
       return true;
     }
@@ -68,6 +69,7 @@ namespace OSCR
 
 # if HAS_NES
     template class CRDBBrowser<OSCR::Databases::NES, OSCR::Databases::NESRecord, CRDB_RECORD_SIZE_NES>;
+    template class CRDBBrowser<OSCR::Databases::NESMapper, OSCR::Databases::NESMapperRecord, CRDB_RECORD_SIZE_NES_MAPPER>;
 # endif /* HAS_NES */
 
 # if HAS_SNES
@@ -118,6 +120,13 @@ namespace OSCR
   void crdbBrowser(__FlashStringHelper const * title, OSCR::Databases::NES * crdbTarget)
   {
     Apps::CRDBBrowser browser = Apps::CRDBBrowser<OSCR::Databases::NES, OSCR::Databases::NESRecord, CRDB_RECORD_SIZE_NES>(title, crdbTarget);
+
+    browser.select();
+  }
+
+  void crdbBrowser(__FlashStringHelper const * title, OSCR::Databases::NESMapper * crdbTarget)
+  {
+    Apps::CRDBBrowser browser = Apps::CRDBBrowser<OSCR::Databases::NESMapper, OSCR::Databases::NESMapperRecord, CRDB_RECORD_SIZE_NES_MAPPER>(title, crdbTarget);
 
     browser.select();
   }

@@ -18,6 +18,7 @@ namespace OSCR::Databases
       {
 #   if CRDB_DEBUGGING
         OSCR::Serial::printLineSync(FS(OSCR::Strings::Headings::CRDBDebugMapper));
+        OSCR::Serial::printValue(OSCR::Strings::Common::Name, _data.name);
         OSCR::Serial::printValue(OSCR::Strings::Common::Mapper, _data.mapper);
         OSCR::Serial::printValue(OSCR::Strings::Common::Submapper, _data.submapper);
         OSCR::Serial::printValue(OSCR::Strings::Common::PRG, _data.prglo, _data.prghi);
@@ -29,10 +30,16 @@ namespace OSCR::Databases
   };
 
   class NESMapper
-    : public OSCR::CRDB::CRDB<NESMapperRecord, CRDB_RECORD_SIZE_NES_MAPPER, OSCR::CRDB::CRDBType::ByID>
+    : public OSCR::CRDB::CRDB<NESMapperRecord, CRDB_RECORD_SIZE_NES_MAPPER, OSCR::CRDB::CRDBType::NamedByMapperSub>
   {
     using CRDB::CRDB;
     public:
+      NESMapper(char const * crdb_filename)
+       : CRDB(crdb_filename)
+      {
+        // ...
+      }
+
       void nextRecord()
       {
         clearError();
@@ -44,6 +51,8 @@ namespace OSCR::Databases
         readNum32(&currentRecord->data()->chrhi);
         readNum32(&currentRecord->data()->ramlo);
         readNum32(&currentRecord->data()->ramhi);
+
+        snprintf_P(BUFFN(currentRecord->data()->name), PSTR("%03" PRIu32 ".%02" PRIu32), currentRecord->data()->mapper, currentRecord->data()->submapper);
       }
   };
 

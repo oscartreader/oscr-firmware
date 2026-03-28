@@ -66,6 +66,7 @@ namespace OSCR::Cores::NES
     uint32_t chrhi;
     uint32_t ramlo;
     uint32_t ramhi;
+    char name[10];
   };
 
   struct crdbNESRecord
