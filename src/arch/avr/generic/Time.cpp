@@ -31,6 +31,8 @@ namespace OSCR::Time
 #else
   constexpr bool const rtcStarted = false;
   uint32_t eventStarted = 0;
+  uint32_t eventEnded = 0;
+  bool eventTiming = false;
 #endif
 
 #if defined(ENABLE_RTC)
@@ -186,7 +188,7 @@ namespace OSCR::Time
       return diffStr;
     }
 
-    if (!eventTiming) endMeasure();
+    if (eventTiming) endMeasure();
 
     TimeSpan difference = eventEnded - eventStarted;
 
@@ -301,7 +303,14 @@ namespace OSCR::Time
 
   void startMeasure()
   {
+    eventTiming = true;
     eventStarted = millis();
+  }
+
+  void endMeasure()
+  {
+    eventEnded = millis();
+    eventTiming = false;
   }
 
   char * getDifference(char * diffStr, size_t length)
@@ -311,6 +320,8 @@ namespace OSCR::Time
       strncpy_P(diffStr, PSTR("? sec"), length);
       return diffStr;
     }
+
+    if (eventTiming) endMeasure();
 
     uint32_t difference = millis() - eventStarted;
 
