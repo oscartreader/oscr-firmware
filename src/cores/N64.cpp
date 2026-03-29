@@ -74,6 +74,16 @@ namespace OSCR::Cores::N64
     Back,
   };
 
+  enum class MenuOptionCart : uint8_t
+  {
+    ReadROM,
+    ReadSave,
+    WriteSave,
+    SetSaveType,
+    RefreshCart,
+    Back,
+  };
+
   // N64 start menu
   constexpr char const PROGMEM menuOptionFlashGameshark[]   = "Flash Gameshark";
   constexpr char const PROGMEM menuOptionFlashXplorer64[]   = "Flash Xplorer 64";
@@ -86,7 +96,6 @@ namespace OSCR::Cores::N64
 # endif /* HAS_FLASH */
     menuOptionFlashGameshark,
     menuOptionFlashXplorer64,
-    OSCR::Strings::MenuOptions::RefreshCart,
     OSCR::Strings::MenuOptions::Back,
   };
 
@@ -108,6 +117,7 @@ namespace OSCR::Cores::N64
     OSCR::Strings::MenuOptions::ReadSave,
     OSCR::Strings::MenuOptions::WriteSave,
     OSCR::Strings::MenuOptions::SetSaveType,
+    OSCR::Strings::MenuOptions::RefreshCart,
     OSCR::Strings::MenuOptions::Back,
   };
 
@@ -144,16 +154,6 @@ namespace OSCR::Cores::N64
   // N64 start menu
   void menu()
   {
-    openCRDB();
-
-    if (!refreshCart())
-    {
-      closeCRDB();
-      return;
-    }
-
-    OSCR::UI::waitButton();
-
     do
     {
       switch (static_cast<MenuOption>(OSCR::UI::menu(FS(OSCR::Strings::Cores::N64), menuOptions, sizeofarray(menuOptions))))
@@ -173,10 +173,6 @@ namespace OSCR::Cores::N64
         cartMenu();
         continue;
 # endif
-
-      case MenuOption::RefreshCart:
-        if (!refreshCart()) continue;
-        break;
 
       case MenuOption::FlashGameshark:
         if (!flashGameshark()) continue;
@@ -243,27 +239,42 @@ namespace OSCR::Cores::N64
   // N64 Cartridge Menu
   void cartMenu()
   {
+    openCRDB();
+
+    if (!refreshCart())
+    {
+      closeCRDB();
+      return;
+    }
+
+    OSCR::UI::waitButton();
+
     do
     {
-      switch (OSCR::UI::menu(FS(OSCR::Strings::Cores::N64), menuOptionsCart, sizeofarray(menuOptionsCart)))
+      switch (static_cast<MenuOptionCart>(OSCR::UI::menu(FS(OSCR::Strings::Cores::N64), menuOptionsCart, sizeofarray(menuOptionsCart))))
       {
-      case 0:
+      case MenuOptionCart::ReadROM:
         readRom();
         break;
 
-      case 1:
+      case MenuOptionCart::ReadSave:
         readSave();
         break;
 
-      case 2:
+      case MenuOptionCart::WriteSave:
         if (!writeSave()) continue;
         break;
 
-      case 3:
+      case MenuOptionCart::SetSaveType:
         menuSaveType();
         continue;
 
-      case 4:
+
+      case MenuOptionCart::RefreshCart:
+        if (!refreshCart()) continue;
+        break;
+
+      case MenuOptionCart::Back:
         return;
       }
 
@@ -2696,11 +2707,11 @@ namespace OSCR::Cores::N64
     uint32_t realSize = (cartSize * 1024 * 1024);
     uint32_t offsetSize = romBase + realSize;
 
-    cartOn();
-
     printHeader();
 
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::N64F), FS(OSCR::Strings::Directory::ROM), fileName, FS(OSCR::Strings::FileType::N64));
+
+    cartOn();
 
     OSCR::UI::ProgressBar::init(realSize, 1);
 
@@ -2710,11 +2721,9 @@ namespace OSCR::Cores::N64
 
     for (uint32_t currByte = romBase; currByte < offsetSize; currByte += 512)
     {
-      // Set the address for the first 512 bytes to dump
-      setAddress(currByte);
+      setAddress(currByte); // Set the address for the first 512 bytes to dump
 
-      // Wait 62.5ns (safety)
-      NOP;
+      NOP; // Wait 62.5ns (safety)
 
       for (size_t c = 0; c < 512; c += 2)
       {
