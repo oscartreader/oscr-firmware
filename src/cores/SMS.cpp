@@ -101,6 +101,7 @@ namespace OSCR::Cores::SMS
     OSCR::Strings::MenuOptions::ReadSave,
     OSCR::Strings::MenuOptions::WriteSave,
     OSCR::Strings::MenuOptions::SetSize,
+    OSCR::Strings::MenuOptions::RefreshCart,
     OSCR::Strings::MenuOptions::Back,
   };
 
@@ -216,6 +217,8 @@ namespace OSCR::Cores::SMS
   //****************************************************
   void operationsMenu()
   {
+    getCartInfo();
+
     do
     {
       if (adapterMode == SMSMode::SG1000Raphnet)
@@ -270,6 +273,10 @@ namespace OSCR::Cores::SMS
         case 3: // Select ROM Size
           manual_selectRomSize();
           break;
+
+        case 4: // Refresh
+          getCartInfo();
+          continue;
 
         default: // Back
           return;
@@ -371,12 +378,6 @@ namespace OSCR::Cores::SMS
     }
 
     delay(400);
-
-    // Read and print cart info only if ROM size not manually selected
-    if (manRomSizeSelected == false)
-    {
-      getCartInfo();
-    }
   }
 
   void cartOff()
@@ -558,6 +559,8 @@ namespace OSCR::Cores::SMS
   {
     printHeader();
 
+    cartOn();
+
     uint8_t cartNib = readNibble(readByte(0x7FFF), 0);
 
     // Get rom size from header
@@ -689,6 +692,8 @@ namespace OSCR::Cores::SMS
       OSCR::UI::printLine(FS(OSCR::Strings::Errors::HeaderNotFound));
     }
 
+    cartOff();
+
     OSCR::UI::printLine();
 
     OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
@@ -781,6 +786,7 @@ namespace OSCR::Cores::SMS
   //******************************************
   void readROM()
   {
+    uint16_t bankSize = 16384; // Set default bank size to 16 KiB
     char const * target;
     char const * ext;
 
@@ -809,20 +815,11 @@ namespace OSCR::Cores::SMS
       OSCR::Util::unreachable();
     }
 
-    cartOn();
-
-    if (cartSize == 0)
-    {
-      cartOff();
-      return;
-    }
+    if (cartSize == 0) return;
 
     printHeader();
 
     OSCR::Storage::Shared::createFile(FS(target), FS(OSCR::Strings::Directory::ROM), fileName, FS(ext));
-
-    // Set default bank size to 16 KiB
-    uint16_t bankSize = 16384;
 
     // For carts not using mappers (SG1000 or SMS/GG 32 KiB)
     if ((adapterMode == SMSMode::SG1000Raphnet) || (cartSize == 32768))
@@ -830,7 +827,11 @@ namespace OSCR::Cores::SMS
       bankSize = cartSize;
     }
 
-    OSCR::UI::ProgressBar::init(cartSize / bankSize); // Initialize progress bar
+    OSCR::UI::ProgressBar::init((cartSize / bankSize), 1); // Initialize progress bar
+
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
+
+    cartOn();
 
     for (uint8_t currBank = 0x0; currBank < (cartSize / bankSize); currBank++)
     {
@@ -854,17 +855,18 @@ namespace OSCR::Cores::SMS
       OSCR::UI::ProgressBar::advance(); // Advance progress bar
     }
 
-    OSCR::UI::ProgressBar::finish(); // Update progress bar
+    cartOff(); // Disable power
 
     OSCR::Storage::Shared::close(); // Close file
 
-    cartOff(); // Disable power
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
 
-    crc32_t crcSearch = crc32_t(OSCR::Storage::Shared::getCRC32());
+    OSCR::UI::ProgressBar::finish(); // Update progress bar
 
-    if (OSCR::Databases::Basic::compareCRC(FS(target), crcSearch))
+    if (OSCR::Databases::Basic::compareCRC(FS(target)))
     {
-      OSCR::Storage::Shared::rename_P(OSCR::Databases::Basic::crdb->record()->data()->name, FS(ext));
+      OSCR::Storage::Shared::rename_P(OSCR::Databases::Basic::crdb->record()->data()->name, ext);
+      OSCR::UI::printValue(OSCR::Strings::Common::Name, OSCR::Databases::Basic::crdb->record()->data()->name);
     }
   }
 
@@ -873,8 +875,6 @@ namespace OSCR::Cores::SMS
   ///*****************************************
   void readSRAM()
   {
-    cartOn();
-
     printHeader();
 
     // Get name, add extension and convert to char array for sd lib
@@ -884,6 +884,10 @@ namespace OSCR::Cores::SMS
       fileName,
       FS(OSCR::Strings::FileType::Save)
     );
+
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
+
+    cartOn();
 
     // Write the whole 32 KiB
     // When there is only 8 KiB of SRAM, the contents should be duplicated
@@ -908,8 +912,9 @@ namespace OSCR::Cores::SMS
 
     cartOff();
 
-    // Close file
     OSCR::Storage::Shared::close();
+
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
   }
 
   //**********************************************
