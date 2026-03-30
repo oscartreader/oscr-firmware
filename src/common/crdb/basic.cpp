@@ -80,13 +80,7 @@ namespace OSCR::Databases::Basic
   bool matchCRC(crc32_t * crc32ptr, uint8_t offset)
   {
     if (!crdb->matchCRC(crc32ptr, offset)) return false;
-
-    if (!_updateRecord())
-    {
-      return false;
-    }
-
-    return crdb->matchCRC(crc32ptr, offset);
+    return _updateRecord();
   }
 
   bool compareCRC(char const * databasePath, crc32_t * crc32ptr, uint8_t offset)

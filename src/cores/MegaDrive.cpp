@@ -306,9 +306,7 @@ namespace OSCR::Cores::MegaDrive
         {
           readROM();
 
-          crc32_t crc = OSCR::Storage::Shared::getCRC32();
-
-          if (OSCR::Databases::Basic::compareCRC(FS((is32x) ? OSCR::Strings::FileType::MegaDrive32X : OSCR::Strings::FileType::MegaDrive), crc))
+          if (OSCR::Databases::Basic::compareCRC(FS((is32x) ? OSCR::Strings::FileType::MegaDrive32X : OSCR::Strings::FileType::MegaDrive)))
           {
             OSCR::Storage::Shared::rename_P(OSCR::Databases::Basic::crdb->record()->data()->name, FS(OSCR::Strings::FileType::MegaDrive));
           }
@@ -1373,8 +1371,7 @@ namespace OSCR::Cores::MegaDrive
     cartOff();
 
     printHeader();
-    OSCR::UI::printLine(FS(OSCR::Strings::MenuOptions::CartInfo));
-    OSCR::UI::printLine();
+
     OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
 
     if (bramCheck != 0x00FF)
@@ -1396,17 +1393,16 @@ namespace OSCR::Cores::MegaDrive
     case 4:
     case 5:
       OSCR::UI::print(OSCR::Strings::Symbol::Plus);
-      OSCR::Lang::printBytes(cartSizeLockon * 8);
+      OSCR::Lang::printBytesLine(cartSizeLockon * 8);
       break;
 
     case 3:
       OSCR::UI::print(OSCR::Strings::Symbol::Plus);
       OSCR::Lang::printBytes(cartSizeLockon * 8);
       OSCR::UI::print(OSCR::Strings::Symbol::Plus);
-      OSCR::Lang::printBytes(cartSizeSonic2 * 8);
+      OSCR::Lang::printBytesLine(cartSizeSonic2 * 8);
       break;
     }
-    OSCR::UI::printLine();
 
     OSCR::UI::printLabel(OSCR::Strings::Common::Checksum);
     OSCR::UI::printHex(chksum);
@@ -1496,18 +1492,18 @@ namespace OSCR::Cores::MegaDrive
   // Read rom and save to the SD card
   void readROM()
   {
-    // Checksum
+    uint8_t offsetSSF2Bank = 0;
     uint16_t calcCKS = 0;
     uint16_t calcCKSLockon = 0;
     uint16_t calcCKSSonic2 = 0;
 
-    cartOn();
-    dataIn();
-
     printHeader();
 
-    // Get name, add extension and convert to char array for sd lib
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::MegaDrive), FS(OSCR::Strings::Directory::ROM), fileName, FS(OSCR::Strings::FileType::Raw));
+
+    cartOn();
+
+    dataIn();
 
     // Phantasy Star/Beyond Oasis with 74HC74 and 74HC139 switch ROM/SRAM at address 0x200000
     if (0x200000 < cartSize && cartSize < 0x400000)
@@ -1522,10 +1518,9 @@ namespace OSCR::Cores::MegaDrive
       writeSSF2Map(0x50987F, 7);  // 0xA130FF
     }
 
-    uint8_t offsetSSF2Bank = 0;
+    OSCR::UI::ProgressBar::init(cartSize + (SnKmode < 2 ? 0 : cartSizeLockon) + (SnKmode == 3 ? cartSizeSonic2 : 0), 1);
 
-    //Initialize progress bar
-    OSCR::UI::ProgressBar::init(cartSize + (SnKmode < 2 ? 0 : cartSizeLockon) + (SnKmode == 3 ? cartSizeSonic2 : 0));
+    OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
     for (uint32_t currBuffer = 0; currBuffer < cartSize / 2; currBuffer += 512)
     {
@@ -1725,10 +1720,11 @@ namespace OSCR::Cores::MegaDrive
 
     cartOff();
 
-    OSCR::UI::ProgressBar::finish();
-
-    // Close the file:
     OSCR::Storage::Shared::close();
+
+    OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
+
+    OSCR::UI::ProgressBar::finish();
 
     // Reset SSF2 Banks
     if (cartSize > 0x400000)
