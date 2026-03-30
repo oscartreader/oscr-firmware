@@ -1,6 +1,6 @@
 #include "common.h"
 
-#if (HARDWARE_INPUT_TYPE == 0) && (OPTION_SERIAL_OUTPUT == 1)
+#if (HARDWARE_INPUT_TYPE == INPUT_SERIAL) && (OPTION_SERIAL_OUTPUT == SERIAL_ASCII)
 # include "common/Updater.h"
 # include "ui/interfaces.h"
 # include "ui/l10n.h"

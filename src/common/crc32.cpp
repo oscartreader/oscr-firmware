@@ -68,7 +68,7 @@ namespace OSCR
     crc32_t current {};
 
 #if OPTION_CRC32_LUT
-    static inline __attribute__((always_inline))
+    static inline __attribute__((always_inline, hot))
     void update(uint32_t & crcValue, uint8_t const & data)
     {
       uint8_t idx = ((crcValue) ^ (data)) & 0xFF;
@@ -85,16 +85,19 @@ namespace OSCR
     }
 #endif
 
+    __hot
     void reset()
     {
       current.reset();
     }
 
+    __hot
     void next(uint8_t const * data)
     {
       current += *data;
     }
 
+    __hot
     void done()
     {
       current.done();
@@ -158,33 +161,37 @@ namespace OSCR
       return value;
     }
 
+    __hot
     crc32_t & crc32_t::operator=(uint32_t v)
     {
       value = v;
       return *this;
     }
 
+    __hot
     bool crc32_t::operator==(crc32_t const & rhs) const
     {
       return (value == rhs.value);
     }
 
+    __hot
     uint8_t & crc32_t::operator[](size_t idx)
     {
       return b[idx];
     }
 
+    __hot
     uint8_t const & crc32_t::operator[](size_t idx) const
     {
       return b[idx];
     }
 
-    __optimize_crc32
+    __hot
     void crc32_t::reset()
     {
       value = 0xFFFFFFFF;
     }
-
+#if !(OPTION_OPTIMIZE_CRC32)
     __optimize_crc32
     crc32_t & crc32_t::operator+=(uint8_t data)
     {
@@ -221,8 +228,8 @@ namespace OSCR
     {
       update(value, data);
     }
-
-    __optimize_crc32
+#endif /* OPTION_OPTIMIZE_CRC32 */
+    __hot
     void crc32_t::done()
     {
       value = ~value;

@@ -9,7 +9,6 @@
 #include "config.h"
 #include "common/specializations.h"
 #include "common/Util.h"
-#include "api/Storage.h"
 
 #define menuoptionsize(menu) (size_t)sizeof(menu.options[0])
 #define menusize(menu) (size_t)(sizeof(menu.options)/sizeof(menu.options[0]))
@@ -48,12 +47,42 @@ namespace OSCR
     extern uint8_t const kLineHeight;
 
     /**
+     * @brief Number of fixed-width columns.
+     *
+     * The number of characters that can fit on a line, or 0 if the
+     *  output does not use a fixed-width font.
+     */
+    extern uint8_t const kDisplayCols;
+
+    /**
+     * @brief Number of fixed-width rows.
+     *
+     * The number of lines an output using a fixed-width font can
+     *   display, or 0 if it does not use a fixed-width font.
+     */
+    extern uint8_t const kDisplayRows;
+
+    /**
      * @brief Lines that can be seen at once (0 = unlimited).
      *
      * The number of lines the output can shown at a time, or 0 for
      *   an unlimited (infinite) number of lines.
      */
     extern uint8_t const kDisplayLines;
+
+#if IS_DOXYGEN
+
+    /**
+     * @brief Maximum number of rows/options in most menus
+     *
+     * The maximum number of rows/options that will be shown at once
+     *   in most menus. Though it will typically be the same value as
+     *   `kDisplayLines`, this one may not be a constant. It should be
+     *   treated as a read-only variable that can only be changed by
+     *   the file which defines it.
+     */
+    extern uint8_t const kPageRowMax;
+#endif
 
     /**
      * @brief Y position of the first line.

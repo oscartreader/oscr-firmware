@@ -201,17 +201,17 @@ namespace OSCR
 
     bool voltagesOk()
     {
-#   if !defined(OPTION_VOLTAGE_MONITOR_METHOD) || (OPTION_VOLTAGE_MONITOR_METHOD == 0)
+#   if !defined(OPTION_VOLTAGE_MONITOR_METHOD) || ((OPTION_VOLTAGE_MONITOR_METHOD) == VLTMON_NONE)
       return true;
 #   else
       return checkVoltage(Voltage::k5V) && checkVoltage(Voltage::k3V3) &&
-#     if (OPTION_VOLTAGE_MONITOR_METHOD == 1) || (OPTION_VOLTAGE_MONITOR_METHOD == 3)
+#     if ((OPTION_VOLTAGE_MONITOR_METHOD) & VLTMON_ASIC)
               (((PINJ & (1 << 4)) ? Voltage::k5V : Voltage::k3V3) == currentVoltage)
 #     endif
-#     if (OPTION_VOLTAGE_MONITOR_METHOD == 3)
+#     if ((OPTION_VOLTAGE_MONITOR_METHOD) & (VLTMON_ASIC|VLTMON_TPSSTAT))
               &&
 #     endif
-#     if (OPTION_VOLTAGE_MONITOR_METHOD == 2) || (OPTION_VOLTAGE_MONITOR_METHOD == 3)
+#     if ((OPTION_VOLTAGE_MONITOR_METHOD) & VLTMON_TPSSTAT)
               (((PINE & (1 << 6)) ? Voltage::k5V : Voltage::k3V3) == currentVoltage)
 #     endif
 #   endif

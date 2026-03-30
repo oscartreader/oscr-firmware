@@ -152,6 +152,13 @@
 #define VLTSPC_TITLE    2
 #define VLTSPC_BOTH     3
 
+/**
+ * Voltage Monitor Options
+ */
+#define VLTMON_NONE     0
+#define VLTMON_ASIC     1
+#define VLTMON_TPSSTAT  2
+
 #pragma region Input
 
 /**

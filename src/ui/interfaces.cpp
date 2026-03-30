@@ -592,16 +592,16 @@ namespace OSCR
 
     MenuRenderer::MenuRenderer(char const * menuTitle, uint16_t entryCount)
       : count(entryCount),
-        totalPages(max(1, (entryCount / UI_PAGE_SIZE + (entryCount%UI_PAGE_SIZE != 0)))),
-        pageEntriesLast(entryCount - ((totalPages - 1) * UI_PAGE_SIZE))
+        totalPages(max(1, (entryCount / kPageRowMax + (entryCount % kPageRowMax != 0)))),
+        pageEntriesLast(entryCount - ((totalPages - 1) * kPageRowMax))
     {
       OSCR::Util::copyStr(this->title, sizeof(title), menuTitle);
     }
 
     MenuRenderer::MenuRenderer(__FlashStringHelper const * menuTitle, uint16_t entryCount)
       : count(entryCount),
-        totalPages(max(1, (entryCount / UI_PAGE_SIZE + (entryCount%UI_PAGE_SIZE != 0)))),
-        pageEntriesLast(entryCount - ((totalPages - 1) * UI_PAGE_SIZE))
+        totalPages(max(1, (entryCount / kPageRowMax + (entryCount % kPageRowMax != 0)))),
+        pageEntriesLast(entryCount - ((totalPages - 1) * kPageRowMax))
     {
       OSCR::Util::copyStr_P(this->title, sizeof(title), menuTitle);
     }
@@ -623,17 +623,17 @@ namespace OSCR
 
     uint16_t MenuRenderer::getPageEntryCount()
     {
-      return isLast() ? pageEntriesLast : UI_PAGE_SIZE;
+      return isLast() ? pageEntriesLast : kPageRowMax;
     }
 
     uint16_t MenuRenderer::getPageEntryOffset()
     {
-      return (getPage() - 1) * UI_PAGE_SIZE;
+      return (getPage() - 1) * kPageRowMax;
     }
 
     uint16_t MenuRenderer::getEntryIndex()
     {
-      return ((currentPage - 1) * UI_PAGE_SIZE) + selection;
+      return ((currentPage - 1) * kPageRowMax) + selection;
     }
 
     void MenuRenderer::navNext()

@@ -148,6 +148,14 @@ namespace OSCR
     TRAIT_HELPERS(is_int32);
 
     /******************************************************************
+     * is_uint32<T> / is_uint32_v<T>
+     */
+
+    TRAIT_DEF(is_uint32, typename T);
+    TRAIT_COND(is_uint32, uint32_t);
+    TRAIT_HELPERS(is_uint32);
+
+    /******************************************************************
      * is_integer<T>
      */
 

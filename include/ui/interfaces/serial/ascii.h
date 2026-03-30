@@ -26,8 +26,13 @@ namespace OSCR
 
     inline constexpr uint8_t const kLineHeight = 0;
 
+    inline constexpr uint8_t const kDisplayCols = 57;
+    inline constexpr uint8_t const kDisplayRows = 20;
+
     inline constexpr uint8_t const kDisplayLines = 0;
     inline constexpr uint8_t const kDisplayLineStart = 0;
+
+    inline constexpr uint8_t const kPageRowMax = (UI_PAGE_SIZE > kDisplayRows) ? kDisplayRows : UI_PAGE_SIZE;
 
     /**
      * Define if a menu is active.

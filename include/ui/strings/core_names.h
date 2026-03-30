@@ -59,13 +59,13 @@ namespace OSCR::Strings::Cores
   constexpr char const PROGMEM PCEngine[]           = "PC Engine/TG16";
 # endif
 
-# if (OPTION_VOLTAGE_SPECIFIER & 2)
+# if ((OPTION_VOLTAGE_SPECIFIER) & VLTSPC_TITLE)
   constexpr char const PROGMEM WonderSwan[]         = "WonderSwan (3V)";
 # else
   constexpr char const PROGMEM WonderSwan[]         = "WonderSwan";
 # endif
 
-# if (OPTION_VOLTAGE_SPECIFIER & 2)
+# if ((OPTION_VOLTAGE_SPECIFIER) & VLTSPC_TITLE)
   constexpr char const PROGMEM NeoGeoPocket[]       = "NeoGeo Pocket (3V)";
 # else
   constexpr char const PROGMEM NeoGeoPocket[]       = "NeoGeo Pocket";
@@ -77,7 +77,7 @@ namespace OSCR::Strings::Cores
 
   constexpr char const PROGMEM VirtualBoy[]         = "Virtual Boy";
 
-# if (OPTION_VOLTAGE_SPECIFIER & 2)
+# if ((OPTION_VOLTAGE_SPECIFIER) & VLTSPC_TITLE)
   constexpr char const PROGMEM Supervision[]        = "Watara Supervision (3V)";
 # else
   constexpr char const PROGMEM Supervision[]        = "Watara Supervision";
@@ -99,7 +99,7 @@ namespace OSCR::Strings::Cores
 
   constexpr char const PROGMEM MSX[]                = "MSX";
 
-# if (OPTION_VOLTAGE_SPECIFIER & 2)
+# if ((OPTION_VOLTAGE_SPECIFIER) & VLTSPC_TITLE)
   constexpr char const PROGMEM PokemonMini[]        = "Pokemon Mini (3V)";
 # else
   constexpr char const PROGMEM PokemonMini[]        = "Pokemon Mini";
@@ -127,7 +127,7 @@ namespace OSCR::Strings::Cores
 
   constexpr char const PROGMEM VIC20[]              = "Commodore VIC-20";
 
-# if (OPTION_VOLTAGE_SPECIFIER & 2)
+# if ((OPTION_VOLTAGE_SPECIFIER) & VLTSPC_TITLE)
   constexpr char const PROGMEM Leapster[]           = "LF Leapster (3V)";
 # else
   constexpr char const PROGMEM Leapster[]           = "LF Leapster";
@@ -141,7 +141,7 @@ namespace OSCR::Strings::Cores
 
   constexpr char const PROGMEM TRS80[]              = "TRS-80";
 
-# if (OPTION_VOLTAGE_SPECIFIER & 2)
+# if ((OPTION_VOLTAGE_SPECIFIER) & VLTSPC_TITLE)
   constexpr char const PROGMEM VSmile[]             = "Vtech V.Smile (3V)";
 # else
   constexpr char const PROGMEM VSmile[]             = "Vtech V.Smile";
@@ -151,7 +151,7 @@ namespace OSCR::Strings::Cores
 
   constexpr char const PROGMEM CPS3[]               = "CP System III";
 
-# if (OPTION_VOLTAGE_SPECIFIER & 2)
+# if ((OPTION_VOLTAGE_SPECIFIER) & VLTSPC_TITLE)
   constexpr char const PROGMEM SelfTest[]           = "Self Test (3V)";
 # else
   constexpr char const PROGMEM SelfTest[]           = "Self Test";

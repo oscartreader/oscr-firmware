@@ -44,6 +44,8 @@ c_standard = env.GetProjectOption("cstd");
 
 flags = {
     "CC": [ # C and C++ flags
+        "-Wall",
+        "-Werror",
         "-flto=auto",
         "-fuse-linker-plugin",
     ],
@@ -56,6 +58,7 @@ flags = {
         "-std=" + cpp_standard,
         "-fpermissive",
         "-fno-threadsafe-statics",
+        "-Wno-volatile",
     ],
     "LINKER": [ # Linker flags
         "-Wall",

@@ -145,6 +145,11 @@
 # define __constinitexpr constexpr
 #endif
 
+// hot
+#if !defined(__hot)
+# define __hot __attribute__((hot))
+#endif
+
 #if defined(COMPILER_TOO_OLD) || defined(COMPILER_OUTDATED)
 # pragma message "Outdated compiler or dialect detected!"
 # pragma message "The recommended minimum dialect is gnu++17 (or gnu++1z)."

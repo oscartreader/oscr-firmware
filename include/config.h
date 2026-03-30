@@ -845,10 +845,10 @@
  */
 #   define UI_INPUT_SERIAL_ANSI_CONFIRM   0x43
 
-#   if (OPTION_SERIAL_OUTPUT == 1)
+#   if (OPTION_SERIAL_OUTPUT == SERIAL_ASCII)
 #     define ENABLE_SERIAL_OUTPUT
 #     define ENABLE_SERIAL_ASCII
-#   elif (OPTION_SERIAL_OUTPUT == 2)
+#   elif (OPTION_SERIAL_OUTPUT == SERIAL_ANSI)
 #     define ENABLE_SERIAL_OUTPUT
 #     define ENABLE_SERIAL_ANSI
 #   endif
@@ -1069,35 +1069,58 @@
 /****/
 
 # if defined(OPTION_PERFORMANCE_FLAGS)
-#   if (OPTION_PERFORMANCE_FLAGS & PRFOPT_CRC32)
-#     define __optimize_crc32 __attribute__((always_inline))
+#   if ((OPTION_PERFORMANCE_FLAGS) & PRFOPT_CRC32)
+#     define __optimize_crc32   __attribute__((always_inline, hot)) inline
+#     define __optimize_crc32_h __attribute__((always_inline, hot)) inline
+#     define OPTION_OPTIMIZE_CRC32 1
 #   endif
-#   if (OPTION_PERFORMANCE_FLAGS & PRFOPT_FILEWR)
-#     define __optimize_file_write __attribute__((always_inline))
+#   if ((OPTION_PERFORMANCE_FLAGS) & PRFOPT_FILEWR)
+#     define __optimize_file_write   __attribute__((always_inline, hot)) inline
+#     define __optimize_file_write_h __attribute__((always_inline, hot)) inline
+#     define OPTION_OPTIMIZE_FILE_WRITE 1
 #   endif
-#   if (OPTION_PERFORMANCE_FLAGS & PRFOPT_FILERD)
-#     define __optimize_file_read __attribute__((always_inline))
+#   if ((OPTION_PERFORMANCE_FLAGS) & PRFOPT_FILERD)
+#     define __optimize_file_read   __attribute__((always_inline, hot)) inline
+#     define __optimize_file_read_h __attribute__((always_inline, hot)) inline
+#     define OPTION_OPTIMIZE_FILE_READ 1
 #   endif
-#   if (OPTION_PERFORMANCE_FLAGS & PRFOPT_SHRDFILE)
-#     define __optimize_shared_file __attribute__((always_inline))
+#   if ((OPTION_PERFORMANCE_FLAGS) & PRFOPT_SHRDFILE)
+#     define __optimize_shared_file __attribute__((always_inline, hot)) inline
+#     define OPTION_OPTIMIZE_SHARED_FILE 1
 #   endif
-#   if (OPTION_PERFORMANCE_FLAGS & PRFOPT_SPEEDORDEATH)
+#   if ((OPTION_PERFORMANCE_FLAGS) & PRFOPT_SPEEDORDEATH)
 #     define OPTION_CRC32_LUT 1
 #     define OPTION_SPEEDORDEATH 1
+#   endif
+#   if ((((OPTION_PERFORMANCE_FLAGS) & PRFOPT_FILEWR) || ((OPTION_PERFORMANCE_FLAGS) & PRFOPT_FILERD)) && !defined(__optimize_file_rw))
+#     define __optimize_file_rw    __attribute__((always_inline, hot)) inline
+#     define __optimize_file_rw_h  __attribute__((always_inline, hot)) inline
 #   endif
 # endif
 
 # if !defined(__optimize_crc32)
-#   define __optimize_crc32
+#   define __optimize_crc32   __attribute__((hot, noinline))
+#   define __optimize_crc32_h __attribute__((hot, noinline))
+#   define OPTION_OPTIMIZE_CRC32 0
 # endif
 # if !defined(__optimize_file_read)
-#   define __optimize_file_read
+#   define __optimize_file_read   __attribute__((hot, noinline))
+#   define __optimize_file_read_h __attribute__((hot, noinline))
+#   define OPTION_OPTIMIZE_FILE_READ 0
 # endif
 # if !defined(__optimize_file_write)
-#   define __optimize_file_write
+#   define __optimize_file_write   __attribute__((hot, noinline))
+#   define __optimize_file_write_h __attribute__((hot, noinline))
+#   define OPTION_OPTIMIZE_FILE_WRITE 0
 # endif
 # if !defined(__optimize_shared_file)
-#   define __optimize_shared_file
+#   define __optimize_shared_file   __attribute__((hot, noinline))
+#   define __optimize_shared_file_h __attribute__((hot, noinline))
+#   define OPTION_OPTIMIZE_SHARED_FILE 0
+# endif
+# if !defined(__optimize_file_rw)
+#   define __optimize_file_rw    __attribute__((hot, noinline))
+#   define __optimize_file_rw_h  __attribute__((hot, noinline))
 # endif
 # if !defined(OPTION_CRC32_LUT)
 #   define OPTION_CRC32_LUT 0

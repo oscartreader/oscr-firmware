@@ -452,6 +452,44 @@ namespace OSCR
     {
       return (((src >= 'a') && (src <= 'z')) || ((src >= 'A') && (src <= 'Z')) || ((src >= '0') && (src <= '9')));
     }
+
+    // 100 as uint32_t
+    constexpr uint32_t const kPercentOrder = 100;
+
+    // The max values we can multiply by 100 without overflowing
+    constexpr uint32_t const kIntMaxPercentage = INT32_MAX / kPercentOrder;
+    constexpr uint32_t const kUIntMaxPercentage = UINT32_MAX / kPercentOrder;
+
+    uint8_t percentage(uint32_t progress, uint32_t total)
+    {
+      uint32_t perc;
+
+      /**
+       * Quick check for 100%
+       *
+       * This also avoids having to also check if progress is too large.
+       */
+      if (progress >= total)
+      {
+        perc = kPercentOrder;
+      }
+      else if (total < kUIntMaxPercentage)
+      {
+        /**
+         * Multiply first and then divide to maintain as much precision as we can.
+         */
+        perc = (progress * kPercentOrder) / total;
+      }
+      else
+      {
+        /**
+         * When progress would overflow if multiplied by 100, we divide.
+         */
+        perc = progress / (total / kPercentOrder);
+      }
+
+      return OSCR::Util::clamp(static_cast<uint8_t>(perc), ((uint8_t)0), ((uint8_t)100));
+    }
   }
 }
 

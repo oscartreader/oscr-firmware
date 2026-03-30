@@ -6,7 +6,7 @@
 #ifndef OSCR_FILE_BROWSER_H_
 # define OSCR_FILE_BROWSER_H_
 
-#include "common/OSCR.h"
+# include "syslibinc.h"
 #include "common/Util.h"
 #include "ui.h"
 

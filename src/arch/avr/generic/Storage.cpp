@@ -434,12 +434,14 @@ namespace OSCR
       OSCR::Util::copyStr_P(BUFFN(tmpFilePath), newPath);
       return rename(tmpFilePath);
     }
-
+#if !(OPTION_OPTIMIZE_FILE_WRITE) && !(OPTION_OPTIMIZE_FILE_READ)
+    __optimize_file_rw
     bool File::hasBuffer() const
     {
       return ((bufferSize > 0) && (buffer != nullptr));
     }
 
+    __optimize_file_rw
     void File::bufferCheck(size_t count)
     {
       if (hasBuffer() && count <= bufferSize) return;
@@ -454,7 +456,9 @@ namespace OSCR
 
       OSCR::UI::fatalErrorBufferOverflow();
     }
+#endif /* !OPTION_OPTIMIZE_FILE_WRITE && !OPTION_OPTIMIZE_FILE_READ */
 
+#if !(OPTION_OPTIMIZE_FILE_WRITE)
     uint8_t File::peek()
     {
       return file.peek();
@@ -554,7 +558,9 @@ namespace OSCR
 
       return write(buffer, bufferSize);
     }
+#endif /* OPTION_OPTIMIZE_FILE_WRITE */
 
+#if !(OPTION_OPTIMIZE_FILE_READ)
     __optimize_file_read
     size_t File::readRaw(uint8_t * buf, size_t count)
     {
@@ -679,6 +685,8 @@ namespace OSCR
       return readBytesUntil(pgm_read_byte(terminator), buffer, count);
     }
 
+#endif /* OPTION_OPTIMIZE_FILE_READ */
+
     // Find
     bool File::find(uint8_t const * target)
     {
@@ -761,7 +769,6 @@ namespace OSCR
       return file.seekEnd(offset);
     }
 
-    __optimize_file_write
     void File::rewind()
     {
       file.rewind();
@@ -899,7 +906,7 @@ namespace OSCR
       File sharedFile; // previously myFile
       Path sharedFilePath{};
 
-      __constinit uint8_t buffer[kBufferSize]; // previously sdBuffer
+      __constinit uint8_t buffer[kBufferSize] __attribute__((nonstring));
 
       __constinit char sharedFileName[kFileNameLength];
       __constinit char sharedFilePathname[kFilePathnameLength];
@@ -908,7 +915,6 @@ namespace OSCR
       __constinit uint16_t folderIncrement = 0; // previously foldern
       __constinit char folderIncrementStr[kFolderIncrementLength];
 
-      __optimize_shared_file
       void open(oflag_t oflag)
       {
         sharedFilePath.chdir();
@@ -931,17 +937,17 @@ namespace OSCR
         open(O_RDONLY);
       }
 
-      __optimize_shared_file
       uint32_t getSize()
       {
         return sharedFile.fileSize();
       }
 
-      __optimize_shared_file
       uint32_t available()
       {
         return OSCR::Util::clamp<uint32_t>(sharedFile.available64(), 0UL, UINT32_MAX);
       }
+
+#if !(OPTION_OPTIMIZE_SHARED_FILE)
 
       __optimize_shared_file
       size_t fill()
@@ -949,15 +955,10 @@ namespace OSCR
         return sharedFile.fill();
       }
 
+      __optimize_shared_file
       size_t dump()
       {
         return sharedFile.write();
-      }
-
-      __optimize_shared_file
-      void rewind()
-      {
-        sharedFile.rewind();
       }
 
       __optimize_shared_file
@@ -975,13 +976,18 @@ namespace OSCR
         return sharedFile.write(buffer, length);
       }
 
-      __optimize_shared_file
+#endif
+
+      void rewind()
+      {
+        sharedFile.rewind();
+      }
+
       void crcReset()
       {
         sharedFile.crcReset();
       }
 
-      __optimize_shared_file
       OSCR::CRC32::crc32_t getCRC32()
       {
         OSCR::CRC32::current = sharedFile.getCRC32();
@@ -1253,61 +1259,6 @@ namespace OSCR
       bool rename_P(char const * baseName, __StringHelper const * fileExt)
       {
         return rename_P(baseName, FSP(fileExt));
-      }
-
-      bool renameTemplate(char const * pathTemplate, char const * newName)
-      {
-        char newFileName[kFileNameLength];
-
-        bool wasSuccess = OSCR::Util::applyTemplate(BUFFN(newFileName), pathTemplate, newName);
-
-        if (!wasSuccess) return false;
-
-        rename(newFileName);
-
-        return true;
-      }
-
-      bool renameTemplate_P(char const * pathTemplate, char const * newName)
-      {
-        char newFileName[kFileNameLength];
-
-        bool wasSuccess = OSCR::Util::applyTemplate_P(BUFFN(newFileName), pathTemplate, newName);
-
-        if (!wasSuccess) return false;
-
-        rename(newFileName);
-
-        return true;
-      }
-
-      bool renameTemplate_P(char const * pathTemplate, __StringHelper const * newName)
-      {
-        return renameTemplate_P(pathTemplate, FSP(newName));
-      }
-
-      bool renameTemplate_P(char const * pathTemplate, char const * baseName, char const * fileExt)
-      {
-        char fileSfx[8];
-        char newFileName[kFileNameLength];
-        char newFilePath[kFileNameLength];
-
-        if (!OSCR::Util::copyStrLwr_P(BUFFN(fileSfx), fileExt)) return false;
-
-        int32_t bufferWritten = snprintf_P(BUFFN(newFileName), FilenameTemplate, baseName, fileSfx);
-
-        if ((bufferWritten < 0) || (bufferWritten > sizeof(newFileName))) return false;
-
-        if (!OSCR::Util::applyTemplate_P(BUFFN(newFilePath), pathTemplate, newFileName)) return false;
-
-        rename(newFilePath);
-
-        return true;
-      }
-
-      bool renameTemplate_P(char const * pathTemplate, char const * baseName, __StringHelper const * fileExt)
-      {
-        return renameTemplate_P(pathTemplate, baseName, FSP(fileExt));
       }
     }
   }

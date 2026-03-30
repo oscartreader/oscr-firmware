@@ -8,9 +8,9 @@
 # if defined(ENABLE_SERIAL_OUTPUT) || defined(ENABLE_UPDATER)
 
 #   include "arch/avr/generic/interfaces/Serial.h"
-#   include "common/OSCR.h"
 #   include "common/Updater.h"
 #   include "common/Util.h"
+#   include "ui.h"
 
 namespace OSCR::Serial
 {
@@ -363,6 +363,17 @@ namespace OSCR::Serial
 #   if defined(ENABLE_SERIAL_ANSI)
       if ( (index > 2) && (ANSI::inputEsc[0] == command[0]) && (ANSI::inputEsc[1] == command[1]) )
       {
+        if (ANSI::state != ANSI::ANSIState::Waiting)
+        {
+          if (!ANSI::receiveControl(index - 1))
+          {
+            command[0] = '\0';
+            index = 0;
+
+            return false;
+          }
+        }
+
         switch (command[2])
         {
           case UI_INPUT_SERIAL_ANSI_NEXT:

@@ -37,8 +37,13 @@ namespace OSCR
 
     inline constexpr uint8_t const kLineHeight = 8;
 
+    inline constexpr uint8_t const kDisplayCols = 0;
+    inline constexpr uint8_t const kDisplayRows = 0;
+
     inline constexpr uint8_t const kDisplayLines = 8;
     inline constexpr uint8_t const kDisplayLineStart = 8;
+
+    inline constexpr uint8_t const kPageRowMax = UI_PAGE_SIZE;
 
     extern void update();
     extern void clear();

@@ -8,6 +8,8 @@
 
 namespace OSCR::Serial::ANSI
 {
+  //   \033[A
+
   constexpr char const PROGMEM ESC[]              = "\033[";
   constexpr char const PROGMEM SEP[]              = ";";
   constexpr char const PROGMEM END[]              = "m";
@@ -27,7 +29,15 @@ namespace OSCR::Serial::ANSI
   constexpr char const PROGMEM C_MOVE_FORWARD[]   = "C";
   constexpr char const PROGMEM C_MOVE_BACKWARD[]  = "D";
 
+  constexpr char const PROGMEM C_GET_POS[]        = "6n";
+
+  constexpr char const PROGMEM R_SSCAN_POS[]      = "\033[%" SCNu16 ";%" SCNu16 "R";
+
   constexpr char const PROGMEM CR[]               = "\r";
+
+  ANSIState state = ANSIState::Waiting;
+  ANSIPosition pos;
+  ANSIPosition res;
 
   Foreground foreground = Foreground::Default;
   Background background = Background::Default;
@@ -77,6 +87,108 @@ namespace OSCR::Serial::ANSI
     _cursor(Cursor::Hide);
   }
 
+  static inline
+  void requestCursorPosition()
+  {
+    pos.state = PositionState::Outdated;
+
+    OSCR::Serial::print(FS(ESC));
+    OSCR::Serial::print(FS(C_GET_POS));
+    OSCR::Serial::flushSync();
+
+    state = ANSIState::AwaitQueryPosition;
+  }
+
+  static inline
+  void receiveCursorPosition()
+  {
+    uint16_t termX = 0, termY = 0;
+
+    if (sscanf_P(command, R_SSCAN_POS, &termX, &termY) != 2) // Check if failure
+    {
+      pos.state = PositionState::Error;
+      return;
+    }
+
+    pos.x = termX;
+    pos.y = termY;
+    pos.state = PositionState::Updated;
+  }
+
+  bool receiveControl(uint8_t idx)
+  {
+    switch(state)
+    {
+    case ANSIState::AwaitQueryPosition:
+      if (command[idx] != 'R')
+      {
+        if (idx > 16)
+        {
+          pos.state = PositionState::TimedOut;
+          break;
+        }
+
+        return true;
+      }
+
+      command[idx + 1] = '\0';
+
+      receiveCursorPosition();
+
+      break;
+
+    case ANSIState::Waiting:
+      return false;
+    }
+
+    state = ANSI::ANSIState::Waiting;
+    return false;
+  }
+
+  bool refreshCursorPos()
+  {
+    requestCursorPosition();
+
+    delay(50);
+
+    do
+    {
+      delay(10);
+      getCommand();
+    }
+    while (pos.state == PositionState::Outdated);
+
+    return (pos.state == PositionState::Updated);
+  }
+
+  bool refreshScreenSize()
+  {
+    res.state = PositionState::Outdated;
+
+    if (!refreshCursorPos())
+    {
+      res.state = pos.state;
+      return false;
+    }
+
+    uint8_t originalX = res.x, originalY = res.y;
+
+    moveCursor(UINT8_MAX, UINT8_MAX);
+
+    if (!refreshCursorPos())
+    {
+      moveCursor(originalX, originalY);
+      res.state = pos.state;
+      return false;
+    }
+
+    res.x = pos.x;
+    res.y = pos.y;
+    res.state = PositionState::Updated;
+
+    return true;
+  }
+
   void saveCursorPos()
   {
     OSCR::Serial::print(FS(ESC));
@@ -101,36 +213,47 @@ namespace OSCR::Serial::ANSI
     OSCR::Serial::flush();
   }
 
+  void _moveCursorDir(uint8_t num, char const * dir)
+  {
+    char cmd[8];
+    snprintf_P(cmd, 8, PSTR("%S%" PRIu8 "%S"), ESC, num, dir);
+    OSCR::Serial::printSync(cmd);
+  }
+
   void moveCursorUp(uint8_t rows)
   {
-    OSCR::Serial::print(FS(ESC));
-    OSCR::Serial::print(rows, DEC);
-    OSCR::Serial::print(FS(C_MOVE_UP));
-    OSCR::Serial::flush();
+    _moveCursorDir(rows, C_MOVE_UP);
+    //OSCR::Serial::print(FS(ESC));
+    //OSCR::Serial::print(rows, DEC);
+    //OSCR::Serial::print(FS(C_MOVE_UP));
+    //OSCR::Serial::flush();
   }
 
   void moveCursorDown(uint8_t rows)
   {
-    OSCR::Serial::print(FS(ESC));
-    OSCR::Serial::print(rows, DEC);
-    OSCR::Serial::print(FS(C_MOVE_DOWN));
-    OSCR::Serial::flush();
+    _moveCursorDir(rows, C_MOVE_DOWN);
+    //OSCR::Serial::print(FS(ESC));
+    //OSCR::Serial::print(rows, DEC);
+    //OSCR::Serial::print(FS(C_MOVE_DOWN));
+    //OSCR::Serial::flush();
   }
 
   void moveCursorForward(uint8_t cols)
   {
-    OSCR::Serial::print(FS(ESC));
-    OSCR::Serial::print(cols, DEC);
-    OSCR::Serial::print(FS(C_MOVE_FORWARD));
-    OSCR::Serial::flush();
+    _moveCursorDir(cols, C_MOVE_FORWARD);
+    //OSCR::Serial::print(FS(ESC));
+    //OSCR::Serial::print(cols, DEC);
+    //OSCR::Serial::print(FS(C_MOVE_FORWARD));
+    //OSCR::Serial::flush();
   }
 
   void moveCursorBackward(uint8_t cols)
   {
-    OSCR::Serial::print(FS(ESC));
-    OSCR::Serial::print(cols, DEC);
-    OSCR::Serial::print(FS(C_MOVE_BACKWARD));
-    OSCR::Serial::flush();
+    _moveCursorDir(cols, C_MOVE_BACKWARD);
+    //OSCR::Serial::print(FS(ESC));
+    //OSCR::Serial::print(cols, DEC);
+    //OSCR::Serial::print(FS(C_MOVE_BACKWARD));
+    //OSCR::Serial::flush();
   }
 
   void eraseTo(uint8_t where, bool line)
@@ -138,7 +261,7 @@ namespace OSCR::Serial::ANSI
     OSCR::Serial::print(FS(ESC));
     if (where > 0) OSCR::Serial::print(where, DEC);
     OSCR::Serial::print(FS(line ? C_ERASE_LINE : C_ERASE_DIR));
-    OSCR::Serial::flush();
+    OSCR::Serial::flushSync();
   }
 
   void eraseToEnd()

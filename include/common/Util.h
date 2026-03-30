@@ -764,6 +764,21 @@ namespace OSCR
         return !bits;
       }
     };
+
+    /**
+     * Calculates the percentage of progress for the provided values.
+     *
+     * @note The reason you'd use this over some simple one-line math
+     *       is because it has overflow checking and clamps the value
+     *       to be 0-100. This way, you only lose precision when the
+     *       values would overflow.
+     *
+     * @param progress  The current progress value
+     * @param total     The total or target value
+     *
+     * @return The progress represented as a % (i.e. 50%)
+     */
+    extern uint8_t percentage(uint32_t progress, uint32_t total);
   }
 
 # if defined(NEEDS_UTIL_BITSET_TEMPLATE)

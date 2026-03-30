@@ -26,10 +26,10 @@ namespace OSCR
 
     extern crc32_t current;
 
-    extern void reset();
-    extern void next(uint8_t const * data);
-    extern void next(uint8_t data);
-    extern void done();
+    extern void reset() __hot;
+    extern void next(uint8_t const * data) __hot;
+    extern void next(uint8_t data) __hot;
+    extern void done() __hot;
 
     extern uint32_t calculateCRC(uint8_t const * buffer, size_t length);
     extern uint32_t calculateCRC(OSCR::Storage::File & infile);

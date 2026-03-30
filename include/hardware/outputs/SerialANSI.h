@@ -41,6 +41,29 @@ namespace OSCR::Serial
     // Escape sequence prefix for input events (arrow keys)
     inline constexpr uint8_t const inputEsc[2] = { 0x1B, 0x5B };
 
+    enum class ANSIState : uint8_t
+    {
+      Waiting,
+      AwaitQueryPosition,
+    };
+
+    enum class PositionState : uint8_t
+    {
+      Outdated,
+      Updated,
+      TimedOut,
+      Error,
+    };
+
+    struct ANSIPosition
+    {
+      uint16_t x = 0;
+      uint16_t y = 0;
+      PositionState state = PositionState::Outdated;
+    };
+
+    extern ANSIState state;
+    extern ANSIPosition pos;
     extern Foreground foreground;
     extern Background background;
     extern Cursor cursor;
@@ -66,8 +89,12 @@ namespace OSCR::Serial
     extern void showCursor();
     extern void hideCursor();
 
+    extern bool receiveControl(uint8_t idx);
+
     extern void saveCursorPos();
     extern void restoreCursorPos();
+
+    extern bool refreshCursorPos();
 
     extern void moveCursor(uint8_t row, uint8_t col = 0);
 

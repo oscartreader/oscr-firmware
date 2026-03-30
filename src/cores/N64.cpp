@@ -70,7 +70,6 @@ namespace OSCR::Cores::N64
 # endif /* HAS_FLASH */
     FlashGameshark,
     FlashXplorer64,
-    RefreshCart,
     Back,
   };
 
@@ -404,7 +403,9 @@ namespace OSCR::Cores::N64
 
   // Switch Cartridge address/data pins to write
 #if ((OPTION_PERFORMANCE_FLAGS) & (PRFOPT_FAST64))
-  inline __attribute__((always_inline))
+  inline __attribute__((always_inline, hot))
+#else
+  __hot
 #endif
   void adOut()
   {
@@ -418,7 +419,9 @@ namespace OSCR::Cores::N64
 
   // Switch Cartridge address/data pins to read
 #if ((OPTION_PERFORMANCE_FLAGS) & (PRFOPT_FAST64))
-  inline __attribute__((always_inline))
+  inline __attribute__((always_inline, hot))
+#else
+  __hot
 #endif
   void adIn()
   {
@@ -433,7 +436,9 @@ namespace OSCR::Cores::N64
 
   // Set Cartridge address
 #if ((OPTION_PERFORMANCE_FLAGS) & (PRFOPT_FAST64))
-  inline __attribute__((always_inline))
+  inline __attribute__((always_inline, hot))
+#else
+  __hot
 #endif
   void setAddress(uint32_t myAddress)
   {

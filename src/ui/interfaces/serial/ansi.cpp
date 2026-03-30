@@ -11,6 +11,8 @@ namespace OSCR
 {
   namespace UI
   {
+    constexpr uint8_t const kPageSize = (UI_PAGE_SIZE > kDisplayRows) ? kDisplayRows : UI_PAGE_SIZE;
+
     /**
      * Define if a menu is active.
      */
@@ -637,12 +639,15 @@ namespace OSCR
 
     namespace ProgressBar
     {
-      constexpr uint16_t kSteps = 30;
+      constexpr uint16_t kSteps = ((kDisplayCols - 7) > 100) ? 100 : (kDisplayCols - 7);
       uint16_t stepSize = 1;
       uint32_t progressUnit = 0;
       uint32_t displayed = 0;
       uint32_t nextUpdate = 0;
       uint16_t lineOffset = 0;
+      uint16_t positionX = 0;
+      uint16_t positionY = 0;
+      bool knownPosition = false;
 
       void init(uint32_t maxProgress)
       {
@@ -651,6 +656,19 @@ namespace OSCR
         displayed = 0;
         current = 0;
         nextUpdate = 0;
+
+        if (OSCR::Serial::ANSI::refreshCursorPos())
+        {
+          knownPosition = true;
+          positionX = OSCR::Serial::ANSI::pos.x;
+          positionY = OSCR::Serial::ANSI::pos.y;
+        }
+        else
+        {
+          knownPosition = false;
+          positionX = 0;
+          positionY = 0;
+        }
 
         if (total <= kSteps)
         {
@@ -667,7 +685,10 @@ namespace OSCR
       void init(uint32_t maxProgress, uint8_t linesToOffset)
       {
         lineOffset = linesToOffset;
+        OSCR::Serial::ANSI::saveCursorPos();
+        OSCR::UI::setLineRel(lineOffset);
         init(maxProgress);
+        OSCR::Serial::ANSI::restoreCursorPos();
       }
 
       void advance(uint32_t steps)
@@ -697,8 +718,17 @@ namespace OSCR
         uint32_t progress = floor(current / progressUnit) * stepSize;
 
         OSCR::Serial::ANSI::saveCursorPos();
-        if (!end) OSCR::UI::setLineRel(lineOffset);
-        clearLine();
+
+        if (knownPosition)
+        {
+          OSCR::Serial::ANSI::moveCursor(positionX, positionY);
+          OSCR::Serial::ANSI::eraseToEnd();
+        }
+        else
+        {
+          if (!end) OSCR::UI::setLineRel(lineOffset);
+          clearLine();
+        }
 
         OSCR::UI::print(FS(OSCR::Strings::Symbol::ProgressBarOpen));
 
@@ -723,7 +753,7 @@ namespace OSCR
 
         if (total)
         {
-          uint8_t progressPercent = floor((current * 100) / total);
+          uint8_t progressPercent = OSCR::Util::percentage(current, total);
 
           OSCR::UI::print(FS(OSCR::Strings::Symbol::Space));
 

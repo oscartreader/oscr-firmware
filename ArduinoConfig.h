@@ -76,7 +76,7 @@
  *   - REGN_EU    : Europe
  *   - REGN_AS    : Asia (Japan)
  */
-#define OSCR_REGION REGN_NA
+#define OSCR_REGION REGN_AUTO
 
 /****/
 
@@ -712,18 +712,17 @@
 /****/
 
 /* [ Voltage Monitoring ------------------------------------------- ]
- *  Which method should be used to monitor voltage?
+ *  Which method(s) should be used to monitor voltage?
  *
  *  Options:
- *    0: Don't monitor voltages [default]
- *    1: Use voltage monitor IC on VCC
- *    2: Use VSELECT STAT pin (requires VSELECT)
- *    3: Use both
+ *    VLTMON_NONE     : Don't monitor voltages [default]
+ *    VLTMON_ASIC     : Use voltage monitor IC on VCC
+ *    VLTMON_TPSSTAT  : Use VSELECT STAT pin (requires VSELECT)
  *
  *  Note: Requires on-board ATmega2560
  */
 
-//#define OPTION_VOLTAGE_MONITOR_METHOD 2
+//#define OPTION_VOLTAGE_MONITOR_METHOD VLTMON_ASIC|VLTMON_TPSSTAT
 
 /****/
 

@@ -153,7 +153,7 @@ void setup()
 
   OSCR::UI::setup();
 
-# ifndef ENABLE_LCD
+# if HARDWARE_OUTPUT_TYPE != OUTPUT_OS12864
 #   ifdef ENABLE_CA_LED
   // Turn LED off
   digitalWrite(12, 1);
