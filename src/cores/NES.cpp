@@ -20,9 +20,18 @@ namespace OSCR::Cores::NES
 
   void printNESSettings(void)
   {
+    char mapperStr[10];
+
     printHeader();
 
-    OSCR::UI::printValue(OSCR::Strings::Common::Mapper, NES_MAPPER);
+    if (fromCRDB)
+    {
+      OSCR::UI::printLine(romDetail->name);
+    }
+
+    snprintf_P(BUFFN(mapperStr), OSCR::Databases::NESMapperStringTemplate, (uint32_t)NES_MAPPER, (uint32_t)NES_SUBMAPPER);
+    OSCR::UI::printValue(OSCR::Strings::Common::Mapper, mapperStr);
+
     OSCR::UI::printSize(OSCR::Strings::Common::PRG, ((uint32_t)NES_PRGSIZE) * 1024);
     OSCR::UI::printSize(OSCR::Strings::Common::CHR, ((uint32_t)NES_CHRSIZE) * 1024);
 
@@ -201,8 +210,7 @@ namespace OSCR::Cores::NES
 
     openCRDB();
 
-    getMapping();
-    checkStatus();
+    pickCart();
 
     do
     {
@@ -227,14 +235,7 @@ namespace OSCR::Cores::NES
         break;
 
       case MenuOption::SetMapper: // Change Mapper
-        fromCRDB = false;
-        useDefaultName();
-        while (!setMapper());
-        checkMapperSize();
-        setPRGSize();
-        setCHRSize();
-        setRAMSize();
-        checkStatus();
+        configureCart();
         break;
 
 # if HAS_FLASH
@@ -248,9 +249,8 @@ namespace OSCR::Cores::NES
         continue;
 
       case MenuOption::RefreshCart: // RefreshCart cart
-        getMapping();
-        checkStatus();
-        continue;
+        if (pickCart()) continue;
+        break;
 
       case MenuOption::Back: // Back to main menu
         closeCRDB();
@@ -435,101 +435,208 @@ namespace OSCR::Cores::NES
     OSCR::Power::disableCartridge();
   }
 
+  void configureCart()
+  {
+    fromCRDB = false;
+    useDefaultName();
+    while (!setMapper());
+    checkMapperSize();
+    setPRGSize();
+    setCHRSize();
+    setRAMSize();
+    checkStatus();
+    printNESSettings();
+  }
+
   crc32_t oldcrc32, oldcrc32MMC3;
 
-  void getMapping()
+  bool pickCart()
   {
-    OSCR::Databases::NESRecord * record;
-
-    printHeader();
-
     fromCRDB = false;
-    oldcrc32.reset();
-    oldcrc32MMC3.reset();
 
-    cartOn();
-
-    // Read first 512 bytes of first and last block of PRG ROM and compute CRC32
-    // MMC3 maps the last 8KB block of PRG ROM to 0xE000 while 0x8000 can contain random data after bootup
-    for (size_t c = 0; c < 512; c++)
+    do
     {
-      oldcrc32 += read_prg_byte(0x8000 + c);
-      oldcrc32MMC3 += read_prg_byte(0xE000 + c);
-    }
+      oldcrc32.reset();
+      oldcrc32MMC3.reset();
 
-    cartOff();
+      cartOn();
 
-    oldcrc32.done();
-    oldcrc32MMC3.done();
-
-    // Filter out all 0xFF checksums at 0x8000 and 0xE000
-    if (oldcrc32 == 0xBD7BC39F && oldcrc32MMC3 == 0xBD7BC39F)
-    {
-      useDefaultName();
-      OSCR::UI::printHeader(FS(OSCR::Strings::Headings::CRDB));
-      OSCR::UI::printLine(FS(OSCR::Strings::Errors::NotFoundDB));
-    }
-    else
-    {
-      OSCR::UI::printLabel(OSCR::Strings::Common::CRCSum);
-      OSCR::UI::print(oldcrc32);
-
-      if (oldcrc32 != oldcrc32MMC3)
+      // Read first 512 bytes of first and last block of PRG ROM and compute CRC32
+      // MMC3 maps the last 8KB block of PRG ROM to 0xE000 while 0x8000 can contain random data after bootup
+      for (size_t c = 0; c < 512; c++)
       {
-        OSCR::UI::print(FS(OSCR::Strings::Symbol::Slash));
-        OSCR::UI::print(oldcrc32MMC3);
+        oldcrc32 += read_prg_byte(0x8000 + c);
+        oldcrc32MMC3 += read_prg_byte(0xE000 + c);
       }
 
-      OSCR::UI::printLine();
-      OSCR::UI::printLineSync(FS(OSCR::Strings::Status::SearchingDatabase));
+      cartOff();
 
-#if OPTION_CRDB_STRICT_MATCHING
-      if (nesCRDB->findEitherRecord(oldcrc32, oldcrc32MMC3, 4))
-#else
-      if (nesCRDB->findEitherRecord(oldcrc32, oldcrc32MMC3, 8))
-#endif /* OPTION_CRDB_STRICT_MATCHING */
+      oldcrc32.done();
+      oldcrc32MMC3.done();
+
+      // Filter out all 0xFF/0x00 checksums
+      if (
+        !((oldcrc32 == 0xBD7BC39F) && (oldcrc32MMC3 == 0xBD7BC39F)) &&
+        !((oldcrc32 == 0xFFFFFFFF) && (oldcrc32MMC3 == 0xFFFFFFFF))
+      ) break;
+
+      switch(OSCR::Prompts::abortRetryContinue())
       {
-        record = nesCRDB->record();
+      case OSCR::Prompts::AbortRetryContinue::Abort:    return false;
+      case OSCR::Prompts::AbortRetryContinue::Retry:    continue; // repeat the loop
+      case OSCR::Prompts::AbortRetryContinue::Continue: break;    // exit the switch and then exit the loop
+      }
 
-        if (!nesCRDB->hasError())
+      useDefaultName();
+
+      break; // Only reached when continue is selected above.
+    }
+    while (true);
+
+    uint_fast16_t const indexMax = nesCRDB->numRecords() - 1;
+    uint_fast16_t firstIndex = 0; // The first index that was found
+    uint_fast16_t previousIndex = 0; // The previous index that was found
+    uint_fast16_t currentIndex = 0; // The current index
+
+    bool searching = true;
+    bool found = false;
+    bool reverse = false;
+
+    // Loop through file
+    while (searching)
+    {
+      printHeader();
+      OSCR::UI::printSync(FS(OSCR::Strings::Status::SearchingDatabase));
+
+      if (!nesCRDB->searchEitherRecord(oldcrc32, oldcrc32MMC3, currentIndex, reverse))
+      {
+        if ((!found) || (currentIndex == previousIndex))
         {
-          romRecord = record;
-          romDetail = record->data();
-          fromCRDB = true;
+          configureCart();
+          return true;
+        }
 
-          setOutName(BUFFN(romDetail->name));
+        currentIndex = previousIndex;
+        continue;
+      }
 
-          OSCR::UI::printLine(romDetail->name);
+      printHeader();
+
+      currentIndex = nesCRDB->getRecordIndex();
+      romRecord = nesCRDB->record();
+      romDetail = romRecord->data();
+      fromCRDB = true;
 
 #   if CRDB_DEBUGGING
-          OSCR::Serial::print(F("Found ROM: "));
-          OSCR::Serial::printLine(romDetail->name);
+      OSCR::Serial::printSync(F("Found ROM: "));
+      OSCR::Serial::printLineSync(romDetail->name);
 
-          romRecord->debug();
+      romRecord->debug();
 #   endif /* CRDB_DEBUGGING */
+
+      checkStatus();
+
+      OSCR::UI::printText(romDetail->name);
+
+      OSCR::UI::gotoLineBottom(2);
+
+#   if HAS_OUTPUT_LINE_ALIGNMENT
+      if (found)
+      {
+        if (currentIndex == previousIndex)
+        {
+          OSCR::UI::printCenter_P(OSCR::Strings::Errors::OnlyMatchingRecord);
+        }
+        else if (currentIndex == firstIndex)
+        {
+          OSCR::UI::printCenter_P(OSCR::Strings::Errors::BackAtFirst);
+        }
+      }
+
+      OSCR::UI::gotoLast();
+
+      char tmpText[14];
+
+      snprintf_P(tmpText, 14, OSCR::Strings::Templates::WordsPP, OSCR::Strings::Symbol::ArrowLeft, OSCR::Strings::MenuOptions::Previous);
+
+      OSCR::UI::print(tmpText);
+
+      snprintf_P(tmpText, 14, OSCR::Strings::Templates::WordsPP, OSCR::Strings::MenuOptions::Next, OSCR::Strings::Symbol::Arrow);
+
+      OSCR::UI::printRight(tmpText);
+#   else
+      if (found)
+      {
+        if (currentIndex == previousIndex)
+        {
+          OSCR::UI::printLine(FS(OSCR::Strings::Errors::OnlyMatchingRecord));
+        }
+        else if (currentIndex == firstIndex)
+        {
+          OSCR::UI::printLine(FS(OSCR::Strings::Errors::BackAtFirst));
+        }
+      }
+
+      OSCR::UI::gotoLast();
+
+      char tmpText[32];
+      snprintf_P(tmpText, 32, OSCR::Strings::Templates::WordsPPPPP, OSCR::Strings::Symbol::ArrowLeft, OSCR::Strings::MenuOptions::Previous, OSCR::Strings::Symbol::MenuSpaces, OSCR::Strings::MenuOptions::Next, OSCR::Strings::Symbol::Arrow);
+
+      OSCR::UI::print(tmpText);
+#   endif
+
+      if (!found)
+      {
+        found = true;
+        firstIndex = currentIndex;
+      }
+
+      previousIndex = currentIndex;
+
+      switch (OSCR::UI::waitInput())
+      {
+      case OSCR::UI::UserInput::kUserInputConfirm: // Confirmed
+      case OSCR::UI::UserInput::kUserInputConfirmShort:
+      case OSCR::UI::UserInput::kUserInputConfirmLong:
+        searching = false; // Exit the loop
+        continue;
+
+      case OSCR::UI::UserInput::kUserInputNext: // Read next entry
+        reverse = false;
+
+        if (currentIndex == indexMax)
+        {
+          currentIndex = 0;
         }
         else
         {
-          // File searched until end but nothing found
-#   if CRDB_DEBUGGING
-          OSCR::Serial::printLine(FS(OSCR::Strings::Errors::NotFoundDB));
-#   endif /* CRDB_DEBUGGING */
-          OSCR::UI::printLine(FS(OSCR::Strings::Errors::NotFoundDB));
-
-          useDefaultName();
+          currentIndex++;
         }
-      }
-      else
-      {
-#   if CRDB_DEBUGGING
-        OSCR::Serial::printLine(FS(OSCR::Strings::Errors::NotFoundDB));
-#   endif /* CRDB_DEBUGGING */
+        continue;
+
+      case OSCR::UI::UserInput::kUserInputBack: // Read previous entry
+        reverse = true;
+
+        if (currentIndex == 0)
+        {
+          currentIndex = indexMax;
+        }
+        else
+        {
+          currentIndex--;
+        }
+        continue;
+
+      case OSCR::UI::UserInput::kUserInputUnknown: // Should not happen.
+      case OSCR::UI::UserInput::kUserInputIgnore:
+        OSCR::Util::unreachable();
       }
     }
 
-    OSCR::UI::update();
+    fromCRDB = true;
+    setOutName(BUFFN(romDetail->name));
 
-    delay(1000);
+    return true;
   }
 
   // void read(char const * fileSuffix, uint8_t const * header, uint8_t const headersize, bool const renamerom)
@@ -1172,10 +1279,6 @@ namespace OSCR::Cores::NES
       NESmaker_ID();  // Flash ID
     }
 # endif
-
-    printNESSettings();
-
-    OSCR::UI::waitButton();
   }
 
   /******************************************

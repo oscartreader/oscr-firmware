@@ -118,8 +118,6 @@ namespace OSCR::Cores::NES
 
   void printNESSettings(void);
 
-  void getMapping();
-
   //void read(char const * fileSuffix, uint8_t const * header, uint8_t headersize, bool renamerom);
   void read(bool const renamerom);
 
@@ -136,6 +134,9 @@ namespace OSCR::Cores::NES
   void setPRGSize();
   void setCHRSize();
   void setRAMSize();
+
+  void configureCart();
+  bool pickCart();
 
   void checkMMC6();
   void checkStatus();

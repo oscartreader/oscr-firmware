@@ -59,6 +59,11 @@ namespace OSCR
       // Unsupported
     }
 
+    void gotoLineBottom(uint8_t lineNumber __attribute__((unused)))
+    {
+      printLine();
+    }
+
     void update()
     {
       OSCR::Serial::flush();

@@ -170,6 +170,22 @@
 #define INPUT_ROTARY    3
 
 /**
+ * [CRDB] Multimatch fields
+ */
+#define CRDBID_USE_ID32A      1
+#define CRDBID_USE_ID32B      2
+#define CRDBID_USE_BOTH       (CRDBID_USE_ID32A|CRDBID_USE_ID32B)
+
+/**
+ * [CRDB] Multimatch methods
+ */
+#define CRDBID_MATCH_ANY        0
+#define CRDBID_MATCH_EITHER     1
+#define CRDBID_MATCH_ALL        2
+#define CRDBID_MATCH_INVERT     4
+#define CRDBID_MATCH_OR_INVERT  8
+
+/**
  * [Core] %SMS - SMS Adapter Types
  */
 #define SMSOPT_SMS_ADAPTER_ALL        0

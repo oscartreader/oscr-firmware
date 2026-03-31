@@ -31,6 +31,19 @@ namespace OSCR
       NamedByMapperSub,
     };
 
+    struct SearchParameters
+    {
+      uint_fast8_t offset = 0;
+      uint_fast32_t startingRecord = 0;
+      uint_fast32_t i = 0;
+      bool reverse = false;
+
+      int8_t step()
+      {
+        return reverse ? -1 : 1;
+      }
+    };
+
     using OSCR::Storage::sd;
     using OSCR::Storage::Shared::sharedFile;
     using OSCR::Storage::Shared::sharedFileName;
@@ -118,6 +131,8 @@ namespace OSCR
       bool gotoRecordIndex(uint16_t index);
       uint_fast16_t getRecordIndex();
 
+      bool searchRecord(uint32_t & target, uint16_t startingRecord = 0, bool reverse = false, uint16_t offset = 0);
+
 #if defined(NEEDS_CRDB_ISQUIET)
       bool isQuiet();
       void quiet(bool shouldBeQuiet = true);
@@ -132,8 +147,11 @@ namespace OSCR
       bool beQuiet = false;
 #endif
       ERRORS errorCode = E_NONE;
+      SearchParameters search;
 
       void openDatabase(char const * crdb_filename);
+
+      bool setNextIndex(SearchParameters * searchParams = nullptr);
     };
 
     class CRDBByIDBase : public CRDBBase
@@ -277,6 +295,9 @@ namespace OSCR
         // ...
       }
 
+      bool searchEitherRecord(crc32_t & search32a, crc32_t & search32b, uint16_t startingRecord = 0, bool reverse = false, uint16_t offset = 4);
+      bool searchEitherRecord(crc32_t * search32a, crc32_t * search32b, uint16_t startingRecord = 0, bool reverse = false, uint16_t offset = 4);
+
       bool findRecord(uint32_t const crc32, uint16_t const offset = 0);
       bool findRecord(crc32_t const & crc32search, uint16_t const offset = 0);
       bool findEitherRecord(crc32_t crc32search1, crc32_t crc32search2, uint16_t offset = 0);
@@ -300,6 +321,7 @@ namespace OSCR
 
     protected:
       virtual bool cmprCRC32(crc32_t * crc32ptr = nullptr) const = 0;
+      bool searchSub(crc32_t * search32a, crc32_t * search32b, crc32_t * id32a, crc32_t * id32b);
       // ...
     };
 

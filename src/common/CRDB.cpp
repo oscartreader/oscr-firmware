@@ -536,6 +536,269 @@ bool CRDBByMapperSubmapperBase::findRecord(uint32_t const mapperSearch, uint32_t
     return false;
   }
 
+  bool CRDBBase::setNextIndex(SearchParameters * searchParams)
+  {
+    uint_fast16_t const indexMax = recordCount - 1;
+    uint16_t endRecord;
+
+    if (searchParams == nullptr) searchParams = &search;
+
+    if (searchParams->reverse && (searchParams->i == 0))
+    {
+      searchParams->i = indexMax;
+    }
+    else if (!searchParams->reverse && (searchParams->i == indexMax))
+    {
+      searchParams->i = 0;
+    }
+    else
+    {
+      searchParams->i += searchParams->step();
+    }
+
+    if (searchParams->startingRecord == 0) endRecord = recordCount;
+    else if (searchParams->startingRecord == recordCount) endRecord = 0;
+    else endRecord = searchParams->startingRecord + -searchParams->step();
+
+    if (searchParams->i == endRecord) return false; // Will infinite loop otherwise
+
+    return true;
+  }
+
+#if (((OPTION_CRDB_MULTIMATCH_METHOD) & CRDBID_MATCH_OR_INVERT) || (((OPTION_CRDB_MULTIMATCH_METHOD) & (CRDBID_MATCH_EITHER|CRDBID_MATCH_ALL)) == 0))
+#   define MATCH_NORMAL true
+#   define MATCH_INVERT true
+#elif ((OPTION_CRDB_MULTIMATCH_METHOD) & CRDBID_MATCH_INVERT)
+#   define MATCH_NORMAL false
+#   define MATCH_INVERT true
+#else
+#   define MATCH_NORMAL true
+#   define MATCH_INVERT false
+#endif
+
+  enum class MatchMethod
+  {
+    Any,
+    Either,
+    All,
+  };
+
+  constexpr MatchMethod const kMatchMethod =
+#if (((OPTION_CRDB_MULTIMATCH_METHOD) & (CRDBID_MATCH_EITHER)) == CRDBID_MATCH_EITHER)
+    MatchMethod::Either;
+#elif (((OPTION_CRDB_MULTIMATCH_METHOD) & (CRDBID_MATCH_ALL)) == CRDBID_MATCH_ALL)
+    MatchMethod::All;
+#else
+    MatchMethod::Any
+#endif
+  ;
+
+  constexpr bool const kUseCartId32a = (((OPTION_CRDB_MULTIMATCH_CART) & (CRDBID_USE_ID32A)) == (CRDBID_USE_ID32A));
+  constexpr bool const kUseCartId32b = (((OPTION_CRDB_MULTIMATCH_CART) & (CRDBID_USE_ID32B)) == (CRDBID_USE_ID32B));
+
+  constexpr bool const kUseDatabaseId32a = (((OPTION_CRDB_MULTIMATCH_DB) & (CRDBID_USE_ID32A)) == (CRDBID_USE_ID32A));
+  constexpr bool const kUseDatabaseId32b = (((OPTION_CRDB_MULTIMATCH_DB) & (CRDBID_USE_ID32B)) == (CRDBID_USE_ID32B));
+
+  constexpr bool const kMatchNormal = MATCH_NORMAL;
+  constexpr bool const kMatchInverted = MATCH_INVERT;
+
+  constexpr bool const kMatchAtoA = kUseCartId32a && kUseDatabaseId32a && kMatchNormal;
+  constexpr bool const kMatchBtoB = kUseCartId32b && kUseDatabaseId32b && kMatchNormal;
+
+  constexpr bool const kMatchAtoB = kUseCartId32a && kUseDatabaseId32b && kMatchInverted;
+  constexpr bool const kMatchBtoA = kUseCartId32b && kUseDatabaseId32a && kMatchInverted;
+
+  __attribute__((hot, always_inline))
+  static inline bool _matches(crc32_t * search32, crc32_t * id32)
+  {
+    return ((search32 != nullptr) && (id32 != nullptr) && (*search32 == *id32));
+  }
+
+  __attribute__((hot, always_inline))
+  static inline bool _matchesEither(crc32_t * search32, crc32_t * id32a, crc32_t * id32b)
+  {
+    if (search32 == nullptr) return false;
+    return (*search32 == *id32a) || (*search32 == *id32b);
+  }
+
+  __attribute__((hot, always_inline))
+  static inline bool _matchesBoth(crc32_t * search32, crc32_t * id32a, crc32_t * id32b)
+  {
+    if (search32 == nullptr) return false;
+    return (*search32 == *id32a) && (*search32 == *id32b);
+  }
+
+  __attribute__((hot, always_inline))
+  static inline bool _hasMatch(crc32_t * search32a, crc32_t * search32b, crc32_t * id32a, crc32_t * id32b)
+  {
+    bool matchedAtoA = false;
+    bool matchedAtoB = false;
+    bool matchedBtoA = false;
+    bool matchedBtoB = false;
+
+    if __if_constexpr (kMatchAtoA)
+    {
+      if ((search32a != nullptr) && (id32a != nullptr))
+      {
+        matchedAtoA = _matches(search32a, id32a);
+      }
+    }
+
+    if __if_constexpr (kMatchAtoB)
+    {
+      if ((search32a != nullptr) && (id32b != nullptr))
+      {
+        matchedAtoB = _matches(search32a, id32b);
+      }
+    }
+
+    if __if_constexpr (kMatchBtoB)
+    {
+      if ((search32b != nullptr) && (id32b != nullptr))
+      {
+        matchedBtoB = _matches(search32b, id32b);
+      }
+    }
+
+    if __if_constexpr (kMatchBtoA)
+    {
+      if ((search32b != nullptr) && (id32a != nullptr))
+      {
+        matchedBtoA = _matches(search32b, id32a);
+      }
+    }
+
+    switch (kMatchMethod)
+    {
+    case MatchMethod::Any:
+      return (matchedAtoA || matchedBtoB || matchedAtoB || matchedBtoA);
+
+    case MatchMethod::All:
+      if __if_constexpr (kMatchNormal)
+      {
+        if (matchedAtoA && matchedBtoB) return true;
+      }
+
+      if __if_constexpr (kMatchInverted)
+      {
+        if (matchedAtoB && matchedBtoA) return true;
+      }
+
+      return false;
+
+    case MatchMethod::Either:
+      if __if_constexpr (kMatchNormal)
+      {
+        if (matchedAtoA || matchedBtoB) return true;
+      }
+
+      if __if_constexpr (kMatchInverted)
+      {
+        if (matchedAtoB || matchedBtoA) return true;
+      }
+
+      return false;
+    }
+
+    return false;
+  }
+
+  bool CRDBBase::searchRecord(uint32_t & target, uint16_t startingRecord, bool reverse, uint16_t offset)
+  {
+    uint32_t data;
+    search.startingRecord = startingRecord;
+    search.reverse = reverse;
+
+    clearError();
+
+#if CRDB_DEBUGGING
+    OSCR::Serial::printLine(F("<CRDB> Searching..."));
+
+    OSCR::Serial::print(F("<CRDB> Search: "));
+    OSCR::Serial::printHexLine(data);
+#endif /* CRDB_DEBUGGING */
+
+    for (search.i = startingRecord; gotoRecordIndex(search.i) && file.seekCur(offset);)
+    {
+      if (readNum32(&data) != 4) break;
+
+      if (data == target)
+      {
+        loadRecordIndex(search.i);
+
+#if CRDB_DEBUGGING
+        OSCR::Serial::print(F("<CRDB> "));
+        OSCR::Serial::printLine(FS(OSCR::Strings::Common::OK));
+#endif /* CRDB_DEBUGGING */
+
+        return true;
+      }
+
+      // Will infinite loop otherwise
+      if (!setNextIndex()) return false;
+    }
+
+#if CRDB_DEBUGGING
+    OSCR::Serial::printLine(F("<CRDB> NOT FOUND"));
+#endif /* CRDB_DEBUGGING */
+
+    gotoRecordIndex(0);
+    return false;
+  }
+
+  bool CRDBNamedByCRC32Base::searchEitherRecord(crc32_t & search32a, crc32_t & search32b, uint16_t startingRecord, bool reverse, uint16_t offset)
+  {
+    return searchEitherRecord(&search32a, &search32b, startingRecord, reverse, offset);
+  }
+
+  bool CRDBNamedByCRC32Base::searchEitherRecord(crc32_t * search32a, crc32_t * search32b, uint16_t startingRecord, bool reverse, uint16_t offset)
+  {
+    crc32_t id32a, id32b;
+    search.startingRecord = startingRecord;
+    search.reverse = reverse;
+
+    clearError();
+
+#if CRDB_DEBUGGING
+    OSCR::Serial::printLine(F("<CRDB> Searching..."));
+
+    OSCR::Serial::print(F("<CRDB> Search[A]: "));
+    OSCR::Serial::printLine(*search32a);
+
+    OSCR::Serial::print(F("<CRDB> Search[B]: "));
+    OSCR::Serial::printLine(*search32b);
+#endif /* CRDB_DEBUGGING */
+
+    for (search.i = startingRecord; gotoRecordIndex(search.i) && file.seekCur(offset);)
+    {
+      if (readNum32(id32a) != 4) break;
+      if (readNum32(id32b) != 4) break;
+
+      if (_hasMatch(search32a, search32b, &id32a, &id32b))
+      {
+        loadRecordIndex(search.i);
+
+#if CRDB_DEBUGGING
+        OSCR::Serial::print(F("<CRDB> "));
+        OSCR::Serial::printLine(FS(OSCR::Strings::Common::OK));
+#endif /* CRDB_DEBUGGING */
+
+        return true;
+      }
+
+      // Will infinite loop otherwise
+      if (!setNextIndex()) return false;
+    }
+
+#if CRDB_DEBUGGING
+    OSCR::Serial::printLine(F("<CRDB> NOT FOUND"));
+#endif /* CRDB_DEBUGGING */
+
+    gotoRecordIndex(0);
+    return false;
+  }
+
+
   bool CRDBNamedByCRC32Base::findEitherRecord(crc32_t crc32search1, crc32_t crc32search2, uint16_t offset)
   {
     clearError();

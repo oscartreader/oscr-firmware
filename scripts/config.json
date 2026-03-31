@@ -671,19 +671,67 @@
           }
         }
       },
-      "core.nes.strict_matching": {
-        "name": "NES ID32 Strict Matching",
-        "define": "OPTION_CRDB_STRICT_MATCHING",
+      "crdb.id32.multimatch.cart": {
+        "name": "CRDB ID32 Multimatch: Cartridge",
+        "define": "OPTION_CRDB_MULTIMATCH_CART",
         "requires": [{ "cores": ["nes"] }],
-        "type": "bool",
-        "bool": {
-          "yes": {
-            "name": "Yes",
-            "value": true
+        "type": "bitflag",
+        "bitflags": {
+          "id32a": {
+            "name": "Use First (id32a)",
+            "flag": "CRDBID_USE_ID32A"
           },
-          "no": {
-            "name": "No",
-            "value": false
+          "id32b": {
+            "name": "Use Second (id32b)",
+            "flag": "CRDBID_USE_ID32B"
+          },
+          "both": {
+            "name": "Use Both (id32a + id32b)",
+            "flag": "CRDBID_USE_BOTH"
+          }
+        }
+      },
+      "crdb.id32.multimatch.database": {
+        "name": "CRDB ID32 Multimatching",
+        "define": "OPTION_CRDB_MULTIMATCH_DB",
+        "requires": [{ "cores": ["nes"] }],
+        "type": "bitflag",
+        "bitflags": {
+          "id32a": {
+            "name": "Use First (id32a)",
+            "flag": "CRDBID_USE_ID32A"
+          },
+          "id32b": {
+            "name": "Use Second (id32b)",
+            "flag": "CRDBID_USE_ID32B"
+          },
+          "both": {
+            "name": "Use Both (id32a + id32b)",
+            "flag": "CRDBID_USE_BOTH"
+          }
+        }
+      },
+      "crdb.id32.multimatch.method": {
+        "name": "CRDB ID32 Multimatching",
+        "define": "OPTION_CRDB_MULTIMATCH_METHOD",
+        "requires": [{ "cores": ["nes"] }],
+        "type": "bitflag",
+        "bitflags": {
+          "any": {
+            "name": "Match Any",
+            "flag": "CRDBID_MATCH_ANY"
+          },
+          "either": {
+            "name": "Match Either",
+            "flag": "CRDBID_MATCH_EITHER"
+          },
+          "all": {
+            "name": "Match Same",
+            "flag": "CRDBID_MATCH_ALL"
+          },
+          "inverse": {
+            "name": "Match Inverse",
+            "flag": "CRDBID_MATCH_INVERSE"
           }
         }
       }

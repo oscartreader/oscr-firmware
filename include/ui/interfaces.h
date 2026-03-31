@@ -115,6 +115,8 @@ namespace OSCR
         char const * operator[](size_t idx) const { return options[idx]; }
     };
 
+    extern uint8_t printText(char const * const text);
+
     /**
      * @brief Print a label.
      *

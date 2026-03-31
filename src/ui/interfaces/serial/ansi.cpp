@@ -83,6 +83,12 @@ namespace OSCR
       gotoLineStart();
     }
 
+    void gotoLineBottom(uint8_t lineNumber)
+    {
+      OSCR::Serial::ANSI::moveCursor(0, 0);
+      OSCR::Serial::ANSI::moveCursorDown(kDisplayLines - (lineNumber - 1));
+    }
+
     void update()
     {
       OSCR::Serial::flush();

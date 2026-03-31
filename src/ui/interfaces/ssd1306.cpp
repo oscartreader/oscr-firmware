@@ -46,6 +46,90 @@ namespace OSCR
       display.setCursor(x, y);
     }
 
+    uint8_t _nextSpace(char const * const text)
+    {
+      char * spaceAt = strchr(text, ' ');
+
+      if (spaceAt == nullptr) return strlen(text);
+
+      return (spaceAt - text);
+    }
+
+    uint8_t printText(char const * const text)
+    {
+      constexpr uint8_t const kBuffSize = 20;
+      constexpr uint8_t const kBuffMaxLen = kBuffSize - 1;
+      char pbuff[kBuffSize] = " ";
+
+      size_t len = strlen(text);
+      size_t remainingLen = len;
+
+      uint8_t lines = 0;
+      uint8_t remainingWidth = kDisplayWidth - display.tx;
+      uint8_t const spaceWidth = OSCR::UI::display.getStrWidth(pbuff);
+
+      for (size_t i = 0; i < len;)
+      {
+        uint8_t wordLen = _nextSpace(text + i);
+
+        if (wordLen > kBuffMaxLen)
+        {
+          lines++;
+          printLine(pbuff);
+          return lines;
+        }
+
+        strncpy(pbuff, text + i, wordLen);
+        pbuff[wordLen] = '\0';
+
+        uint8_t wordWidth = OSCR::UI::display.getStrWidth(pbuff);
+
+        if (wordWidth > kDisplayWidth)
+        {
+          if (remainingWidth != kDisplayWidth)
+          {
+            lines++;
+            printLine();
+            remainingWidth = kDisplayWidth;
+          }
+        }
+        else if (wordWidth > remainingWidth)
+        {
+          lines++;
+          printLine();
+          remainingWidth = kDisplayWidth;
+        }
+
+        print(pbuff);
+
+        remainingLen -= (wordLen);
+        remainingWidth -= (wordWidth);
+
+        i += wordLen + 1;
+
+        if (spaceWidth >= remainingWidth)
+        {
+          lines++;
+          printLine();
+          remainingWidth = kDisplayWidth;
+          if (remainingLen > 0) remainingLen -= 1;
+          continue;
+        }
+
+        if (remainingLen > 0)
+        {
+          remainingWidth -= spaceWidth;
+          remainingLen -= 1;
+          print(FS(OSCR::Strings::Symbol::Space));
+        }
+      }
+
+      lines++;
+      printLine();
+
+      return lines;
+    }
+
     void printCenter(char const * text)
     {
       uint8_t currentY = display.ty;
@@ -98,7 +182,7 @@ namespace OSCR
 
     void gotoLineBottom(uint8_t lineNumber)
     {
-      setCursorY<0>((kDisplayLines - lineNumber - 1) * kLineHeight);
+      setCursorY<0>((kDisplayLines - (lineNumber - 1)) * kLineHeight);
     }
 
     bool overlapsPreviousLine(uint8_t lineNumber)

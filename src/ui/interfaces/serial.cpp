@@ -8,6 +8,12 @@
 
 namespace OSCR::UI
 {
+  uint8_t printText(char const * const text)
+  {
+    printLine(text);
+    return 1;
+  }
+
   template <bool sync>
   void printLine(void)
   {

@@ -11,6 +11,8 @@ namespace OSCR::Databases
   using OSCR::Cores::NES::crdbNESRecord;
   using OSCR::Cores::NES::crdbNESMapperRecord;
 
+  constexpr char const PROGMEM NESMapperStringTemplate[] = "%03" PRIu32 ".%02" PRIu32;
+
   class NESMapperRecord
     : public OSCR::CRDB::GenericRecord<crdbNESMapperRecord>
   {
@@ -52,7 +54,7 @@ namespace OSCR::Databases
         readNum32(&currentRecord->data()->ramlo);
         readNum32(&currentRecord->data()->ramhi);
 
-        snprintf_P(BUFFN(currentRecord->data()->name), PSTR("%03" PRIu32 ".%02" PRIu32), currentRecord->data()->mapper, currentRecord->data()->submapper);
+        snprintf_P(BUFFN(currentRecord->data()->name), NESMapperStringTemplate, currentRecord->data()->mapper, currentRecord->data()->submapper);
       }
   };
 

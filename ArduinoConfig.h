@@ -619,9 +619,22 @@
  *  When enabled, this will require both identification checksums to
  *  match for an entry to be considered a match. When disabled, if
  *  either entry matches, it will be considered a match.
+ *
+ *  Options:
+ *    CRDBID_USE_ID32A    : Use the first (`id32a`) checksum
+ *    CRDBID_USE_ID32B    : use the second (`id32b`) checksum
+ *
+ *  Methods:
+ *    CRDBID_MATCH_ANY        : Match any checksum.
+ *    CRDBID_MATCH_EITHER     : Match either checksum.
+ *    CRDBID_MATCH_ALL        : Match all/both checksums.
+ *    CRDBID_MATCH_INVERT     : Invert matching (a=b/b=a)
+ *    CRDBID_MATCH_OR_INVERT  : Match inverted and/or normal
  */
 
-#define OPTION_CRDB_STRICT_MATCHING true
+#define OPTION_CRDB_MULTIMATCH_CART   CRDBID_USE_ID32A|CRDBID_USE_ID32B
+#define OPTION_CRDB_MULTIMATCH_DB     CRDBID_USE_ID32B
+#define OPTION_CRDB_MULTIMATCH_METHOD CRDBID_MATCH_ANY
 
 /****/
 
