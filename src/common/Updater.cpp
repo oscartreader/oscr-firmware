@@ -32,26 +32,21 @@ namespace OSCR
       //
       // Output Method
       //
-# if (HARDWARE_OUTPUT_TYPE == OUTPUT_OS12864)
-      char const * outputType = nullptr;
 
-#     if (HARDWARE_OUTPUT_TYPE == OUTPUT_SERIAL)
-#       if (OPTION_SERIAL_OUTPUT == SERIAL_ASCII)
-      outputType = PSTR("ASCII");
-#       elif (OPTION_SERIAL_OUTPUT == SERIAL_ANSI)
-      outputType = PSTR("ANSI");
-#       endif
-#     elif (HARDWARE_OUTPUT_TYPE == OUTPUT_SSD1306)
-      outputType = PSTR("OLED");
-#     elif (HARDWARE_OUTPUT_TYPE == OUTPUT_OS12864)
-#       if (OPTION_LCD_TYPE == LCD_MKS)
-      outputType = PSTR("MKSLCD");
-#       elif (OPTION_LCD_TYPE == LCD_SSRETRO)
-      outputType = PSTR("SSRLCD");
-#       endif
-#     endif
-
-      flagValue(PSTR("OUT"), outputType);
+# if (HARDWARE_OUTPUT_TYPE == OUTPUT_SERIAL)
+#   if (OPTION_SERIAL_OUTPUT == SERIAL_ASCII)
+      flagValue(PSTR("OUT"), PSTR("ASCII"));
+#   elif (OPTION_SERIAL_OUTPUT == SERIAL_ANSI)
+      flagValue(PSTR("OUT"), PSTR("ANSI"));
+#   endif
+# elif (HARDWARE_OUTPUT_TYPE == OUTPUT_SSD1306)
+      flagValue(PSTR("OUT"), PSTR("OLED"));
+# elif (HARDWARE_OUTPUT_TYPE == OUTPUT_OS12864)
+#   if (OPTION_LCD_TYPE == LCD_MKS)
+      flagValue(PSTR("OUT"), PSTR("MKS"));
+#   elif (OPTION_LCD_TYPE == LCD_SSRETRO)
+      flagValue(PSTR("OUT"), PSTR("SSRETRO"));
+#   endif
 # endif
       // --
 

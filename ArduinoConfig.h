@@ -38,7 +38,7 @@
  *  Choose your hardware version:
  */
 
-#define HW_VERSION 5
+//#define HW_VERSION 5
 
 /****/
 
@@ -49,7 +49,7 @@
  *    LANG_EN : English
  */
 
-#define OSCR_LANGUAGE LANG_EN
+//#define OSCR_LANGUAGE LANG_EN
 
 /****/
 
@@ -76,7 +76,7 @@
  *   - REGN_EU    : Europe
  *   - REGN_AS    : Asia (Japan)
  */
-#define OSCR_REGION REGN_AUTO
+//#define OSCR_REGION REGN_AUTO
 
 /****/
 
@@ -122,7 +122,7 @@
  *  Enable this if you have an integrated (non-module) ATmega.
  */
 
-#define ENABLE_ONBOARD_ATMEGA
+//#define ENABLE_ONBOARD_ATMEGA
 
 /****/
 
@@ -130,7 +130,7 @@
  *  Enable this if you have the VSELECT module.
  */
 
-#define ENABLE_VSELECT
+//#define ENABLE_VSELECT
 
 /****/
 
@@ -138,7 +138,7 @@
  *  Disable this if you don't have the clock generator module.
  */
 
-#define ENABLE_CLOCKGEN
+//#define ENABLE_CLOCKGEN
 
 /****/
 
@@ -147,7 +147,7 @@
  *  type later in this file.
  */
 
-#define ENABLE_RTC
+//#define ENABLE_RTC
 
 /****/
 
@@ -513,7 +513,7 @@
  *  Filename: config.txt
  */
 
-#define ENABLE_CONFIG
+//#define ENABLE_CONFIG
 
 /****/
 
@@ -707,7 +707,7 @@
  *    LCD_SSRETRO:  StarshadeRETRO OSCR 12864 (internally the same as LCD_BTT)
  */
 
-#define OPTION_LCD_TYPE LCD_SSRETRO
+//#define OPTION_LCD_TYPE LCD_SSRETRO
 
 /****/
 
