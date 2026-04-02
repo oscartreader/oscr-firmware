@@ -1,5 +1,6 @@
 import click # pyright: ignore[reportMissingImports]
-from os.path import join
+from os import getcwd
+from os.path import join, isfile
 from SCons.Script import ARGUMENTS # pyright: ignore[reportMissingImports]
 from SCons.Errors import UserError # pyright: ignore[reportMissingImports]
 import crutils
@@ -38,6 +39,25 @@ confDefines = coreConfig.getCoreFlags() + coreConfig.getHardwareFlags() + coreCo
 TOOLCHAIN_ROOT = platform.get_package_dir("toolchain-atmelavr")
 AVRGGC_DIR = join(TOOLCHAIN_ROOT, "avr-gcc")
 AVRGGC_BINDIR = join(AVRGGC_DIR, "bin")
+
+#
+# Create user.ini if it doesn't exist.
+#
+
+PROJECT_ROOT = getcwd()
+
+userFile = join(PROJECT_ROOT, "user.ini")
+userFileNew = join(PROJECT_ROOT, ".user.new.ini")
+
+if not isfile(userFile) and isfile(userFileNew):
+    with open(userFileNew, 'r', encoding='UTF-8') as srcFile, open(userFile, 'w', encoding='UTF-8') as destFile:
+        while line := srcFile.readline():
+            if not line.startswith(";@"):
+                destFile.write(line)
+
+#
+# End create user.ini
+#
 
 cpp_standard = env.GetProjectOption("cppstd");
 c_standard = env.GetProjectOption("cstd");

@@ -22,6 +22,10 @@ __pycache__
 *.backup.*
 *-backup.*
 
+# User files
+/user.ini
+/scripts/settings.json
+
 # Don't commit new stuff by accident...
 src/arch/stm32
 include/arch/stm32

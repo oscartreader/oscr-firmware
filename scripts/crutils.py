@@ -1,7 +1,6 @@
-import json, shutil
-import click # pyright: ignore[reportMissingImports]
-from time import sleep
-from os.path import join, dirname
+import json
+from datetime import datetime
+from os.path import join, dirname, isfile
 
 MYDIR = dirname(__file__)
 MYCONF = join(MYDIR, "config.json")
@@ -13,6 +12,58 @@ def convifbool(v):
     if (isinstance(v, bool)):
         return "true" if v else "false"
     return v
+
+def askYNQuestion(question):
+    userAnswer = None
+    while userAnswer == None:
+        print(question, " [(Y)es/(n)o]")
+        requestInput = input().lower()
+
+        if requestInput == "" or requestInput == "y" or requestInput == "yes" or requestInput == "true":
+            userAnswer = True
+        elif requestInput == "n" or requestInput == "no" or requestInput == "false":
+            userAnswer = False
+        else:
+            print("Invalid response. Type Y or N and then press enter/return.")
+            print("")
+
+    return userAnswer
+
+class CRSettings:
+    file = join(MYDIR, "settings.json")
+    section = None
+    settings = {}
+
+    def __init__(self, section):
+        self.section = section
+        self.reload()
+
+    def reload(self):
+        if isfile(self.file):
+            with open(self.file, 'r', encoding='UTF-8') as f:
+                self.settings = json.load(f)
+        else:
+            self.settings = {}
+
+        if self.settings.setdefault(self.section, {}) == {}:
+            now = datetime.now()
+            self.settings[self.section]['_created'] = now.strftime("%Y-%m-%d %H-%M-%S")
+            self.settings[self.section]['_created_ts'] = now.timestamp()
+            self.save()
+
+    def get(self, setting, default = None):
+        return self.settings.get(self.section, {}).get(setting, default)
+
+    def set(self, setting, value):
+        self.settings[self.section][setting] = value
+
+    def save(self):
+        now = datetime.now()
+        self.settings[self.section]['_modified'] = now.strftime("%Y-%m-%d %H-%M-%S")
+        self.settings[self.section]['_modified_ts'] = now.timestamp()
+        with open(self.file, 'w') as f:
+            json.dump(self.settings, f)
+        self.reload()
 
 class CRConfig:
     env = None
@@ -253,6 +304,9 @@ class CRFeature:
             #
             # bitflag
             #
+            case "bitflag" if value == "":
+                self.__value = []
+
             case "bitflag":
                 bitflags = [v.strip() for v in value.lower().split('|')]
 
@@ -299,7 +353,7 @@ class CRFeature:
         elif (self.type == "int"):
             return (self.define, self.__value)
         elif (self.type == "bitflag"):
-            return "\"" + ("=".join([self.define, '|'.join(self.__value)])) + "\""
+            return None if len(self.__value) < 1 else "\"" + ("=".join([self.define, '|'.join(self.__value)])) + "\""
         elif (self.type == "enum"):
             return (self.define, self.__value) if self.__value != None else None
         else:
