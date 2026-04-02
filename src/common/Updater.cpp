@@ -54,8 +54,8 @@ namespace OSCR
       // Localization
       //
 
-      flagValue(PSTR("LANG"), (uint8_t)OSCR_REGION);
-      flagValue(PSTR("REGN"), (uint8_t)OSCR_LANGUAGE);
+      flagValue(PSTR("LANG"), (uint8_t)OSCR_LANGUAGE);
+      flagValue(PSTR("REGN"), (uint8_t)OSCR_REGION);
 
       // --
 
