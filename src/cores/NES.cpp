@@ -41,12 +41,13 @@ namespace OSCR::Cores::NES
     {
       _ramSize = NES_RAMSIZE * 256;
     }
-    else if ((NES_MAPPER == 16) || (NES_MAPPER == 80) || (NES_MAPPER == 159))
+    else if (NES_MAPPER == 16)
     {
-      if (NES_MAPPER == 16)
-        _ramSize = NES_RAMSIZE * 32;
-      else
-        _ramSize = NES_RAMSIZE * 16;
+      _ramSize = NES_RAMSIZE * 32;
+    }
+    else if ((NES_MAPPER == 80) || (NES_MAPPER == 159))
+    {
+      _ramSize = NES_RAMSIZE * 16;
     }
     else if ((NES_MAPPER == 19) && (NES_RAM == 2))
     {
