@@ -195,8 +195,6 @@ namespace OSCR::Cores::N64
   // N64 Controller Menu
   void controllerMenu()
   {
-    setupController();
-
     do
     {
       switch (OSCR::UI::menu(FS(OSCR::Strings::Cores::N64), menuOptionsController, sizeofarray(menuOptionsController)))
@@ -313,7 +311,7 @@ namespace OSCR::Cores::N64
   /******************************************
      Setup
   *****************************************/
-  void setupController()
+  void controllerOn()
   {
     // Request 3.3V
     OSCR::Power::setVoltage(OSCR::Voltage::k3V3);
@@ -1553,7 +1551,7 @@ namespace OSCR::Cores::N64
     uint8_t buf[256];
     bool failed = false;
 
-    cartOn();
+    controllerOn();
 
     resetController();
     checkController();
@@ -1570,20 +1568,23 @@ namespace OSCR::Cores::N64
     OSCR::Storage::Shared::sharedFile.write((uint8_t)0xFF);
     OSCR::Storage::Shared::rewind();
 
-    OSCR::UI::setLineRel(2);
+    OSCR::UI::setLineRel(1);
     OSCR::UI::ProgressBar::init(0xFFFE);
-    OSCR::UI::setLineRel(-2);
+    OSCR::UI::setLineRel(-1);
 
     OSCR::UI::printSync(FS(OSCR::Strings::Status::Reading));
 
     // Controller paks, which all have 32kB of space, are mapped between 0x0000 – 0x7FFF
     for (uint16_t pos = 0x0000; pos < 0x8000; pos += 512)
     {
+      uint8_t crcByte = 0;
+
       // Read 32 byte block into buffer
       for (uint16_t currBlock = 0; currBlock < OSCR::Storage::kBufferSize; currBlock += 32)
       {
         // Read one block of the Controller Pak into array myBlock and write CRC of that block to crc file
-        crcFile.write(readBlock(&OSCR::Storage::Shared::buffer[currBlock], pos + currBlock));
+        crcByte = readBlock(&OSCR::Storage::Shared::buffer[currBlock], pos + currBlock);
+        crcFile.write(crcByte);
 
         // Real N64 has about 627us pause between banks, add a bit extra delay
         if (currBlock < 479)
@@ -1597,12 +1598,18 @@ namespace OSCR::Cores::N64
       OSCR::UI::ProgressBar::advance(512);
     }
 
+    cartOff();
+
     OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
 
     writeErrors = 0;
 
     OSCR::Storage::Shared::rewind();
     crcFile.rewind();
+
+    // Overwrite the progress bar
+    OSCR::UI::setLineRel(-1);
+    OSCR::UI::clearLine();
 
     OSCR::UI::printSync(FS(OSCR::Strings::Status::Verifying));
 
@@ -1658,7 +1665,7 @@ namespace OSCR::Cores::N64
 
     for (uint8_t i = 0; i < sizeofarray(checkAddresses); i++)
     {
-      headerErrors += checkHeader(&buf[checkAddresses[i]]);
+      headerErrors += !checkHeader(&buf[checkAddresses[i]]);
     }
 
     if (headerErrors > 0)
@@ -1724,14 +1731,14 @@ namespace OSCR::Cores::N64
 
     printHeader();
 
-    cartOn();
+    controllerOn();
 
     resetController();
     checkController();
 
-    OSCR::UI::setLineRel(2);
+    OSCR::UI::setLineRel(1);
     OSCR::UI::ProgressBar::init(0xFFFE);
-    OSCR::UI::setLineRel(-2);
+    OSCR::UI::setLineRel(-1);
 
     OSCR::UI::printSync(FS(OSCR::Strings::Status::Writing));
 

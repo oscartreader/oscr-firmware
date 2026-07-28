@@ -24,7 +24,7 @@ namespace OSCR::Cores::N64
   void cartOn();
   void cartOff();
 
-  void setupController();
+  void controllerOn();
 
   inline void adOut();
   inline void adIn();
