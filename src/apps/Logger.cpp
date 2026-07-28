@@ -115,6 +115,51 @@ namespace OSCR
     logLine();
   }
 
+  void debugPrintLine(void)
+  {
+#if (SERIAL_DEBUGGING)
+    OSCR::Serial::printLineSync();
+#endif /* SERIAL_DEBUGGING */
+  }
+
+  template <typename T,
+            OSCR::Util::enable_if_t<!(OSCR::Util::is_number<T>::value), bool> Enable,
+            OSCR::Util::enable_if_t<!(OSCR::Util::is_printable<T>::value), bool> NonPrintable>
+  void debugPrint(T string)
+  {
+#if (SERIAL_DEBUGGING)
+    OSCR::Serial::printSync(string);
+#endif /* SERIAL_DEBUGGING */
+  }
+
+  template <typename T,
+            OSCR::Util::enable_if_t<!(OSCR::Util::is_number<T>::value), bool> Enable,
+            OSCR::Util::enable_if_t<!(OSCR::Util::is_printable<T>::value), bool> NonPrintable>
+  void debugPrintLine(T string)
+  {
+#if (SERIAL_DEBUGGING)
+    OSCR::Serial::printLineSync(string);
+#endif /* SERIAL_DEBUGGING */
+  }
+
+  template <typename Tint,
+            OSCR::Util::enable_if_t<OSCR::Util::is_integer<Tint>::value, bool> Enable>
+  void debugPrint(Tint number, int base)
+  {
+#if (SERIAL_DEBUGGING)
+    OSCR::Serial::printSync(number, base);
+#endif /* SERIAL_DEBUGGING */
+  }
+
+  template <typename Tint,
+            OSCR::Util::enable_if_t<OSCR::Util::is_integer<Tint>::value, bool> Enable>
+  void debugPrintLine(Tint number, int base)
+  {
+#if (SERIAL_DEBUGGING)
+    OSCR::Serial::printLineSync(number, base);
+#endif /* SERIAL_DEBUGGING */
+  }
+
 #if (SERIAL_DEBUGGING)
   void debugLine(char const * const fileName, uint16_t lineNumber)
   {
@@ -142,3 +187,30 @@ namespace OSCR
   }
 #endif
 }
+
+//! @cond
+template void OSCR::debugPrint<__StringHelper const *>(__StringHelper const *);
+template void OSCR::debugPrint<String const &>(String const &);
+template void OSCR::debugPrint<char const[]>(char const[]);
+template void OSCR::debugPrint<char const *>(char const *);
+template void OSCR::debugPrint<char *>(char *);
+template void OSCR::debugPrint<OSCR::UI::UserInput>(OSCR::UI::UserInput);
+template void OSCR::debugPrint<int8_t>(int8_t, int);
+template void OSCR::debugPrint<uint8_t>(uint8_t, int);
+template void OSCR::debugPrint<int16_t>(int16_t, int);
+template void OSCR::debugPrint<uint16_t>(uint16_t, int);
+template void OSCR::debugPrint<int32_t>(int32_t, int);
+template void OSCR::debugPrint<uint32_t>(uint32_t, int);
+
+template void OSCR::debugPrintLine<__StringHelper const *>(__StringHelper const *);
+template void OSCR::debugPrintLine<String const &>(String const &);
+template void OSCR::debugPrintLine<char const[]>(char const[]);
+template void OSCR::debugPrintLine<char const *>(char const *);
+template void OSCR::debugPrintLine<char *>(char *);
+template void OSCR::debugPrintLine<OSCR::UI::UserInput>(OSCR::UI::UserInput);
+template void OSCR::debugPrintLine<int8_t>(int8_t, int);
+template void OSCR::debugPrintLine<uint8_t>(uint8_t, int);
+template void OSCR::debugPrintLine<int16_t>(int16_t, int);
+template void OSCR::debugPrintLine<uint16_t>(uint16_t, int);
+template void OSCR::debugPrintLine<int32_t>(int32_t, int);
+template void OSCR::debugPrintLine<uint32_t>(uint32_t, int);
