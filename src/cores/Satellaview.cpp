@@ -433,6 +433,7 @@ namespace OSCR::Cores::Satellaview
 
     //Disable 8M memory pack write protection
     writeBank(0x0C, 0x5000, 0x80);  //Modify write enable register
+    writeBank(0x0D, 0x5000, 0x80);  //Deassert flash /WP line (allow erasing locked pages)
     writeBank(0x0E, 0x5000, 0x80);  //Commit register modification
 
     OSCR::UI::printSync(FS(OSCR::Strings::Status::Erasing));
