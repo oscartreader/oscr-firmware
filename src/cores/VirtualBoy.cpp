@@ -144,7 +144,7 @@ namespace OSCR::Cores::VirtualBoy
 
     do
     {
-      uint8_t selected = (menuOptionCount == 1) ? 0 : OSCR::UI::menu(FS(OSCR::Strings::Cores::SuperAcan), menuOptions, menuOptionCount);
+      uint8_t selected = (menuOptionCount == 1) ? 0 : OSCR::UI::menu(FS(OSCR::Strings::Cores::VirtualBoy), menuOptions, menuOptionCount);
 
       switch (menuOptionMap[selected])
       {
@@ -445,8 +445,8 @@ namespace OSCR::Cores::VirtualBoy
     for (uint8_t c = 0; c < 20; c += 2)
     {
       uint16_t myWord = readWord(nameAddress + (c / 2));
-      OSCR::Storage::Shared::buffer[c] = myWord & 0xFF;
-      OSCR::Storage::Shared::buffer[c + 1] = myWord >> 8;
+      OSCR::Storage::Shared::buffer[c] = myWord >> 8;
+      OSCR::Storage::Shared::buffer[c + 1] = myWord & 0xFF;
     }
 
     cartOff();
@@ -462,11 +462,11 @@ namespace OSCR::Cores::VirtualBoy
 
     OSCR::UI::printValue(OSCR::Strings::Common::Name, fileName);
 
-    OSCR::UI::printSize(OSCR::Strings::Common::ROM, cartSize * 8);
+    OSCR::UI::printSize(OSCR::Strings::Common::ROM, cartSize, true); // better option here than unadorned "true"?
 
     if (sramSize)
     {
-      OSCR::UI::printSize(OSCR::Strings::Common::Save, sramSize * 8);
+      OSCR::UI::printSize(OSCR::Strings::Common::Save, sramSize, true); // similar
     }
 
     OSCR::UI::waitButton();
@@ -590,7 +590,7 @@ namespace OSCR::Cores::VirtualBoy
   {
     printHeader();
 
-    OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::SuperAcan), FS(OSCR::Strings::Directory::Save), fileName, FS(OSCR::Strings::FileType::SaveRAM));
+    OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::VirtualBoy), FS(OSCR::Strings::Directory::Save), fileName, FS(OSCR::Strings::FileType::SaveRAM));
 
     cartOn();
 
