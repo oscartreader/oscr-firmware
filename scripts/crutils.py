@@ -1,12 +1,239 @@
 import json
+import re
+import subprocess
+import shutil
+import click # pyright: ignore[reportMissingImports]
 from datetime import datetime
+from time import sleep
 from os.path import join, dirname, isfile
+from typing import Annotated, NoReturn
+from dataclasses import dataclass
+from SCons.Script import DefaultEnvironment # pyright: ignore[reportMissingImports]
+
+try:
+    from tqdm import tqdm # pyright: ignore[reportMissingModuleSource, reportMissingImports]
+except ImportError:
+    _env = DefaultEnvironment()
+    _env.Execute("$PYTHONEXE -m pip install tqdm")
 
 MYDIR = dirname(__file__)
 MYCONF = join(MYDIR, "config.json")
 
+type IfExitCode = Annotated[int, "A value of 0 indicates no error, a value between 1 and 255 indicates an error occurred"] | Annotated[None, "A value of None means return instead of exit"]
+type ExitCode = Annotated[int, "A value of 0 indicates no error, a value between 1 and 255 indicates an error occurred"]
+
+def getsig(port, part, proto, speed, env):
+    command = [
+        env['UPLOADER'],
+        "-C",
+        env['UPLOADERCONFIG'],
+        "-p",
+        part,
+        "-c",
+        proto,
+        "-P",
+        port,
+        "-b",
+        "{}".format(speed),
+        "-qq",
+        "-U",
+        "signature:r:-:d"
+    ]
+
+    if (proto == "arduino") or (proto == "stk500v1") or (proto == "stk500v2") or (proto == "stk500"):
+        command.append("-x")
+        command.append("attempts=1")
+
+    result = subprocess.run(command, capture_output=True, text=True)
+
+    if (result.returncode != 0):
+        return False
+    
+    rstr = result.stdout.strip()
+
+    m = re.match("([0-9]+),([0-9]+),([0-9]+)", rstr)
+
+    if not m:
+        return False
+
+    return [m.group(1), m.group(2), m.group(3)]
+
+def readid(port, speed, env):
+    command = [
+        env['UPLOADER'],
+        "-C",
+        env['UPLOADERCONFIG'],
+        "-p",
+        "m2560",
+        "-c",
+        "urclock",
+        "-P",
+        port,
+        "-b",
+        "{}".format(speed),
+        "-qq",
+        "-xid=F.-16.8",
+        "-xshowid",
+    ]
+
+    result = subprocess.run(command, capture_output=True, text=True)
+
+    if (result.returncode != 0):
+        return False
+    
+    oscr_string = result.stdout.strip()
+    oscr_raw = list(reversed([int(oscr_string[i:i + 2], 16) for i in range(0, len(oscr_string), 2)]))
+
+    if (oscr_raw[0] == 0x05) and (oscr_raw[1] == 0xC1) and (oscr_raw[2] == 0x20):
+        return {
+            "ver": (oscr_raw[3] & 0xF0) >> 4,
+            "rev": (oscr_raw[3] & 0x0F),
+            "bldrid": oscr_raw[4],
+            "slots": oscr_raw[5],
+            "hardware": oscr_raw[6],
+            "integrated": oscr_raw[7],
+        }
+
+    return False
+
+class TqdmBaud(tqdm):
+    """Provides a `baud` format parameter"""
+
+    foundBaud: bool = False
+    baud: int|str|None = None
+    baudFormat: str  = "Testing {baud:>7} baud"
+    baudSuccess: str = "Testing {baud:>7} baud succeeded!"
+    speedFormat = "({n:>{totalLen}}/{total} speeds)"
+
+    def __init__(self, baud: int|str|None = None, baudFormat: str|None = None, *args, **kwargs):
+        self.baud = baud
+
+        if baudFormat:
+            self.baudFormat = baudFormat
+
+        if 'bar_format' not in kwargs:
+            kwargs['bar_format'] = "{percentage:3.0f}% [{bar}] {baudSpeed} {elapsed_s:5.2f} secs"
+
+        super().__init__(*args, **kwargs)
+
+    def set_baud(self, baud: int|str|None, refresh: bool = True):
+        self.baud = baud
+        if refresh: self.refresh()
+
+    def success(self):
+        self.foundBaud = True
+        self.n = self.total
+        self.close()
+
+    def failure(self):
+        self.foundBaud = False
+        self.refresh()
+        self.close()
+
+    @property
+    def format_dict(self):
+        d = super().format_dict
+
+        totalLen = len(str(self.total))
+        speedsLen = (totalLen * 2) + 10
+        baudSpeedLen = speedsLen + 21
+
+        myDict = {
+            "baud": self.baud,
+            "n": self.n,
+            "total": self.total,
+            "totalLen": totalLen,
+            "speedsLen": speedsLen,
+            "baudSpeedLen": baudSpeedLen,
+        }
+      
+        _baud = "" if self.baud is None else self.baudFormat.format(**myDict)
+        baud = "{baud:>{baudLen}}".format(baud=_baud, baudLen=20)
+
+        _speeds = "" if self.foundBaud else self.speedFormat.format(**myDict)
+        speeds = "{speeds:>{speedsLen}}".format(speeds=_speeds, **myDict)
+
+        if self.foundBaud:
+            _baudSpeed = self.baudSuccess.format(**myDict)
+            baudSpeed = "{baudSpeed:<{baudSpeedLen}}".format(baudSpeed=_baudSpeed, **myDict)
+        else:
+            baudSpeed = "{baud} {speeds}".format(baud=baud, speeds=speeds)
+
+        d.update(baud=baud, speeds=speeds, baudSpeed=baudSpeed)
+        return d
+
+def detectbootloaderspeed(port, env, speeds = [250000, 500000, 1000000, 2000000]):
+    speedCount = len(speeds)
+
+    pbar = TqdmBaud(total=speedCount, initial=1, miniters=1, mininterval=0, baud=speeds[0])
+
+    for index, speed in enumerate(speeds):
+        pbar.set_baud(speed, refresh=False if index == 0 else True)
+        sleep(0.1)
+
+        chkdetail = readid(port, speed, env)
+
+        if chkdetail:
+            pbar.success()
+            sleep(0.5)
+            chkdetail['port'] = port
+            chkdetail['baud'] = speed
+            return chkdetail
+
+        pbar.n += 1
+
+    pbar.failure()
+
+    return False
+
 def isnumber(i):
     return isinstance(i, (int, float, complex)) and not isinstance(i, bool)
+
+def isbool(i):
+    return isinstance(i, bool)
+
+def IsEven(num):
+    if num % 2 == 0:
+        return True
+    else:
+        return False
+
+def IsOdd(num):
+    if num % 2 == 1:
+        return True
+    else:
+        return False
+
+def Bar(char="=", **args):
+    bar = char * int(shutil.get_terminal_size().columns);
+    click.secho(bar, **args)
+
+def LabeledBar(label, char="=", **args):
+    width = len(click.unstyle(label))
+    bars = char * int((shutil.get_terminal_size().columns - width - 2) / 2);
+
+    labeledBar = ' '.join([
+        bars,
+        label,
+        bars + (char if IsOdd(width) else "")
+    ])
+
+    click.secho(labeledBar, **args)
+
+def PrintError(message: str, header="ERROR"):
+    """Prints a generic error. If `code` is `None`, the method returns. Otherwise, it exits with an exit code of `code`."""
+    sleep(1)
+
+    click.echo("", err=True)
+    LabeledBar(click.style(header, fg="red", bold=True), char="!", err=True)
+    click.echo(click.style(message, fg="red", bold=True), err=True)
+    Bar(char="!", err=True)
+    click.echo("", err=True)
+
+def FatalError(message: str, header="FATAL ERROR", code: ExitCode = 1) -> NoReturn:
+    """Prints a fatal error and exits with an exit code of `code`."""
+    PrintError(message, header)
+    raise SystemExit(0 if code < 0 else (255 if code > 255 else code))
 
 def convifbool(v):
     if (isinstance(v, bool)):
@@ -185,8 +412,6 @@ class CRConfig:
 
                 (keyType, keyFor) = key.split('.', 1)
                 options[keyFor] = value
-
-                #print("for {}, override {} with {}".format(section, keyFor, value))
 
         return options
 
@@ -381,8 +606,6 @@ class CROptionBase:
 
             self._flags[key] = CRFeature(self.cr.target, option, conf)
 
-        #print("Found {} {}".format(len(self._flags), sectionKey))
-
     def getFlags(self):
         flags = []
 
@@ -494,19 +717,15 @@ class CRCores:
         self.cr = cr
         self.conf = conf
 
-        #optionKeys = self.cr.projConf.options("cores")
         optionKeys = self.cr.getSectionValues("cores")
 
         for key, conf in optionKeys.items():
             core = self.conf.get(key)
-            #conf = self.cr.projConf.get("cores", key)
 
             if (core == None) or (conf == None) or ("define" not in core):
                 continue
 
             self.cores[key] = CRCore(self.cr.target, core, conf)
-
-        #print("Found {} cores".format(len(self.cores)))
 
     def getFlags(self):
         flags = []

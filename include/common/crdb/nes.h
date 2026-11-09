@@ -3,8 +3,9 @@
 #ifndef CRDB_NES_H_
 # define CRDB_NES_H_
 
-# include "common/CRDB.h"
-# include "cores/NES.h"
+# if HAS_NES
+#   include "common/CRDB.h"
+#   include "cores/NES.h"
 
 namespace OSCR::Databases
 {
@@ -107,5 +108,7 @@ namespace OSCR::Databases
     }
   };
 }
+
+# endif /* HAS_NES */
 
 #endif /* CRDB_NES_H_ */

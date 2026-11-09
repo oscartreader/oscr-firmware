@@ -1,131 +1,163 @@
 import click # pyright: ignore[reportMissingImports]
-from os import getcwd
-from os.path import join, isfile
-from SCons.Script import ARGUMENTS # pyright: ignore[reportMissingImports]
-from SCons.Errors import UserError # pyright: ignore[reportMissingImports]
 import crutils
-import subprocess
+from time import sleep
+from SCons.Errors import UserError # pyright: ignore[reportMissingImports]
 
-# 87efff695820c105
+try:
+  Import("env") # pyright: ignore[reportUndefinedVariable]
+except (NameError, KeyError, UserError):
+  crutils.FatalError("The `env` variable is missing", "FATAL INTERNAL ERROR")
+  env = None # Unreachable, only for linting
 
-OSCR_CLOCKGEN         = (1 <<  0) # Clock Generator
-OSCR_VSELECT          = (1 <<  1) # VSelect
-OSCR_RTC              = (1 <<  2) # RTC
-OSCR_SSR_LCD          = (1 <<  7) # Using LCD from StarshadeRETRO/BigTreeTech
-OSCR_OBM              = (1 <<  0) # Integrated ATmega2560
-OSCR_CBUS             = (1 <<  1) # Cartridge Bus
-OSCR_VOLTMON          = (1 <<  2) # Voltage Monitors
-OSCR_STAT_LED         = (1 <<  3) # Status LED
-OSCR_SVN_SLT          = (1 <<  5) # Seven-slot Adapter
-OSCR_USBC             = (1 <<  6) # Integrated USB C port
-OSCR_AUX              = (1 <<  7) # AUX Capability
-OSCR_GBX              = (1 <<  0) # GB slot
-OSCR_NES              = (1 <<  1) # NES slot
-OSCR_FC               = (1 <<  2) # Famicom slot
-OSCR_SNES             = (1 <<  3) # SNES/SFC slot
-OSCR_N64              = (1 <<  4) # N64 slot
-OSCR_MD               = (1 <<  5) # Mega Drive/Genesis slot
-OSCR_SMS              = (1 <<  6) # SMS slot
-OSCR_GG               = (1 <<  7) # Game Gear slot
+def decodeBootloader(source = None, target = None, env = None):
+  if not env:
+    crutils.FatalError("The `env` variable is missing", "FATAL INTERNAL ERROR")
 
-print("")
-print("")
-print("========== ATTACHED OSCR FEATURE CHECKER ==========")
-print("")
-print("Communicating with bootloader ... ", end="")
+  OSCR_CLOCKGEN         = (1 <<  0) # Clock Generator
+  OSCR_VSELECT          = (1 <<  1) # VSelect
+  OSCR_RTC              = (1 <<  2) # RTC
+  OSCR_SSR_LCD          = (1 <<  7) # Using LCD from StarshadeRETRO/BigTreeTech
+  OSCR_OBM              = (1 <<  0) # Integrated ATmega2560
+  OSCR_CBUS             = (1 <<  1) # Cartridge Bus
+  OSCR_VOLTMON          = (1 <<  2) # Voltage Monitors
+  OSCR_STAT_LED         = (1 <<  3) # Status LED
+  OSCR_SVN_SLT          = (1 <<  5) # Seven-slot Adapter
+  OSCR_USBC             = (1 <<  6) # Integrated USB C port
+  OSCR_AUX              = (1 <<  7) # AUX Capability
+  OSCR_GBX              = (1 <<  0) # GB slot
+  OSCR_NES              = (1 <<  1) # NES slot
+  OSCR_FC               = (1 <<  2) # Famicom slot
+  OSCR_SNES             = (1 <<  3) # SNES/SFC slot
+  OSCR_N64              = (1 <<  4) # N64 slot
+  OSCR_MD               = (1 <<  5) # Mega Drive/Genesis slot
+  OSCR_SMS              = (1 <<  6) # SMS slot
+  OSCR_GG               = (1 <<  7) # Game Gear slot
 
-result = subprocess.run(["avrdude.exe", "-patmega2560", "-curclock", "-PCOM7", "-b250000", "-qq", "-xid=F.-16.8", "-xshowid"], capture_output=True, text=True)
+  boardConf = env.BoardConfig()
+  bootloaderConf = boardConf.get("bootloader", {})
+  port = bootloaderConf.get("port", "")
 
-if (result.returncode != 0):
-  print("")
-  exit(1)
+  if (port == ""):
+    crutils.FatalError("No serial port specified")
 
-oscr_string = result.stdout.strip()
-oscr_raw = list(reversed([int(oscr_string[i:i + 2], 16) for i in range(0, len(oscr_string), 2)]))
+  click.echo("Detecting bootloader baud rate ... ")
 
-print("ident = " + ''.join('%02X' % x for x in oscr_raw) + " ... ", end="")
+  deviceDetails = crutils.detectbootloaderspeed(port, env)
 
-if (oscr_raw[0] == 0x05) and (oscr_raw[1] == 0xC1) and (oscr_raw[2] == 0x20):
-  print("ok")
-else:
-  print("invalid")
-  print("")
-  print(oscr_raw)
-  print("")
-  exit(1)
-
-oscr_ver = (oscr_raw[3] & 0xF0) >> 4
-oscr_rev = (oscr_raw[3] & 0x0F)
-
-oscr_bldrid = oscr_raw[4]
-oscr_slots = oscr_raw[5]
-oscr_hardware = oscr_raw[6]
-oscr_integrated = oscr_raw[7]
-
-print("")
-print("")
-
-print("[[ OSCR Hardware Version {ver}, Revision {rev} ]]".format(ver=oscr_ver, rev=oscr_rev))
-
-if (oscr_bldrid > 0):
-  print("Builder: ", end="")
-
-  match (oscr_bldrid):
-    case 0x69:  print("StarshadeRETRO")
-    case _:     print("Unknown")
+  if not deviceDetails:
+    crutils.FatalError("Unable to communicate with bootloader (Note: The customized OSCR version of urboot is required to use this feature!)")
 
 
-if (oscr_hardware > 0):
-  print("Basic Hardware:")
+  click.echo("")
+  click.echo(" >>> Got details from OSCR bootloader via {port} @ {baud} baud".format(port=deviceDetails['port'], baud=deviceDetails['baud']))
+  click.echo("")
+  click.echo("")
 
-  if (oscr_hardware & OSCR_CLOCKGEN):
-    print(" + Clock Generator");
-  if (oscr_hardware & OSCR_VSELECT):
-    print(" + Automatic Voltage Select");
-  if (oscr_hardware & OSCR_RTC):
-    print(" + Real-Time Clock");
-  if (oscr_hardware & OSCR_SSR_LCD):
-    print(" + StarshadeRETRO LCD");
+  header = "OSCR Hardware Version {ver}, Revision {rev}".format(ver=deviceDetails['ver'], rev=deviceDetails['rev'])
 
-if (oscr_integrated > 0):
-  print("Integrated Hardware:")
+  crutils.Bar()
+  crutils.LabeledBar(header, char=" ")
 
-  if (oscr_integrated & OSCR_OBM):
-    print(" + Integrated ATmega2560");
-  if (oscr_integrated & OSCR_CBUS):
-    print(" + Cartridge Bus");
-  if (oscr_integrated & OSCR_VOLTMON):
-    print(" + Voltage Monitoring");
-  if (oscr_integrated & OSCR_STAT_LED):
-    print(" + Status LED");
+  if (deviceDetails['bldrid'] > 0):
+    match (deviceDetails['bldrid']):
+      # If you don't care about the number, just take the next available one.
+      case 0x01:  builder, buildType = "Rad Rabbit Retro", "Built"
+      case 0x69:  builder, buildType = "StarshadeRETRO", "Built"
+      case 0x6A:  builder, buildType = "StarshadeRETRO", "Kit"
+      case _:     builder, buildType = hex(deviceDetails['bldrid']), "Unknown"
 
-  if (oscr_integrated & OSCR_SVN_SLT):
-    print(" + Seven-Slot Top PCB");
-  if (oscr_integrated & OSCR_USBC):
-    print(" + USB C Port");
-  if (oscr_integrated & OSCR_AUX):
-    print(" + AUX Accessory Port");
+    subHeader = " {type} by {builder} ".format(type=buildType, builder=builder)
 
-if (oscr_slots > 0):
-  print("Available Slots:")
+    crutils.LabeledBar("{subHeader:*^{headerLen}}".format(subHeader=subHeader, headerLen=len(header)-4), char=" ")
 
-  if (oscr_slots & OSCR_GBX):
-    print(" + Game Boy");
-  if (oscr_slots & OSCR_NES):
-    print(" + NES");
-  if (oscr_slots & OSCR_FC):
-    print(" + Famicom");
-  if (oscr_slots & OSCR_SNES):
-    print(" + SNES/SFC");
-  if (oscr_slots & OSCR_N64):
-    print(" + N64");
-  if (oscr_slots & OSCR_MD):
-    print(" + Mega Drive/Genesis");
-  if (oscr_slots & OSCR_SMS):
-    print(" + SMS");
-  if (oscr_slots & OSCR_GG):
-    print(" + Game Gear");
+  crutils.Bar()
+  sleep(0.5)
 
-print("")
-print("Note: This list is what your bootloader says is physically part of your OSCR. It is not an indication of enabled or added features of the firmware.")
-print("")
+  if (deviceDetails['hardware'] > 0):
+    click.echo("")
+    crutils.LabeledBar("Basic Hardware", char="-")
+
+    if (deviceDetails['hardware'] & OSCR_CLOCKGEN):
+      click.echo(" + Clock Generator");
+    if (deviceDetails['hardware'] & OSCR_VSELECT):
+      click.echo(" + Automatic Voltage Select");
+    if (deviceDetails['hardware'] & OSCR_RTC):
+      click.echo(" + Real-Time Clock");
+    if (deviceDetails['hardware'] & OSCR_SSR_LCD):
+      click.echo(" + StarshadeRETRO LCD");
+
+    crutils.Bar(char="-")
+    sleep(1)
+  else:
+    click.echo("!! No basic hardware information is present or none were installed.")
+
+  if (deviceDetails['integrated'] > 0):
+    click.echo("")
+    crutils.LabeledBar("Integrated Hardware", char="-")
+
+    if (deviceDetails['integrated'] & OSCR_OBM):
+      click.echo(" + Integrated ATmega2560");
+    if (deviceDetails['integrated'] & OSCR_CBUS):
+      click.echo(" + Cartridge Bus");
+    if (deviceDetails['integrated'] & OSCR_VOLTMON):
+      click.echo(" + Voltage Monitoring");
+    if (deviceDetails['integrated'] & OSCR_STAT_LED):
+      click.echo(" + Status LED");
+    if (deviceDetails['integrated'] & OSCR_SVN_SLT):
+      click.echo(" + Seven-Slot Top PCB");
+    if (deviceDetails['integrated'] & OSCR_USBC):
+      click.echo(" + USB C Port");
+    if (deviceDetails['integrated'] & OSCR_AUX):
+      click.echo(" + AUX Accessory Port");
+
+    crutils.Bar(char="-")
+    sleep(1)
+  else:
+    click.echo("!! No integrated hardware information is present or none were installed.")
+
+  if (deviceDetails['slots'] > 0):
+    click.echo("")
+    crutils.LabeledBar("Integrated Slots", char="-")
+
+    if (deviceDetails['slots'] & OSCR_GBX):
+      click.echo(" + Game Boy");
+    if (deviceDetails['slots'] & OSCR_NES):
+      click.echo(" + NES");
+    if (deviceDetails['slots'] & OSCR_FC):
+      click.echo(" + Famicom");
+    if (deviceDetails['slots'] & OSCR_SNES):
+      click.echo(" + SNES/SFC");
+    if (deviceDetails['slots'] & OSCR_N64):
+      click.echo(" + N64");
+    if (deviceDetails['slots'] & OSCR_MD):
+      click.echo(" + Mega Drive/Genesis");
+    if (deviceDetails['slots'] & OSCR_SMS):
+      click.echo(" + SMS");
+    if (deviceDetails['slots'] & OSCR_GG):
+      click.echo(" + Game Gear");
+
+    crutils.Bar(char="-")
+    sleep(1)
+  else:
+    click.echo("!! No integrated slot information is present.")
+
+  click.echo("")
+  crutils.LabeledBar("Note", char="-")
+  click.echo(" The data above is what your bootloader reports about your OSCR.")
+  click.echo(" The values were set by whoever burnt your bootloader to your ATmega2560.")
+  click.echo(" Any changes you've made since then will not be reflected above.")
+  crutils.Bar(char="-")
+  click.echo("")
+  crutils.Bar()
+  click.echo("")
+
+# Multiple actions
+env.AddCustomTarget(
+    name="decodebootloader",
+    dependencies=None,
+    actions=[
+        decodeBootloader
+    ],
+    title="Check OSCR Bootloader",
+    description="Decode OSCR Bootloader"
+)

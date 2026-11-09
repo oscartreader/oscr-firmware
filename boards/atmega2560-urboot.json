@@ -15,7 +15,7 @@
   "bootloader": {
     "file": "bootloader/avr/urboot/urboot-generic-250000bps.hex",
     "lfuse": "0xFF",
-    "hfuse": "0xDC",
+    "hfuse": "0xDE",
     "efuse": "0xFD",
     "lock_bits": "0x0F",
     "unlock_bits": "0x3F"
@@ -35,7 +35,7 @@
   "name": "ATmega2560 (urboot)",
   "upload": {
     "maximum_ram_size": 8192,
-    "maximum_size": 261120,
+    "maximum_size": 261118,
     "protocol": "urclock",
     "require_upload_port": true,
     "speed": 250000

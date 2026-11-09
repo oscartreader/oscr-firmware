@@ -1,136 +1,3 @@
-diff --git a/src/hexls b/src/hexls
-index ec649b4..848abd9 100755
---- a/src/hexls
-+++ b/src/hexls
-@@ -242,6 +242,53 @@ use constant {
-   UR_HAS_CE         =>   1, # Bootloader has Chip Erase (u7.7+)
- };
- 
-+use constant {
-+  #
-+  # == Modular Hardware ==
-+  # - Anything that could be added via an external module.
-+  OSCR_CLOCKGEN         => 1 <<  0, # Clock Generator
-+  OSCR_VSELECT          => 1 <<  1, # VSelect
-+  OSCR_RTC              => 1 <<  2, # RTC
-+  # unassigned          => 1 <<  3, # ...
-+  # unassigned          => 1 <<  4, # ...
-+  # unassigned          => 1 <<  5, # ...
-+  # unassigned          => 1 <<  6, # ...
-+  OSCR_SSR_LCD          => 1 <<  7, # Using LCD from StarshadeRETRO/BigTreeTech
-+
-+  # == Integrated Hardware/ICs ==
-+  # - Anything that must be integrated into the main PCB to function.
-+  OSCR_OBM              => 1 <<  0, # Integrated ATmega2560
-+  OSCR_CBUS             => 1 <<  1, # Cartridge Bus
-+  OSCR_VOLTMON          => 1 <<  2, # Voltage Monitors
-+  OSCR_STAT_LED         => 1 <<  3, # Status LED
-+  # unassigned          => 1 <<  4, # ...
-+  OSCR_SVN_SLT          => 1 <<  5, # Seven-slot Adapter
-+  OSCR_USBC             => 1 <<  6, # Integrated USB C port
-+  OSCR_AUX              => 1 <<  7, # AUX Capability
-+
-+  # == Built-in Slots ==
-+  # - Slots which are part of the hardware (not adapters)
-+  OSCR_GBX              => 1 <<  0, # GB slot
-+  OSCR_NES              => 1 <<  1, # NES slot
-+  OSCR_FC               => 1 <<  2, # Famicom slot
-+  OSCR_SNES             => 1 <<  3, # SNES/SFC slot
-+  OSCR_N64              => 1 <<  4, # N64 slot
-+  OSCR_MD               => 1 <<  5, # Mega Drive/Genesis slot
-+  OSCR_SMS              => 1 <<  6, # SMS slot
-+  OSCR_GG               => 1 <<  7, # Game Gear slot
-+
-+  # == Builders/Vendors ==
-+  # - Builder and vendor IDs.
-+  # - This can only have 1 value, so there are 255 IDs available (since 0 = none)
-+  BDR_NONE              =>    0x00, # None/self-built/unset
-+  BDR_STARSHADERETRO    =>    0x69, # StarshadeRETRO
-+};
-+
-+my %builders = (
-+  0x00  => "Unknown",
-+  0x69  => "StarshadeRETRO",
-+);
-+
- # default to all *.hex files if no argument given
- @ARGV = <*.hex> if !@ARGV;
- 
-@@ -256,7 +303,7 @@ foreach my $fname (@ARGV) {
-   undef $rjmpop;
-   # read intel hex file (see https://en.wikipedia.org/wiki/Intel_HEX)
-   open($in, $fname) or die "$progname: cannot open $fname";
--  my ($startaddr, $endaddr, $flashsize, $offset, $versionlen) = (0, 0, 0, 0, 0);
-+  my ($startaddr, $endaddr, $flashsize, $offset, $versionlen, $oscrlen) = (0, 0, 0, 0, 0, 0);
-   my $lastdata;
-   while(<$in>) {
-     # offset address for large devices (up to 1 MB)
-@@ -275,6 +322,65 @@ foreach my $fname (@ARGV) {
-       $disthex = $len == 2? undef: hex(substr($_, 4+2*$len, 1).substr($_, 1+2*$len, 2));
-       # add $len-2 to start of version section to be just after rjmp; 0x9805 is the ret opcode
-       $pgmwriteaddr = $len ==2 || $rjmpop eq '9805'? undef: $offset + hex(substr($_,3,4)) + $len-2 + 2*($disthex-4096);
-+    } elsif(/^:0[864]..F00005C120/i) { # either ordinary data record or oscr hardware record at end
-+      # print "!> $_\r\n";
-+      my $line = $_;
-+      $line =~ s/^\s*(.*?)\s*$/$1/;
-+
-+      my $len = hex(substr($_, 1, 2));
-+      my $pos = 8-(2+(2*$len));
-+
-+      my $hw_data = hex(substr($line, $pos - 2, 2));
-+
-+      my $hw_ver = ($hw_data & 0xF0) >> 4;  # Hardware Version in upper 4 bits
-+      my $hw_rev = ($hw_data & 0x0F);       # Hardware Revision (main PCB) in lower 4 bits
-+
-+      my $oscr_data = substr($line, $pos, -2);
-+
-+      my $oscr_builder    = hex(substr($oscr_data, 0, 2));
-+      my $oscr_slots      = hex(substr($oscr_data, 2, 2));
-+      my $oscr_integrated = hex(substr($oscr_data, 4, 2));
-+      my $oscr_hardware   = hex(substr($oscr_data, 6, 2));
-+
-+      # print "oscr_data = $oscr_data\r\n";
-+
-+      my $hardware = "";
-+      my $integrated = "";
-+      my $slots = "";
-+
-+      $hardware   .= f( $oscr_hardware & OSCR_CLOCKGEN    ? " + Clock Generator\r\n"            : '' );
-+      $hardware   .= f( $oscr_hardware & OSCR_VSELECT     ? " + Automatic Voltage Select\r\n"   : '' );
-+      $hardware   .= f( $oscr_hardware & OSCR_RTC         ? " + Real-Time Clock\r\n"            : '' );
-+      $hardware   .= f( $oscr_hardware & OSCR_SSR_LCD     ? " + StarshadeRETRO LCD\r\n"         : '' );
-+
-+      $integrated .= f( $oscr_integrated & OSCR_OBM       ? " + Integrated ATmega2560\r\n"      : '' );
-+      $integrated .= f( $oscr_integrated & OSCR_CBUS      ? " + Cartridge Bus\r\n"              : '' );
-+      $integrated .= f( $oscr_integrated & OSCR_VOLTMON   ? " + Voltage Monitoring\r\n"         : '' );
-+      $integrated .= f( $oscr_integrated & OSCR_STAT_LED  ? " + Status LED\r\n"                 : '' );
-+      $integrated .= f( $oscr_integrated & OSCR_SVN_SLT   ? " + Seven-Slot Adapter\r\n"         : '' );
-+      $integrated .= f( $oscr_integrated & OSCR_USBC      ? " + USB C Port\r\n"                 : '' );
-+      $integrated .= f( $oscr_integrated & OSCR_AUX       ? " + AUX Accessory Port\r\n"         : '' );
-+
-+      $slots      .= f( $oscr_slots & OSCR_GBX            ? " + GB slot\r\n"                    : '' );
-+      $slots      .= f( $oscr_slots & OSCR_NES            ? " + NES slot\r\n"                   : '' );
-+      $slots      .= f( $oscr_slots & OSCR_FC             ? " + Famicom slot\r\n"               : '' );
-+      $slots      .= f( $oscr_slots & OSCR_SNES           ? " + SNES/SFC slot\r\n"              : '' );
-+      $slots      .= f( $oscr_slots & OSCR_N64            ? " + N64 slot\r\n"                   : '' );
-+      $slots      .= f( $oscr_slots & OSCR_MD             ? " + Mega Drive/Genesis slot\r\n"    : '' );
-+      $slots      .= f( $oscr_slots & OSCR_SMS            ? " + SMS slot\r\n"                   : '' );
-+      $slots      .= f( $oscr_slots & OSCR_GG             ? " + Game Gear slot\r\n"             : '' );
-+
-+      print "[ OSCR HW${hw_ver}r${hw_rev} ]\r\n";
-+
-+      if ($oscr_builder > 0) { print "Builder: $builders{$oscr_builder}\r\n"; }
-+
-+      print "Features:\r\n";
-+      print "$hardware";
-+      print "Integrations:\r\n";
-+      print "$integrated";
-+      print "Built-In Slots:\r\n";
-+      print "$slots";
-+      print "\r\n";
-     } elsif(/^:......00/i) { # ordinary data record
-       my $len = hex(substr($_, 1, 2));
-       my $addr = hex(substr($_,3,4))+$offset;
 diff --git a/src/Makefile b/src/Makefile
 index 3ffe061..329d32a 100644
 --- a/src/Makefile
@@ -384,6 +251,220 @@ index 3ffe061..329d32a 100644
  	$(OBJDUMP) -h -S $*.elf > $*.lst
  #	@$(SIZE) $*.elf
  	@echo -- `./hexls $@`
+diff --git a/src/hexls b/src/hexls
+index ec649b4..eeb4995 100755
+--- a/src/hexls
++++ b/src/hexls
+@@ -32,8 +32,8 @@ Options:
+   -use         Print number of bytes occupied by bootloader and exit
+ END_USAGE
+ 
+-my ($version, $check, $srt, $usage, $md, $mcu, $pre, $l, $c, $t, $title, $in, $disthex, $rjmpop,
+-    $vers, $distelf, $pgmwriteaddr, $addrlst, @rows, $siz, $use, $ver, $fea, $nam, %legend);
++my ($version, $check, $srt, $usage, $oscr, $oscr_text, $md, $mcu, $pre, $l, $c, $t, $title, $in, $disthex, $rjmpop,
++    $vers, $distelf, $pgmwriteaddr, $addrlst, @rows, @rows_oscr, $siz, $use, $ver, $fea, $nam, %legend);
+ 
+ my %feature = (
+   'w'      => "  + `w` bootloader provides `pgm_write_page(sram, flash)` for the application at `FLASHEND-4+1`\n",
+@@ -215,6 +215,7 @@ GetOptions(
+   'md=s' => \$md,
+   'sort' => \$srt,
+   'use'  => \$usage,
++  'oscr' => \$oscr,
+ ) or die $Usage;
+ 
+ $isauto2 = 1 if "_atmega103_at43usb320_at90s2313_at90s2333_at90s4433_at90s4414_at90s8515_at90s4434_at90s8535_" =~ /_${mcu}_/i;
+@@ -242,6 +243,57 @@ use constant {
+   UR_HAS_CE         =>   1, # Bootloader has Chip Erase (u7.7+)
+ };
+ 
++use constant {
++  #
++  # == Modular Hardware ==
++  # - Anything that could be added via an external module.
++  OSCR_CLOCKGEN         => 1 <<  0, # Clock Generator
++  OSCR_VSELECT          => 1 <<  1, # VSelect
++  OSCR_RTC              => 1 <<  2, # RTC
++  # unassigned          => 1 <<  3, # ...
++  # unassigned          => 1 <<  4, # ...
++  # unassigned          => 1 <<  5, # ...
++  # unassigned          => 1 <<  6, # ...
++  OSCR_SSR_LCD          => 1 <<  7, # Using LCD from StarshadeRETRO/BigTreeTech
++
++  # == Integrated Hardware/ICs ==
++  # - Anything that must be integrated into the main PCB to function.
++  OSCR_OBM              => 1 <<  0, # Integrated ATmega2560
++  OSCR_CBUS             => 1 <<  1, # Cartridge Bus
++  OSCR_VOLTMON          => 1 <<  2, # Voltage Monitors
++  OSCR_STAT_LED         => 1 <<  3, # Status LED
++  # unassigned          => 1 <<  4, # ...
++  OSCR_SVN_SLT          => 1 <<  5, # Seven-slot Adapter
++  OSCR_USBC             => 1 <<  6, # Integrated USB C port
++  OSCR_AUX              => 1 <<  7, # AUX Capability
++
++  # == Built-in Slots ==
++  # - Slots which are part of the hardware (not adapters)
++  OSCR_GBX              => 1 <<  0, # GB slot
++  OSCR_NES              => 1 <<  1, # NES slot
++  OSCR_FC               => 1 <<  2, # Famicom slot
++  OSCR_SNES             => 1 <<  3, # SNES/SFC slot
++  OSCR_N64              => 1 <<  4, # N64 slot
++  OSCR_MD               => 1 <<  5, # Mega Drive/Genesis slot
++  OSCR_SMS              => 1 <<  6, # SMS slot
++  OSCR_GG               => 1 <<  7, # Game Gear slot
++
++  # == Builders/Vendors ==
++  # - Builder and vendor IDs.
++  # - This can only have 1 value, so there are 255 IDs available (since 0 = none)
++  BDR_NONE              =>    0x00, # None/self-built/unset
++  BDR_RADRABBITRETRO    =>    0x01, # Rad Rabbit Retro
++  BDR_STARSHADERETRO    =>    0x69, # StarshadeRETRO
++  BDR_STARSHADERETROKIT =>    0x6A, # StarshadeRETRO (Kit)
++};
++
++my %builders = (
++  0x00  => "Unknown",
++  0x01  => "Rad Rabbit Retro",
++  0x69  => "StarshadeRETRO",
++  0x6A  => "StarshadeRETRO (Kit)",
++);
++
+ # default to all *.hex files if no argument given
+ @ARGV = <*.hex> if !@ARGV;
+ 
+@@ -256,7 +308,7 @@ foreach my $fname (@ARGV) {
+   undef $rjmpop;
+   # read intel hex file (see https://en.wikipedia.org/wiki/Intel_HEX)
+   open($in, $fname) or die "$progname: cannot open $fname";
+-  my ($startaddr, $endaddr, $flashsize, $offset, $versionlen) = (0, 0, 0, 0, 0);
++  my ($startaddr, $endaddr, $flashsize, $offset, $versionlen, $oscrlen) = (0, 0, 0, 0, 0, 0);
+   my $lastdata;
+   while(<$in>) {
+     # offset address for large devices (up to 1 MB)
+@@ -275,6 +327,82 @@ foreach my $fname (@ARGV) {
+       $disthex = $len == 2? undef: hex(substr($_, 4+2*$len, 1).substr($_, 1+2*$len, 2));
+       # add $len-2 to start of version section to be just after rjmp; 0x9805 is the ret opcode
+       $pgmwriteaddr = $len ==2 || $rjmpop eq '9805'? undef: $offset + hex(substr($_,3,4)) + $len-2 + 2*($disthex-4096);
++    } elsif(/^:0[864]..F00005C120/i) { # either ordinary data record or oscr hardware record at end
++      # print "!> $_\r\n";
++      my $line = $_;
++      $line =~ s/^\s*(.*?)\s*$/$1/;
++
++      my $len = hex(substr($_, 1, 2));
++      my $pos = 8-(2+(2*$len));
++
++      my $hw_data = hex(substr($line, $pos - 2, 2));
++
++      my $hw_ver = ($hw_data & 0xF0) >> 4;  # Hardware Version in upper 4 bits
++      my $hw_rev = ($hw_data & 0x0F);       # Hardware Revision (main PCB) in lower 4 bits
++
++      my $oscr_data = substr($line, $pos, -2);
++
++      my $oscr_builder    = hex(substr($oscr_data, 0, 2));
++      my $oscr_slots      = hex(substr($oscr_data, 2, 2));
++      my $oscr_integrated = hex(substr($oscr_data, 4, 2));
++      my $oscr_hardware   = hex(substr($oscr_data, 6, 2));
++
++      my $hardware = "";
++      my $integrated = "";
++      my $slots = "";
++
++      $hardware   .= f( $oscr_hardware & OSCR_CLOCKGEN    ? "  + Clock Generator\r\n"           : '' );
++      $hardware   .= f( $oscr_hardware & OSCR_VSELECT     ? "  + Automatic Voltage Select\r\n"  : '' );
++      $hardware   .= f( $oscr_hardware & OSCR_RTC         ? "  + Real-Time Clock\r\n"           : '' );
++      $hardware   .= f( $oscr_hardware & OSCR_SSR_LCD     ? "  + StarshadeRETRO LCD\r\n"        : '' );
++
++      $integrated .= f( $oscr_integrated & OSCR_OBM       ? "  + Integrated ATmega2560\r\n"     : '' );
++      $integrated .= f( $oscr_integrated & OSCR_CBUS      ? "  + Cartridge Bus\r\n"             : '' );
++      $integrated .= f( $oscr_integrated & OSCR_VOLTMON   ? "  + Voltage Monitoring\r\n"        : '' );
++      $integrated .= f( $oscr_integrated & OSCR_STAT_LED  ? "  + Status LED\r\n"                : '' );
++      $integrated .= f( $oscr_integrated & OSCR_SVN_SLT   ? "  + Seven-Slot Adapter\r\n"        : '' );
++      $integrated .= f( $oscr_integrated & OSCR_USBC      ? "  + USB C Port\r\n"                : '' );
++      $integrated .= f( $oscr_integrated & OSCR_AUX       ? "  + AUX Accessory Port\r\n"        : '' );
++
++      $slots      .= f( $oscr_slots & OSCR_GBX            ? "  + GB slot\r\n"                   : '' );
++      $slots      .= f( $oscr_slots & OSCR_NES            ? "  + NES slot\r\n"                  : '' );
++      $slots      .= f( $oscr_slots & OSCR_FC             ? "  + Famicom slot\r\n"              : '' );
++      $slots      .= f( $oscr_slots & OSCR_SNES           ? "  + SNES/SFC slot\r\n"             : '' );
++      $slots      .= f( $oscr_slots & OSCR_N64            ? "  + N64 slot\r\n"                  : '' );
++      $slots      .= f( $oscr_slots & OSCR_MD             ? "  + Mega Drive/Genesis slot\r\n"   : '' );
++      $slots      .= f( $oscr_slots & OSCR_SMS            ? "  + SMS slot\r\n"                  : '' );
++      $slots      .= f( $oscr_slots & OSCR_GG             ? "  + Game Gear slot\r\n"            : '' );
++
++      $oscr_text = "== [ File `${fname}` ] ==========\r\n";
++      if ($oscr_builder > 0) {
++        my $bldr = defined($builders{$oscr_builder}) ? $builders{$oscr_builder} : $builders{0x00};
++        $oscr_text .= "* Builder: $bldr\r\n";
++      }
++      $oscr_text .= "* Hardware\r\n";
++      $oscr_text .= "  + Version: ${hw_ver}\r\n";
++      $oscr_text .= "  + Revision: ${hw_rev}\r\n";
++
++      if ($oscr_hardware > 0) {
++        $oscr_text .= "* Features\r\n";
++        $oscr_text .= "$hardware";
++      } else {
++        $oscr_text .= "* Features: [none]\r\n";
++      }
++
++      if ($oscr_integrated > 0) {
++        $oscr_text .= "* Integrations\r\n";
++        $oscr_text .= "$integrated";
++      } else {
++        $oscr_text .= "* Integrations: [none]\r\n";
++      }
++
++      if ($oscr_slots > 0) {
++        $oscr_text .= "* Built-In Slots\r\n";
++        $oscr_text .= "$slots";
++      } else {
++        $oscr_text .= "* Built-In Slots: [unknown]\r\n";
++      }
++      $oscr_text .= "====================\r\n";
+     } elsif(/^:......00/i) { # ordinary data record
+       my $len = hex(substr($_, 1, 2));
+       my $addr = hex(substr($_,3,4))+$offset;
+@@ -355,6 +483,7 @@ foreach my $fname (@ARGV) {
+   f(basename($fname));
+ 
+   push @rows, [$siz, $use, $ver, $fea, $nam];
++  push @rows_oscr, [$oscr_text];
+ 
+   # check .lst file for pgm_write_page symbol
+   if($check && defined($pgmwriteaddr)) {
+@@ -383,7 +512,7 @@ print $checked != $checkedok? "$progname: rjmp pgm_write_page() inconsistencies;
+   "$progname: rjmp pgm_write_page() entries in $checked bootloaders look good\n"
+   if $check && $checked;
+ 
+-if(!$check) {
++if(!$check && !$oscr) {
+   if($srt) {
+     @rows = sort { $a->[1] <=> $b->[1] or  $a->[0] <=> $b->[0] or $b->[2] cmp $a->[2] or $a->[3] cmp $b->[3] or $a->[4] cmp $b->[4] } @rows;
+   }
+@@ -417,6 +546,13 @@ if(!$check) {
+      print $feature{$_} for grep { $legend{$_} } (qw(wdto xfcpu ifcpu <fcpu >fcpu fcpux+ fcpui+ fcpupm baud+ auto auto2 swio uart alt rxtx
+        led-b1 led9 ledPB1 lednop no-led csb0 cs8 csPB0 csnop template dual fp9 pr ee ce fr vbl hw ur aur dur adur stk500 ddd v2 v3 min));
+   }
++} elsif ($oscr) {
++  my $i = 0;
++  for my $line (@rows_oscr) {
++    if ($i > 0) { print "\r\n"; }
++    print @{$line};
++    $i += 1;
++  }
+ }
+ 
+ exit($checked != $checkedok);
+diff --git a/src/urboot-gcc b/src/urboot-gcc
+index bd52218..e1c43ee 100755
+--- a/src/urboot-gcc
++++ b/src/urboot-gcc
+@@ -1,4 +1,4 @@
+-#!/usr/bin/perl -CS
++#!/usr/bin/env -S perl -CS
+ 
+ # urboot-gcc
+ #
 diff --git a/src/urboot.c b/src/urboot.c
 index b914409..e6395ef 100644
 --- a/src/urboot.c

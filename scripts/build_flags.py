@@ -1,4 +1,4 @@
-import click
+import click # pyright: ignore[reportMissingImports]
 from os import getcwd
 from os.path import join, isfile
 from SCons.Script import ARGUMENTS # pyright: ignore[reportMissingImports]
@@ -63,7 +63,7 @@ if not isfile(userFile) and isfile(userFileNew):
 
 cpp_standard = env.GetProjectOption("cppstd");
 c_standard = env.GetProjectOption("cstd");
-bootloader_protocol = boardConf.get("bootloader", {}).get("protocol", "avrisp")
+bootloader_protocol = boardConf.get("bootloader", {}).get("protocol", "stk500v1")
 bootloader_port = boardConf.get("bootloader", {}).get("port", "COM7")
 bootloader_speed = boardConf.get("bootloader", {}).get("upload_speed", "19200")
 
@@ -107,6 +107,7 @@ for _env in envs:
 
     _env.Replace(
         UPLOADER=join(AVRGGC_BINDIR, "avrdude"),
+        UPLOADERCONFIG=join(AVRGGC_BINDIR, "avrdude.conf"),
         UPLOADERFLAGS=[
             "-p",
             "$BOARD_MCU",
@@ -114,6 +115,8 @@ for _env in envs:
             join(AVRGGC_BINDIR, "avrdude.conf"),
             "-c",
             "$UPLOAD_PROTOCOL",
+            "-x",
+            "nostore",
         ],
         UPLOADCMD="$UPLOADER $UPLOADERFLAGS -U flash:w:$SOURCES:i",
         UPLOADEEPCMD="$UPLOADER $UPLOADERFLAGS -U eeprom:w:$SOURCES:i",
