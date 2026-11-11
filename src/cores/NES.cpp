@@ -1114,7 +1114,7 @@ namespace OSCR::Cores::NES
 
   void dumpCHR_pulsem2(uint16_t address)
   {
-    for (int x = 0; x < 512; x++)
+    for (uint16_t x = 0; x < 512; x++)
     {
       OSCR::Storage::Shared::buffer[x] = read_chr_pulsem2(address + x);
     }
@@ -5202,10 +5202,10 @@ namespace OSCR::Cores::NES
 
     while (bytesProcessed < prgSize)
     {
-      int bytesRead = OSCR::Storage::Shared::fill();
-      if (bytesRead <= 0) break;
+      uint16_t bytesRead = OSCR::Storage::Shared::fill();
+      if (bytesRead == 0) break;
 
-      for (int i = 0; i < bytesRead; i++)
+      for (uint16_t i = 0; i < bytesRead; i++)
       {
         A29040B_PRG_Write(prgAddress++, OSCR::Storage::Shared::buffer[i]);
         delayMicroseconds(14);  // Typical 14us
@@ -5263,11 +5263,11 @@ namespace OSCR::Cores::NES
 
     while (bytesProcessed < chrSize)
     {
-      int bytesRead = OSCR::Storage::Shared::readBuffer();
+      uint16_t bytesRead = OSCR::Storage::Shared::readBuffer();
 
-      if (bytesRead <= 0) break;
+      if (bytesRead == 0) break;
 
-      for (int i = 0; i < bytesRead; i++)
+      for (uint16_t i = 0; i < bytesRead; i++)
       {
         A29040B_CHR_Write(chrAddress++, OSCR::Storage::Shared::buffer[i]);
 

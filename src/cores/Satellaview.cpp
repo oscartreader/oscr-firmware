@@ -316,7 +316,7 @@ namespace OSCR::Cores::Satellaview
     for (uint8_t currBank = 0x10; currBank < 0x18; currBank++)
     {
       //startAddr = 0x5000
-      for (long currByte = 0x5000; currByte < 0x6000; currByte += 512)
+      for (uint16_t currByte = 0x5000; currByte < 0x6000; currByte += 512)
       {
         OSCR::Storage::Shared::fill();
 
@@ -342,7 +342,7 @@ namespace OSCR::Cores::Satellaview
     //startBank = 0x10; endBank = 0x17; CS low
     for (uint8_t BSBank = 0x10; BSBank < 0x18; BSBank++)
     {
-      for (long currByte = 0x5000; currByte < 0x6000; currByte += 512)
+      for (uint16_t currByte = 0x5000; currByte < 0x6000; currByte += 512)
       {
         OSCR::Storage::Shared::fill();
 
@@ -380,11 +380,11 @@ namespace OSCR::Cores::Satellaview
     OSCR::UI::ProgressBar::init(0x100000);
 
     // Read Banks
-    for (int currBank = 0x40; currBank < 0x50; currBank++)
+    for (uint8_t currBank = 0x40; currBank < 0x50; currBank++)
     {
-      for (long currByte = 0; currByte < 65536; currByte += 512)
+      for (uint32_t currByte = 0; currByte < 65536; currByte += 512)
       {
-        for (int c = 0; c < 512; c++)
+        for (uint16_t c = 0; c < 512; c++)
         {
           OSCR::Storage::Shared::buffer[c] = readBank(currBank, currByte + c);
         }
@@ -446,9 +446,9 @@ namespace OSCR::Cores::Satellaview
 
     OSCR::UI::printSync(FS(OSCR::Strings::Status::Checking));
 
-    for (int currBank = 0xC0; currBank < 0xD0; currBank++)
+    for (uint8_t currBank = 0xC0; currBank < 0xD0; currBank++)
     {
-      for (long currByte = 0; currByte < 0x10000; currByte++)
+      for (uint32_t currByte = 0; currByte < 0x10000; currByte++)
       {
         if (0xFF != readBank(currBank, currByte))
         {
@@ -465,9 +465,9 @@ namespace OSCR::Cores::Satellaview
 
     OSCR::UI::printSync(FS(OSCR::Strings::Status::Writing));
 
-    for (int currBank = 0xC0; currBank < 0xD0; currBank++)
+    for (uint8_t currBank = 0xC0; currBank < 0xD0; currBank++)
     {
-      for (long currByte = 0; currByte < 0x10000; currByte++)
+      for (uint32_t currByte = 0; currByte < 0x10000; currByte++)
       {
         writeBank(0xC0, 0x0000, 0x10);  //Program Byte
         writeBank(currBank, currByte, OSCR::Storage::Shared::sharedFile.read());
@@ -487,9 +487,9 @@ namespace OSCR::Cores::Satellaview
 
     OSCR::UI::printSync(FS(OSCR::Strings::Status::Verifying));
 
-    for (int currBank = 0xC0; currBank < 0xD0; currBank++)
+    for (uint8_t currBank = 0xC0; currBank < 0xD0; currBank++)
     {
-      for (long currByte = 0; currByte < 0x10000; currByte++)
+      for (uint32_t currByte = 0; currByte < 0x10000; currByte++)
       {
         if (OSCR::Storage::Shared::sharedFile.read() != readBank(currBank, currByte))
         {

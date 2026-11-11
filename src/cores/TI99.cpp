@@ -324,7 +324,7 @@ namespace OSCR::Cores::TI99
   {
     for (uint16_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int w = 0; w < 512; w++)
+      for (uint16_t w = 0; w < 512; w++)
       {
         uint8_t temp = readROM(addr + w);
         OSCR::Storage::Shared::buffer[w] = temp;
@@ -343,9 +343,9 @@ namespace OSCR::Cores::TI99
     GROM_DATA; // A14(MO) LOW = DATA
   }
 
-  void pulseGRC(int times)
+  void pulseGRC(uint8_t times)
   {
-    for (int i = 0; i < (times * 2); i++)
+    for (uint8_t i = 0; i < (times * 2); i++)
     {
       PORTH ^= (1 << 1);
 
@@ -411,7 +411,7 @@ namespace OSCR::Cores::TI99
     {
       pulseGROM(addr);
 
-      for (int y = 0; y < 512; y++)
+      for (uint16_t y = 0; y < 512; y++)
       {
         ENABLE_GROM;
 
@@ -571,9 +571,9 @@ namespace OSCR::Cores::TI99
 
       readSegment(0x6000, 0x6C00); // 3K
 
-      for (int w = 0; w < 1024; w += 512) // 1K RAM at 0x6C00
+      for (uint16_t w = 0; w < 1024; w += 512) // 1K RAM at 0x6C00
       {
-        for (int x = 0; x < 512; x++)
+        for (uint16_t x = 0; x < 512; x++)
         {
           OSCR::Storage::Shared::buffer[x] = 0xFF; // Replace Random RAM Contents with 0xFF
         }
@@ -581,7 +581,7 @@ namespace OSCR::Cores::TI99
         OSCR::Storage::Shared::writeBuffer();
       }
 
-      for (int y = 1; y < 4; y++)
+      for (uint8_t y = 1; y < 4; y++)
       {
         writeData(0x6FFE, y); // Set Bank 1/2/3
         readSegment(0x7000, 0x8000); // 4K x 3 = +12K = 16K

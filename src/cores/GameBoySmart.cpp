@@ -553,7 +553,7 @@ namespace OSCR::Cores::GameBoySmart
       writeFlashByte(addr, 0x00);  // BCH should be 0x00
 
       // fill page buffer
-      for (int d = 0; d < 256; d++)
+      for (uint16_t d = 0; d < 256; d++)
       {
         writeFlashByte(d, OSCR::Storage::Shared::buffer[d]);
       }

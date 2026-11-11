@@ -350,7 +350,7 @@ namespace OSCR::Cores::Atari2600
 
     case 0xD0:  // DPC Mapper 10KB
       // 8K ROM
-      for (int x = 0; x < 0x2; x++)
+      for (uint8_t x = 0; x < 0x2; x++)
       {
         readData(0x1FF8 + x);
 
@@ -372,7 +372,7 @@ namespace OSCR::Cores::Atari2600
         // Split Read of Last 0x200 bytes
         readDataArray(0x1E00, 0x1F8);
 
-        for (int z = 0; z < 8; z++)
+        for (uint8_t z = 0; z < 8; z++)
         {
           // Set Bank to ensure 0x1FFA-0x1FFF is correct
           readData(0x1FF8 + x);
@@ -398,9 +398,9 @@ namespace OSCR::Cores::Atari2600
       writeData(0x1051, 0xFF);  // LSB for Data Fetcher 1
       writeData(0x1059, 0x07);  // MSB for Data Fetcher 1
 
-      for (int x = 0; x < 0x800; x += 512)
+      for (uint16_t x = 0; x < 0x800; x += 512)
       {
-        for (int y = 0; y < 512; y++)
+        for (uint16_t y = 0; y < 512; y++)
         {
           OSCR::Storage::Shared::buffer[y] = readData(0x1008);  // Data Fetcher 0
           readData(0x1009);                // Data Fetcher 1
@@ -412,7 +412,7 @@ namespace OSCR::Cores::Atari2600
       break;
 
     case 0xE0: // E0 Mapper 8KB
-      for (int x = 0; x < 0x7; x++)
+      for (uint8_t x = 0; x < 0x7; x++)
       {
         readData(0x1FE0 + x);
         readSegment(0x1000, 0x1400);
@@ -439,7 +439,7 @@ namespace OSCR::Cores::Atari2600
       break;
 
     case 0xF0:  // F0 Mapper 64KB
-      for (int x = 0; x < 0x10; x++) {
+      for (uint8_t x = 0; x < 0x10; x++) {
         readData(0x1FF0);
         readSegment(0x1000, 0x2000);
       }
@@ -447,12 +447,12 @@ namespace OSCR::Cores::Atari2600
 
     case 0x04: // F4SC Mapper 32KB w/RAM
     case 0xF4: // F4 Mapper 32KB
-      for (int x = 0; x < 8; x++)
+      for (uint8_t x = 0; x < 8; x++)
       {
         readData(0x1FF4 + x);
         readSegmentFx(mapperDetail->id == 0x04, 0x1F4);
 
-        for (int z = 0; z < 12; z++)
+        for (uint8_t z = 0; z < 12; z++)
         {
           // Set Bank to ensure 0x1FFC-0x1FFF is correct
           readData(0x1FF4 + x);
@@ -465,13 +465,13 @@ namespace OSCR::Cores::Atari2600
 
     case 0x06: // F6SC Mapper 16KB w/RAM
     case 0xF6: // F6 Mapper 16KB
-      for (int w = 0; w < 4; w++)
+      for (uint8_t w = 0; w < 4; w++)
       {
         readData(0x1FF6 + w);
         readSegmentFx(mapperDetail->id == 0x06, 0x1F6);
 
         // Bank Registers 0x1FF6-0x1FF9
-        for (int y = 0; y < 4; y++)
+        for (uint8_t y = 0; y < 4; y++)
         {
           readData(0x1FFF); // Reset Bank
           OSCR::Storage::Shared::buffer[y] = readData(0x1FF6 + y);
@@ -481,7 +481,7 @@ namespace OSCR::Cores::Atari2600
         readData(0x1FFF); // Reset Bank
         readData(0x1FF6 + w); // Set Bank
 
-        for (int z = 4; z < 10; z++)
+        for (uint8_t z = 4; z < 10; z++)
         {
           OSCR::Storage::Shared::buffer[z] = readData(0x1FF6 + z); // 0x1FFA-0x1FFF
         }
@@ -493,13 +493,13 @@ namespace OSCR::Cores::Atari2600
 
     case 0x08: // F8SC Mapper 8KB w/RAM
     case 0xF8: // F8 Mapper 8KB
-      for (int w = 0; w < 2; w++)
+      for (uint8_t w = 0; w < 2; w++)
       {
         readData(0x1FF8 + w);
         readSegmentFx(mapperDetail->id == 0x08, 0x1F8);
 
         // Bank Registers 0x1FF8-0x1FF9
-        for (int y = 0; y < 2; y++)
+        for (uint8_t y = 0; y < 2; y++)
         {
           readData(0x1FFF); // Reset Bank
           OSCR::Storage::Shared::buffer[y] = readData(0x1FF8 + y);
@@ -509,7 +509,7 @@ namespace OSCR::Cores::Atari2600
         readData(0x1FFF); // Reset Bank
         readData(0x1FF8 + w); // Set Bank
 
-        for (int z = 2; z < 8; z++)
+        for (uint8_t z = 2; z < 8; z++)
         {
           OSCR::Storage::Shared::buffer[z] = readData(0x1FF8 + z); // 0x1FFA-0x1FFF
         }
@@ -524,7 +524,7 @@ namespace OSCR::Cores::Atari2600
       // Bad implementation of the F8 Mapper
       // kevtris swapped the bank order - swapped banks may not match physical ROM data
       // Bankswitch code uses 0x1FFC and 0x1FF9
-      for (int w = 3; w >= 0; w -= 3)
+      for (int8_t w = 3; w >= 0; w -= 3)
       {
         readData(0x1FF9 + w);
         readSegment(0x1000, 0x1E00);
@@ -539,7 +539,7 @@ namespace OSCR::Cores::Atari2600
         readData(0x1FFF); // Reset Bank
         readData(0x1FF9 + w); // Set Bank
 
-        for (int z = 1; z < 7; z++)
+        for (uint8_t z = 1; z < 7; z++)
         {
           OSCR::Storage::Shared::buffer[z] = readData(0x1FF9 + z); // 0x1FFA-0x1FFF
         }
@@ -555,7 +555,7 @@ namespace OSCR::Cores::Atari2600
       break;
 
     case 0xFA:  // FA Mapper 12KB
-      for (int x = 0; x < 0x3; x++)
+      for (uint8_t x = 0; x < 0x3; x++)
       {
         writeData(0x1FF8 + x, 0x1);  // Set Bank with D0 HIGH
         readSegment(0x1000, 0x1E00);
@@ -563,7 +563,7 @@ namespace OSCR::Cores::Atari2600
         // Split Read of Last 0x200 bytes
         readDataArray(0x1E00, 0x1F8);
 
-        for (int z = 0; z < 8; z++)
+        for (uint8_t z = 0; z < 8; z++)
         {
           // Set Bank to ensure 0x1FFB-0x1FFF is correct
           writeData(0x1FF8 + x, 0x1);  // Set Bank with D0 HIGH
@@ -577,7 +577,7 @@ namespace OSCR::Cores::Atari2600
       break;
 
     case 0xFE:  // FE Mapper 8KB
-      for (int x = 0; x < 0x2; x++)
+      for (uint8_t x = 0; x < 0x2; x++)
       {
         writeData(0x01FE, 0xF0 ^ (x << 5));
         writeData(0x01FF, 0xF0 ^ (x << 5));
@@ -593,7 +593,7 @@ namespace OSCR::Cores::Atari2600
       break;
 
     case 0x07:  // X07 Mapper 64K
-      for (int x = 0; x < 16; x++)
+      for (uint8_t x = 0; x < 16; x++)
       {
         readData(0x080D | (x << 4));
         readSegment(0x1000, 0x2000);
@@ -601,7 +601,7 @@ namespace OSCR::Cores::Atari2600
       break;
 
     case 0xDF:  // DFSC 128K
-      for (int x = 0; x < 0x20; x++)
+      for (uint8_t x = 0; x < 0x20; x++)
       {
         readData(0x1FC0 + x);
         readSegment(0x1000, 0x1FBF);
@@ -609,7 +609,7 @@ namespace OSCR::Cores::Atari2600
       break;
 
     case 0xBA:  // SUPERbank 128K
-      for (int x = 0; x < 0x20; x++)
+      for (uint8_t x = 0; x < 0x20; x++)
       {
         readData(0x0800 + x);
         readSegment(0x1000, 0x2000);
@@ -617,7 +617,7 @@ namespace OSCR::Cores::Atari2600
       break;
 
     case 0xBB:  // SUPERbank 256K
-      for (int x = 0; x < 0x40; x++)
+      for (uint8_t x = 0; x < 0x40; x++)
       {
         readData(0x0800 + x);
         readSegment(0x1000, 0x2000);

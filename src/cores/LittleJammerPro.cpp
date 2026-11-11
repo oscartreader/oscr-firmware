@@ -226,7 +226,7 @@ namespace OSCR::Cores::LittleJammerPro
 
   void sendSerial_U1(uint8_t data)
   {
-    for (int i = 0; i < 8; i++)
+    for (uint8_t i = 0; i < 8; i++)
     {
       PORTH &= ~(1 << 1); // SCLK LOW
 
@@ -248,7 +248,7 @@ namespace OSCR::Cores::LittleJammerPro
 
   void sendSerial_U2(uint8_t data)
   {
-    for (int i = 0; i < 8; i++)
+    for (uint8_t i = 0; i < 8; i++)
     {
       PORTH &= ~(1 << 1); // SCLK LOW
 
@@ -379,7 +379,7 @@ namespace OSCR::Cores::LittleJammerPro
   {
     for (uint32_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int x = 0; x < 512; x++)
+      for (uint16_t x = 0; x < 512; x++)
       {
         OSCR::Storage::Shared::buffer[x] = readSerial_U1();
       }
@@ -392,7 +392,7 @@ namespace OSCR::Cores::LittleJammerPro
   {
     for (uint32_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int x = 0; x < 512; x++)
+      for (uint16_t x = 0; x < 512; x++)
       {
         OSCR::Storage::Shared::buffer[x] = readSerial_U2();
       }
@@ -442,7 +442,7 @@ namespace OSCR::Cores::LittleJammerPro
   {
     for (uint32_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int x = 0; x < 512; x++)
+      for (uint16_t x = 0; x < 512; x++)
       {
         pulseClock(1);
         OSCR::Storage::Shared::buffer[x] = PINF;
@@ -456,7 +456,7 @@ namespace OSCR::Cores::LittleJammerPro
   {
     for (uint32_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int x = 0; x < 512; x++)
+      for (uint16_t x = 0; x < 512; x++)
       {
         pulseClock(1);
         OSCR::Storage::Shared::buffer[x] = PINC;

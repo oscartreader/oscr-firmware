@@ -39,7 +39,7 @@ namespace OSCR::Cores::TI99
   uint8_t readROM(uint16_t addr);
   void readSegment(uint16_t startaddr, uint16_t endaddr);
   void setupGROM();
-  void pulseGRC(int times);
+  void pulseGRC(uint8_t times);
   void checkGRC();
   void pulseGROM(uint16_t addr);
   void readSegmentGROM(uint32_t startaddr, uint32_t endaddr);

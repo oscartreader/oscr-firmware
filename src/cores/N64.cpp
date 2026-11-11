@@ -24,6 +24,8 @@ namespace OSCR::Cores::N64
   /******************************************
      Variables
   *****************************************/
+  using OSCR::Storage::Endian;
+
   using OSCR::Databases::Extended::romDetail;
   using OSCR::Databases::Extended::romRecord;
 
@@ -2276,8 +2278,7 @@ namespace OSCR::Cores::N64
         // read, split and write word to buffer
         myWord = readWord();
 
-        OSCR::Storage::Shared::buffer[c] = myWord >> 8;
-        OSCR::Storage::Shared::buffer[c + 1] = myWord & 0xFF;
+        OSCR::Storage::Shared::putWord(c, myWord, Endian::MSBFirst);
       }
 
       // Pull ale_H(PC1) high
@@ -2315,8 +2316,7 @@ namespace OSCR::Cores::N64
         uint16_t myWord = readWord();
 
         // write to buffer
-        OSCR::Storage::Shared::buffer[c] = myWord >> 8;
-        OSCR::Storage::Shared::buffer[c + 1] = myWord & 0xFF;
+        OSCR::Storage::Shared::putWord(c, myWord, Endian::MSBFirst);
       }
 
       // Check buffer content against file on sd card
@@ -3906,8 +3906,7 @@ namespace OSCR::Cores::N64
         uint16_t myWord = readWord();
 
         // write to buffer
-        OSCR::Storage::Shared::buffer[c] = myWord >> 8;
-        OSCR::Storage::Shared::buffer[c + 1] = myWord & 0xFF;
+        OSCR::Storage::Shared::putWord(c, myWord, Endian::MSBFirst);
       }
 
       OSCR::Storage::Shared::writeBuffer();
@@ -4242,8 +4241,7 @@ namespace OSCR::Cores::N64
         uint16_t myWord = readWord();
 
         // write to buffer
-        OSCR::Storage::Shared::buffer[c] = myWord >> 8;
-        OSCR::Storage::Shared::buffer[c + 1] = myWord & 0xFF;
+        OSCR::Storage::Shared::putWord(c, myWord, Endian::MSBFirst);
       }
 
       OSCR::Storage::Shared::writeBuffer();

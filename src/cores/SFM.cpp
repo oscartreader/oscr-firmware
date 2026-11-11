@@ -315,7 +315,7 @@ namespace OSCR::Cores::SFM
     // Check if menu is present
     uint8_t menuString[] = { 0x4D, 0x45, 0x4E, 0x55, 0x20, 0x50, 0x52, 0x4F, 0x47, 0x52, 0x41, 0x4D };
 
-    for (int i = 0; i < 12; i++)
+    for (uint8_t i = 0; i < 12; i++)
     {
       if (menuString[i] != readBank(0xC0, 0x7FC0 + i))
       {
@@ -335,7 +335,7 @@ namespace OSCR::Cores::SFM
       }
 
       // Get game info
-      for (int i = 0; i < gamesMenu.count; i++)
+      for (uint16_t i = 0; i < gamesMenu.count; i++)
       {
         // Read starting address and size
         gameAddress[i] = 0xC0 + readBank(0xC6, i * 0x2000 + 0x01) * 0x8;
@@ -343,7 +343,7 @@ namespace OSCR::Cores::SFM
         // Read game code
         uint8_t myByte = 0;
         uint8_t myLength = 0;
-        for (int j = 0; j < 9; j++)
+        for (uint8_t j = 0; j < 9; j++)
         {
           myByte = readBank(0xC6, i * 0x2000 + 0x07 + j);
 
@@ -1002,7 +1002,7 @@ namespace OSCR::Cores::SFM
         // Fill buffer
         OSCR::Storage::Shared::fill();
 
-        for (int c = 0; c < 512; c++)
+        for (uint16_t c = 0; c < 512; c++)
         {
           if (readBank(currBank, currByte + c) != OSCR::Storage::Shared::buffer[c])
           {
@@ -1041,7 +1041,7 @@ namespace OSCR::Cores::SFM
       {
         for (uint32_t currByte = 0; currByte < 0x10000; currByte += 512)
         {
-          for (int c = 0; c < 512; c++)
+          for (uint16_t c = 0; c < 512; c++)
           {
             OSCR::Storage::Shared::buffer[c] = readBank(currBank, currByte + c);
           }
@@ -1056,7 +1056,7 @@ namespace OSCR::Cores::SFM
       {
         for (uint32_t currByte = 0x8000; currByte < 0x10000; currByte += 512)
         {
-          for (int c = 0; c < 512; c++)
+          for (uint16_t c = 0; c < 512; c++)
           {
             OSCR::Storage::Shared::buffer[c] = readBank(currBank, currByte + c);
           }
@@ -1079,7 +1079,7 @@ namespace OSCR::Cores::SFM
     // Read the mapping out of the first chip
     for (uint16_t currByte = 0xFF00; currByte < 0xFF50; currByte += 10)
     {
-      for (int c = 0; c < 10; c++)
+      for (uint8_t c = 0; c < 10; c++)
       {
         // Now print the significant bits
         OSCR::UI::printHex<false>(readBank(0xC0, currByte + c));

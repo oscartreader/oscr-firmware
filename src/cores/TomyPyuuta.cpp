@@ -200,7 +200,7 @@ namespace OSCR::Cores::TomyPyuuta
   {
     for (uint32_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int w = 0; w < 512; w++)
+      for (uint16_t w = 0; w < 512; w++)
       {
         OSCR::Storage::Shared::buffer[w] = readData(addr + w);
       }

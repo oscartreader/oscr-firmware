@@ -11,6 +11,7 @@
 
 namespace OSCR::Cores::GameBoyAdvance
 {
+  using OSCR::Storage::Endian;
   using OSCR::Cores::Flash::flashid;
 
   /******************************************
@@ -583,19 +584,16 @@ namespace OSCR::Cores::GameBoyAdvance
       cartOn();
 
       // Read Header into array
-      for (int currWord = 0; currWord < 192; currWord += 2)
+      for (uint8_t currWord = 0; currWord < 192; currWord += 2)
       {
-        uint16_t tempWord = readWord(currWord);
-
-        OSCR::Storage::Shared::buffer[currWord] = tempWord & 0xFF;
-        OSCR::Storage::Shared::buffer[currWord + 1] = (tempWord >> 8) & 0xFF;
+        OSCR::Storage::Shared::putWord(currWord, readWord(currWord), Endian::LSBFirst);
       }
 
       cartOff();
 
       logoChecksum = 0;
 
-      for (int currByte = 0x4; currByte < 0xA0; currByte++)
+      for (uint8_t currByte = 0x4; currByte < 0xA0; currByte++)
       {
         logoChecksum += OSCR::Storage::Shared::buffer[currByte];
       }
@@ -819,7 +817,7 @@ namespace OSCR::Cores::GameBoyAdvance
       cartOff();
 
       // Reading 4kbit EEPROM as 64kbit just gives the same 8 bytes repeated
-      for (int currByte = 0; currByte < 512 - 8; currByte++)
+      for (uint16_t currByte = 0; currByte < 512 - 8; currByte++)
       {
         if (OSCR::Storage::Shared::buffer[currByte] != OSCR::Storage::Shared::buffer[currByte + 8])
         {
@@ -876,12 +874,9 @@ namespace OSCR::Cores::GameBoyAdvance
     // Read rom
     for (uint32_t myAddress = 0; myAddress < cartSize; myAddress += 512)
     {
-      for (int currWord = 0; currWord < 512; currWord += 2)
+      for (uint16_t currWord = 0; currWord < 512; currWord += 2)
       {
-        uint16_t tempWord = readWord(myAddress + currWord);
-
-        OSCR::Storage::Shared::buffer[currWord] = tempWord & 0xFF;
-        OSCR::Storage::Shared::buffer[currWord + 1] = (tempWord >> 8) & 0xFF;
+        OSCR::Storage::Shared::putWord(currWord, readWord(myAddress + currWord), Endian::LSBFirst);
       }
 
       OSCR::Storage::Shared::writeBuffer();
@@ -1117,7 +1112,7 @@ namespace OSCR::Cores::GameBoyAdvance
 
     for (uint32_t currAddress = 0; currAddress < sramSize; currAddress += 512)
     {
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         // Read byte
         OSCR::Storage::Shared::buffer[c] = readByte(currAddress + c);
@@ -1151,7 +1146,7 @@ namespace OSCR::Cores::GameBoyAdvance
     {
       OSCR::Storage::Shared::fill();
 
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         // Write byte
         writeByte(currAddress + c, OSCR::Storage::Shared::buffer[c]);
@@ -1177,7 +1172,7 @@ namespace OSCR::Cores::GameBoyAdvance
     {
       OSCR::Storage::Shared::fill();
 
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         // Read byte
         if (readByte(currAddress + c) != OSCR::Storage::Shared::buffer[c])
@@ -1223,8 +1218,10 @@ namespace OSCR::Cores::GameBoyAdvance
     // Get name, add extension and convert to char array for sd lib
     OSCR::Storage::Shared::createFile(FS(OSCR::Strings::FileType::GameBoyAdvance), FS(OSCR::Strings::Directory::Save), fileName, FS(OSCR::Strings::FileType::SaveRAM));
 
-    for (uint32_t currAddress = 0; currAddress < framSize; currAddress += 512) {
-      for (int c = 0; c < 512; c++) {
+    for (uint32_t currAddress = 0; currAddress < framSize; currAddress += 512) 
+    {
+      for (uint16_t c = 0; c < 512; c++)
+      {
         // Pull OE_SRAM(PH6) HIGH
         PORTH |= (1 << 6);
 
@@ -1287,7 +1284,7 @@ namespace OSCR::Cores::GameBoyAdvance
     {
       OSCR::Storage::Shared::fill();
 
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         // Output Data on PORTC
         PORTC = OSCR::Storage::Shared::buffer[c];
@@ -1343,7 +1340,8 @@ namespace OSCR::Cores::GameBoyAdvance
     {
       OSCR::Storage::Shared::fill();
 
-      for (int c = 0; c < 512; c++) {
+      for (uint16_t c = 0; c < 512; c++)
+      {
         // Pull OE_SRAM(PH6) HIGH
         PORTH |= (1 << 6);
 
@@ -1567,7 +1565,7 @@ namespace OSCR::Cores::GameBoyAdvance
 
     for (uint32_t currAddress = 0; currAddress < flashSize; currAddress += 512)
     {
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         // Read byte
         OSCR::Storage::Shared::buffer[c] = readByteFlash(currAddress + c);
@@ -1651,7 +1649,7 @@ namespace OSCR::Cores::GameBoyAdvance
 
       for (uint32_t currAddress = 0; currAddress < chipSize; currAddress += 512)
       {
-        for (int c = 0; c < 512; c++)
+        for (uint16_t c = 0; c < 512; c++)
         {
           OSCR::Storage::Shared::buffer[c] = readByteFlash(currAddress + c);
         }
@@ -1730,7 +1728,7 @@ namespace OSCR::Cores::GameBoyAdvance
       {
         OSCR::Storage::Shared::fill();
 
-        for (int c = 0; c < 512 && (currAddress + c) < flashSize; c++)
+        for (uint16_t c = 0; c < 512 && (currAddress + c) < flashSize; c++)
         {
           // Write command sequence
           writeByteFlash(0x5555, 0xAA);
@@ -1755,7 +1753,7 @@ namespace OSCR::Cores::GameBoyAdvance
         writeByteFlash(0x2AAA, 0x55);
         writeByteFlash(0x5555, 0xA0);
 
-        for (int c = 0; c < 128; c++)
+        for (uint8_t c = 0; c < 128; c++)
         {
           writeByteFlash(currAddress + c, OSCR::Storage::Shared::buffer[c]);
         }
@@ -1807,7 +1805,7 @@ namespace OSCR::Cores::GameBoyAdvance
     {
       OSCR::Storage::Shared::fill();
 
-      for (int c = 0; c < 512 && (currAddress + c) < flashSize; c++)
+      for (uint16_t c = 0; c < 512 && (currAddress + c) < flashSize; c++)
       {
         // Read byte
         if (OSCR::Storage::Shared::buffer[c] != readByteFlash(currAddress + c))
@@ -2148,7 +2146,7 @@ namespace OSCR::Cores::GameBoyAdvance
       interrupts();
 
       // Compare
-      for (int currByte = 0; currByte < 512; currByte++)
+      for (uint16_t currByte = 0; currByte < 512; currByte++)
       {
         if (OSCR::Storage::Shared::buffer[currByte] != OSCR::Storage::Shared::sharedFile.read())
         {
@@ -2519,7 +2517,7 @@ namespace OSCR::Cores::GameBoyAdvance
         OSCR::Storage::Shared::fill();
 
         // Write 32 words at a time
-        for (int currWriteBuffer = 0; currWriteBuffer < 512; currWriteBuffer += 64)
+        for (uint16_t currWriteBuffer = 0; currWriteBuffer < 512; currWriteBuffer += 64)
         {
           // Unlock Block
           writeWord(currBlock + currSdBuffer + currWriteBuffer, 0x60);
@@ -2572,7 +2570,7 @@ namespace OSCR::Cores::GameBoyAdvance
         OSCR::Storage::Shared::fill();
 
         // Write 16 words at a time
-        for (int currWriteBuffer = 0; currWriteBuffer < 512; currWriteBuffer += 32)
+        for (uint16_t currWriteBuffer = 0; currWriteBuffer < 512; currWriteBuffer += 32)
         {
           // Write Buffer command
           writeWord_GAB(0xAAA, 0xAA);
@@ -2618,7 +2616,7 @@ namespace OSCR::Cores::GameBoyAdvance
         OSCR::Storage::Shared::fill();
 
         // Write 32 words at a time
-        for (int currWriteBuffer = 0; currWriteBuffer < 512; currWriteBuffer += 64)
+        for (uint16_t currWriteBuffer = 0; currWriteBuffer < 512; currWriteBuffer += 64)
         {
           // Write Buffer command
           writeWord_GAB(0xAAA, 0xAA);
@@ -2666,7 +2664,7 @@ namespace OSCR::Cores::GameBoyAdvance
         // Fill SD buffer
         OSCR::Storage::Shared::fill();
 
-        for (int currByte = 0; currByte < 512; currByte += 2)
+        for (uint16_t currByte = 0; currByte < 512; currByte += 2)
         {
           // Join two bytes into one word
           uint16_t currWord = ((OSCR::Storage::Shared::buffer[currByte + 1] & 0xFF) << 8) | (OSCR::Storage::Shared::buffer[currByte] & 0xFF);
@@ -2784,7 +2782,7 @@ namespace OSCR::Cores::GameBoyAdvance
         for (uint32_t currBuffer = 0; currBuffer < lastBuffer; currBuffer += 1024)
         {
           // 1024 byte readBuffer
-          for (int currWord = 0; currWord < 1024; currWord += 2)
+          for (uint16_t currWord = 0; currWord < 1024; currWord += 2)
           {
             uint16_t tempWord = readWord(currBlock + currBuffer + currWord);
             readBuffer[currWord] = tempWord & 0xFF;

@@ -323,7 +323,7 @@ namespace OSCR::Cores::ChannelF
 
     // PWs = 4 PHI Cycles
     // PWl = 6 PHI Cycles
-    for (int x = 0; x < 2; x++) // 2 PHI
+    for (uint8_t x = 0; x < 2; x++) // 2 PHI
     {
       PHI_LOW;
       NOP;
@@ -335,7 +335,7 @@ namespace OSCR::Cores::ChannelF
 
     PORTF = command;  // ROMC3 = command
 
-    for (int x = 0; x < 3; x++) // 4 PHI
+    for (uint8_t x = 0; x < 3; x++) // 4 PHI
     {
       PHI_LOW;
       NOP;
@@ -387,7 +387,7 @@ namespace OSCR::Cores::ChannelF
 
     // PWs = 4 PHI Cycles
     // PWl = 6 PHI Cycles
-    for (int x = 0; x < 2; x++) // 2 PHI
+    for (uint8_t x = 0; x < 2; x++) // 2 PHI
     {
       PHI_LOW;
       NOP;
@@ -402,7 +402,7 @@ namespace OSCR::Cores::ChannelF
 
   uint8_t readData()
   {
-    for (int x = 0; x < 3; x++) // 4 PHI
+    for (uint8_t x = 0; x < 3; x++) // 4 PHI
     {
       PHI_LOW;
       NOP;
@@ -465,7 +465,7 @@ namespace OSCR::Cores::ChannelF
         {
           OSCR::Storage::Shared::buffer[1] = startbyte;
 
-          for (int w = 2; w < 512; w++)
+          for (uint16_t w = 2; w < 512; w++)
           {
             startbyte = readData();
 
@@ -478,7 +478,7 @@ namespace OSCR::Cores::ChannelF
 
           startbyte = OSCR::Storage::Shared::buffer[1]; // Restore byte for 3K Hangman Check
 
-          for (int z = 1; z < blocks; z++)
+          for (uint8_t z = 1; z < blocks; z++)
           {
             if ((cartsize == 0x0C00) && (startbyte == 0x2B)) // 3K Hangman
             {
@@ -488,7 +488,7 @@ namespace OSCR::Cores::ChannelF
               // Chips are organized: 1K ROM + 1K SRAM + 1K ROM + 1K ROM
               if (z == 2)
               {
-                for (int x = 0; x < 0x0A00; x++) // Skip 1K SRAM at 0x0400
+                for (uint16_t x = 0; x < 0x0A00; x++) // Skip 1K SRAM at 0x0400
                 {
                   readData();
                 }
@@ -506,7 +506,7 @@ namespace OSCR::Cores::ChannelF
               }
             }
 
-            for (int w = 0; w < 512; w++)
+            for (uint16_t w = 0; w < 512; w++)
             {
               uint8_t temp = readData();
               OSCR::Storage::Shared::buffer[w] = temp;
@@ -554,7 +554,7 @@ namespace OSCR::Cores::ChannelF
         }
       }
 
-      for (int w = 0; w < 512; w++)
+      for (uint16_t w = 0; w < 512; w++)
       {
         uint8_t temp = readData();
 

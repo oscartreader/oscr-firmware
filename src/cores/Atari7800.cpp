@@ -231,7 +231,7 @@ namespace OSCR::Cores::Atari7800
   {
     for (uint32_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int w = 0; w < 512; w++)
+      for (uint16_t w = 0; w < 512; w++)
       {
         uint8_t temp = readData(addr + w);
         OSCR::Storage::Shared::buffer[w] = temp;
@@ -339,9 +339,10 @@ namespace OSCR::Cores::Atari7800
     NOP;
     NOP;
 
-    PORTH &= ~(1 << 6);            // R/W(PH6) LOW = WRITE
-    for (int y = 0; y < 8; y++) {  // Pulse Clock to latch data into PAL16 Chip
-      PORTH &= ~(1 << 1);          // CLK(PH1) LOW
+    PORTH &= ~(1 << 6);             // R/W(PH6) LOW = WRITE
+    for (uint8_t y = 0; y < 8; y++) // Pulse Clock to latch data into PAL16 Chip
+    {
+      PORTH &= ~(1 << 1);           // CLK(PH1) LOW
       NOP;
       PORTH |= (1 << 1);  // CLK(PH1) HIGH
       NOP;
@@ -380,7 +381,7 @@ namespace OSCR::Cores::Atari7800
       break;
 
     case 3: // F-18 Hornet 64K [78AB]
-      for (int x = 1; x >= 0; x--)    // Bank Order Inverted = Bank 1 then Bank 0
+      for (int8_t x = 1; x >= 0; x--)    // Bank Order Inverted = Bank 1 then Bank 0
       {
         writeData(0x8000, x);         // Banks 0-1
         readSegment(0x4000, 0x8000);  // 16K * 2 = 32K
@@ -397,7 +398,7 @@ namespace OSCR::Cores::Atari7800
       // Double Dragon (NTSC) = CRC32 AA265865 BAD
       // Double Dragon (PAL)  = CRC32 F29ABDB2 BAD
       // Rampage (NTSC)       = CRC32 39A316AA BAD
-      for (int x = 0; x < 8; x++)
+      for (uint8_t x = 0; x < 8; x++)
       {
         bankSwitch(0xFF80 + x); // Activision Bankswitch
         readSegment(0xA000, 0xE000); // 16K * 8 = 128K
@@ -408,7 +409,7 @@ namespace OSCR::Cores::Atari7800
       // Double Dragon (NTSC) = CRC32 F20773D5
       // Double Dragon (PAL)  = CRC32 4D634BF5
       // Rampage (NTSC)       = CRC32 D2876EE2
-      for (int x = 0; x < 8; x++)
+      for (uint8_t x = 0; x < 8; x++)
       {
         bankSwitch(0xFF80 + x);       // Activision Bankswitch
         readSegment(0xC000, 0xE000);  // 8K * 8 = 64K

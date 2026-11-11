@@ -213,7 +213,7 @@ namespace OSCR::Cores::TRS80
   {
     for (uint32_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int w = 0; w < 512; w++)
+      for (uint16_t w = 0; w < 512; w++)
       {
         OSCR::Storage::Shared::buffer[w] = readData(addr + w);
       }
@@ -287,8 +287,8 @@ namespace OSCR::Cores::TRS80
     if (romSize > 5) { // Bankswitch Carts - Predator 64K/Robocop 128K
       // Predator 64K = (2^6) / 16 = 4
       // Robocop 128K = (2^7) / 16 = 8
-      int banks = (OSCR::Util::power<2>(romSize)) / 16;
-      for (int x = 0; x < banks; x++) {
+      uint8_t banks = (OSCR::Util::power<2>(romSize)) / 16;
+      for (uint8_t x = 0; x < banks; x++) {
         bankSwitch(0xFF40, x); // Bankswitch
         readSegment(0xC000, 0x10000); // 16K * 8 = 128K
       }

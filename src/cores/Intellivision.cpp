@@ -61,6 +61,8 @@ namespace OSCR::Cores::Intellivision
   // DATA WRITE STROBE (DWS):    1/0/1
   // INTERRUPT ACK (INTAK):      1/1/1
 
+  using OSCR::Storage::Endian;
+
   using OSCR::Databases::Standard::crdbRecord;
   using OSCR::Databases::Standard::crdb;
   using OSCR::Databases::Standard::romDetail;
@@ -353,10 +355,7 @@ namespace OSCR::Cores::Intellivision
       for (uint16_t w = 0; w < 256; w++)
       {
         uint16_t temp = readData(addr + w);
-        uint16_t pos = w * 2;
-
-        OSCR::Storage::Shared::buffer[pos] = (temp >> 8) & 0xFF;
-        OSCR::Storage::Shared::buffer[++pos] = temp & 0xFF;
+        OSCR::Storage::Shared::putWord(w << 1, temp, Endian::MSBFirst);
       }
 
       OSCR::Storage::Shared::writeBuffer();

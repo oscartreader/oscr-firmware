@@ -458,6 +458,24 @@ namespace OSCR
     }
 #endif /* !OPTION_OPTIMIZE_FILE_WRITE && !OPTION_OPTIMIZE_FILE_READ */
 
+    void File::putWord(uint16_t idx, uint16_t word, Endian endianness)
+    {
+      bufferCheck(idx + 2);
+
+      uint8_t const lsb = static_cast<uint8_t>(word & 0xFF);
+      uint8_t const msb = static_cast<uint8_t>((word >> 8) & 0xFF);
+
+      if (endianness == Endian::MSBFirst)
+      {
+        buffer[idx]     = msb;
+        buffer[idx + 1] = lsb;
+        return;
+      }
+
+      buffer[idx]     = lsb;
+      buffer[idx + 1] = msb;
+    }
+
 #if !(OPTION_OPTIMIZE_FILE_WRITE)
     uint8_t File::peek()
     {
@@ -945,6 +963,22 @@ namespace OSCR
       uint32_t available()
       {
         return OSCR::Util::clamp<uint32_t>(sharedFile.available64(), 0UL, UINT32_MAX);
+      }
+
+      void putWord(uint16_t idx, uint16_t word, Endian endianness)
+      {
+        uint8_t const lsb = static_cast<uint8_t>(word & 0xFF);
+        uint8_t const msb = static_cast<uint8_t>((word >> 8) & 0xFF);
+
+        if (endianness == Endian::MSBFirst)
+        {
+          buffer[idx]     = msb;
+          buffer[idx + 1] = lsb;
+          return;
+        }
+
+        buffer[idx]     = lsb;
+        buffer[idx + 1] = msb;
       }
 
 #if !(OPTION_OPTIMIZE_SHARED_FILE)

@@ -58,6 +58,8 @@ namespace OSCR::Cores::VirtualBoy
   // NOT CONNECTED:
   // CLK(PH1) - N/C
 
+  using OSCR::Storage::Endian;
+
   //******************************************
   //  MENU
   //******************************************
@@ -445,8 +447,7 @@ namespace OSCR::Cores::VirtualBoy
     for (uint8_t c = 0; c < 20; c += 2)
     {
       uint16_t myWord = readWord(nameAddress + (c / 2));
-      OSCR::Storage::Shared::buffer[c] = myWord & 0xFF;
-      OSCR::Storage::Shared::buffer[c + 1] = myWord >> 8;
+      OSCR::Storage::Shared::putWord(c, myWord, Endian::MSBFirst);
     }
 
     cartOff();
@@ -493,18 +494,15 @@ namespace OSCR::Cores::VirtualBoy
     // ONLY FOR HYPER FIGHTING PLUGIN WITH ALL ADDRESS LINES CONNECTED
     // NORMAL PLUGIN DOES NOT HAVE THE UPPER ADDRESS LINES CONNECTED
 
-    romSize = cartSize / 2;
+    uint32_t const startAddress = (cartSize == 0x400000) ?  0x800000  : 0;
+    uint32_t const endAddress =   (cartSize == 0x400000) ? 0x1000000  : cartSize >> 1;
 
-    uint8_t const startAddress = (cartSize == 0x400000) ? 0x1000000 - romSize : 0;
-    uint8_t const endAddress = (cartSize == 0x400000) ? 0x1000000 : romSize;
-
-    for (uint32_t blockAddress = startAddress; blockAddress < endAddress; blockAddress += 256)
+    for (uint32_t blockAddress = startAddress; blockAddress < endAddress;)
     {
-      for (uint16_t addrOffset = 0, d = 0; addrOffset < 256; addrOffset++, d+=2)
+      for (uint16_t i = 0; i < 512; i += 2, blockAddress++)
       {
-        uint16_t myWord = readWord(blockAddress + addrOffset);
-        OSCR::Storage::Shared::buffer[d] = ((myWord >> 8) & 0xFF);
-        OSCR::Storage::Shared::buffer[d + 1] = (myWord & 0xFF);
+        uint16_t const myWord = readWord(blockAddress);
+        OSCR::Storage::Shared::putWord(i, myWord, Endian::MSBFirst);
       }
 
       OSCR::Storage::Shared::writeBuffer();
@@ -598,7 +596,7 @@ namespace OSCR::Cores::VirtualBoy
 
     for (uint32_t currBuffer = 0; currBuffer < sramSize; currBuffer += 512)
     {
-      for (int currByte = 0; currByte < 512; currByte++)
+      for (uint16_t currByte = 0; currByte < 512; currByte++)
       {
         uint8_t myByte = readByte(currBuffer + currByte);
         OSCR::Storage::Shared::buffer[currByte] = myByte;

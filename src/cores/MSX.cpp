@@ -284,7 +284,7 @@ namespace OSCR::Cores::MSX
   {
     for (uint32_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int w = 0; w < 512; w++)
+      for (uint16_t w = 0; w < 512; w++)
       {
         OSCR::Storage::Shared::buffer[w] = readData(addr + w);
       }
@@ -330,7 +330,7 @@ namespace OSCR::Cores::MSX
   {
     chipselect = 0;
 
-    for (int x = 0; x < 4; x++)
+    for (uint8_t x = 0; x < 4; x++)
     {
       uint8_t check0 = readData(0x4000);
       uint8_t check1 = readData(0x4001);
@@ -564,7 +564,7 @@ namespace OSCR::Cores::MSX
       MERQ_ENABLE;
       CS1_ENABLE;
 
-      for (int x = 0; x < 4; x++)
+      for (uint8_t x = 0; x < 4; x++)
       {
         writeData(0x7FFE, x);         // Official v2.20
         readSegment(0x4000, 0x8000);  // 16K Init Bank 0
@@ -577,7 +577,7 @@ namespace OSCR::Cores::MSX
     case 11:  // FM-PAC (64K)
       CS1_ENABLE;
 
-      for (int x = 0; x < 4; x++)
+      for (uint8_t x = 0; x < 4; x++)
       {
         writeData(0x7FF7, x);
         readSegment(0x4000, 0x8000);  // 16K
@@ -587,7 +587,7 @@ namespace OSCR::Cores::MSX
       break;
 
     case 12:  // R-TYPE (384K)
-      for (int x = 0; x < 23; x++)
+      for (uint8_t x = 0; x < 23; x++)
       {
         writeData(0x7000, x);
         readSegment(0x8000, 0xC000);  // 16K Init Bank 0
@@ -600,7 +600,7 @@ namespace OSCR::Cores::MSX
       MERQ_ENABLE;
       CS2_ENABLE;
 
-      for (int x = 0; x < 8; x++)
+      for (uint8_t x = 0; x < 8; x++)
       {
         writeData(0x0000, x);
         readSegment(0x8000, 0xC000);  // 16K Init Bank 0
@@ -638,7 +638,7 @@ namespace OSCR::Cores::MSX
   {
     uint8_t test1, test2;
 
-    for (int x = 0; x < 0x10; x++)
+    for (uint8_t x = 0; x < 0x10; x++)
     {
       // Test 16 Bytes
       writeData(0x7000, enable1);
@@ -778,7 +778,7 @@ namespace OSCR::Cores::MSX
 
       if (sramSize > 2)
       {
-        for (int x = 1; x < 4; x++)
+        for (uint8_t x = 1; x < 4; x++)
         {
           if (srambit6)
           {
@@ -838,7 +838,7 @@ namespace OSCR::Cores::MSX
 
         OSCR::Storage::Shared::fill();
 
-        for (int x = 0; x < 512; x++)
+        for (uint16_t x = 0; x < 512; x++)
         {
           writeData(0x8000 + address + x, OSCR::Storage::Shared::buffer[x]);
         }
@@ -855,7 +855,7 @@ namespace OSCR::Cores::MSX
       {
         OSCR::Storage::Shared::fill();
 
-        for (int x = 0; x < 512; x++)
+        for (uint16_t x = 0; x < 512; x++)
         {
           writeData(0x8000 + address + x, OSCR::Storage::Shared::buffer[x]);
         }
@@ -866,7 +866,7 @@ namespace OSCR::Cores::MSX
       break;
 
     case 4:  // Game Master 2 (8K)
-      for (int y = 0; y < 2; y++)
+      for (uint8_t y = 0; y < 2; y++)
       {
         writeData(0xA000, 0x10 + (y * 0x20));  // Bit 4 Enable, Bit 5 SRAM Segment 0/1
 
@@ -874,7 +874,7 @@ namespace OSCR::Cores::MSX
         {
           OSCR::Storage::Shared::fill();
 
-          for (int x = 0; x < 512; x++)
+          for (uint16_t x = 0; x < 512; x++)
           {
             writeData(0xB000 + address + x, OSCR::Storage::Shared::buffer[x]);
           }
@@ -894,7 +894,7 @@ namespace OSCR::Cores::MSX
       {
         OSCR::Storage::Shared::fill();
 
-        for (int x = 0; x < 512; x++)
+        for (uint16_t x = 0; x < 512; x++)
         {
           writeData(address + x, OSCR::Storage::Shared::buffer[x]);
         }
@@ -918,7 +918,7 @@ namespace OSCR::Cores::MSX
       {
         OSCR::Storage::Shared::fill();
 
-        for (int x = 0; x < 512; x++)
+        for (uint16_t x = 0; x < 512; x++)
         {
           writeData(0x8000 + address + x, OSCR::Storage::Shared::buffer[x]);
         }
@@ -926,7 +926,7 @@ namespace OSCR::Cores::MSX
 
       if (sramSize > 2)
       {
-        for (int y = 1; y < 4; y++)
+        for (uint8_t y = 1; y < 4; y++)
         {
           if (srambit6)
             writeData(0x7000, 0xC0 + y);  // Bit 6 + Bit 7 Enable
@@ -937,7 +937,7 @@ namespace OSCR::Cores::MSX
           {
             OSCR::Storage::Shared::fill();
 
-            for (int x = 0; x < 512; x++)
+            for (uint16_t x = 0; x < 512; x++)
             {
               writeData(0x8000 + address + x, OSCR::Storage::Shared::buffer[x]);
             }
@@ -955,7 +955,7 @@ namespace OSCR::Cores::MSX
       {
         OSCR::Storage::Shared::fill();
 
-        for (int x = 0; x < 512; x++)
+        for (uint16_t x = 0; x < 512; x++)
         {
           writeData(0x4000 + address + x, OSCR::Storage::Shared::buffer[x]);
         }

@@ -1092,14 +1092,14 @@ namespace OSCR::Cores
       // Get name
       uint8_t myByte = 0;
       uint8_t myLength = 0;
-      uint8_t x = 0;
+      uint16_t untilAddr = 0x0144;
 
       if (OSCR::Storage::Shared::buffer[0x143] == 0x80 || OSCR::Storage::Shared::buffer[0x143] == 0xC0)
       {
-        x++;
+        untilAddr--;
       }
 
-      for (int addr = 0x0134; addr <= 0x0143 - x; addr++)
+      for (uint16_t addr = 0x0134; addr < untilAddr; addr++)
       {
         myByte = OSCR::Storage::Shared::buffer[addr];
 
@@ -1305,7 +1305,7 @@ namespace OSCR::Cores
 
         while (romAddress <= endAddress) // Read banks and save to SD
         {
-          for (int i = 0; i < 512; i++)
+          for (uint16_t i = 0; i < 512; i++)
           {
             OSCR::Storage::Shared::buffer[i] = readByte(romAddress + i);
           }
@@ -1535,7 +1535,7 @@ namespace OSCR::Cores
             //fill OSCR::Storage::Shared::buffer
             OSCR::Storage::Shared::readBuffer(64);
 
-            for (int c = 0; c < 64; c++)
+            for (uint8_t c = 0; c < 64; c++)
             {
               if (readByteSRAM(sramAddress + c) != OSCR::Storage::Shared::buffer[c])
               {
@@ -1619,7 +1619,7 @@ namespace OSCR::Cores
         // Read banks and save to SD
         while (romAddress <= 0x5FFF)
         {
-          for (int i = 0; i < 512; i++)
+          for (uint16_t i = 0; i < 512; i++)
           {
             OSCR::Storage::Shared::buffer[i] = readByte(romAddress + i);
           }
@@ -1756,7 +1756,7 @@ namespace OSCR::Cores
           writeByte(0x2000, currBank);
           writeByte(0x3000, currBank);
 
-          for (int i = 0; i < 128; i++)
+          for (uint8_t i = 0; i < 128; i++)
           {
             writeByte(romAddress++, OSCR::Storage::Shared::sharedFile.read());
           }
@@ -2120,12 +2120,12 @@ namespace OSCR::Cores
 
           for (uint16_t currAddr = 0x4000; currAddr < 0x7FFF; currAddr += 512)
           {
-            for (int currByte = 0; currByte < 512; currByte++)
+            for (uint16_t currByte = 0; currByte < 512; currByte++)
             {
               OSCR::Storage::Shared::buffer[currByte] = readByte(currAddr + currByte);
             }
 
-            for (int j = 0; j < 512; j++)
+            for (uint16_t j = 0; j < 512; j++)
             {
               if (OSCR::Storage::Shared::buffer[j] != 0xFF)
               {
@@ -2168,7 +2168,7 @@ namespace OSCR::Cores
           {
             OSCR::Storage::Shared::fill();
 
-            for (int currByte = 0; currByte < 512; currByte++)
+            for (uint16_t currByte = 0; currByte < 512; currByte++)
             {
               // Write command sequence
               sendFlashCommand(0xA0, commandSet);
@@ -2212,7 +2212,7 @@ namespace OSCR::Cores
           {
             OSCR::Storage::Shared::fill();
 
-            for (int currByte = 0; currByte < 512; currByte++)
+            for (uint16_t currByte = 0; currByte < 512; currByte++)
             {
               // Write command sequence
               sendFlashCommand(0xA0, commandSet);
@@ -2249,7 +2249,7 @@ namespace OSCR::Cores
         {
           OSCR::Storage::Shared::fill();
 
-          for (int currByte = 0; currByte < 512; currByte++)
+          for (uint16_t currByte = 0; currByte < 512; currByte++)
           {
             // Write command sequence
             sendFlashCommand(0xA0, commandSet);
@@ -2310,7 +2310,7 @@ namespace OSCR::Cores
           OSCR::Storage::Shared::fill();
 
           // Compare
-          for (int i = 0; i < 512; i++)
+          for (uint16_t i = 0; i < 512; i++)
           {
             if (readByte(romAddress + i) != OSCR::Storage::Shared::buffer[i])
             {
@@ -2502,12 +2502,12 @@ namespace OSCR::Cores
 
         for (uint16_t currAddr = 0x4000; currAddr < 0x7FFF; currAddr += 512)
         {
-          for (int currByte = 0; currByte < 512; currByte++)
+          for (uint16_t currByte = 0; currByte < 512; currByte++)
           {
             OSCR::Storage::Shared::buffer[currByte] = readByte(currAddr + currByte);
           }
 
-          for (int j = 0; j < 512; j++)
+          for (uint16_t j = 0; j < 512; j++)
           {
             if (OSCR::Storage::Shared::buffer[j] != 0xFF)
             {
@@ -2543,7 +2543,7 @@ namespace OSCR::Cores
         {
           OSCR::Storage::Shared::fill();
 
-          for (int currByte = 0; currByte < 512; currByte++)
+          for (uint16_t currByte = 0; currByte < 512; currByte++)
           {
             // Write command sequence
             sendCFICommand(0xA0);
@@ -2629,7 +2629,7 @@ namespace OSCR::Cores
           OSCR::Storage::Shared::fill();
 
           // Compare
-          for (int i = 0; i < 512; i++)
+          for (uint16_t i = 0; i < 512; i++)
           {
             if (readByte(romAddress + i) != OSCR::Storage::Shared::buffer[i])
             {
@@ -2757,7 +2757,7 @@ namespace OSCR::Cores
         // Read banks and save to SD
         for (uint16_t address = startAddress; address <= finalAddress; address+=512)
         {
-          for (int i = 0; i < 512; i++)
+          for (uint16_t i = 0; i < 512; i++)
           {
             OSCR::Storage::Shared::buffer[i] = readByte(address + i);
           }
@@ -2888,12 +2888,12 @@ namespace OSCR::Cores
 
         for (uint16_t currAddr = 0x2000; currAddr < 0x4000; currAddr += 0x200)
         {
-          for (int currByte = 0; currByte < 512; currByte++)
+          for (uint16_t currByte = 0; currByte < 512; currByte++)
           {
             OSCR::Storage::Shared::buffer[currByte] = readByte(currAddr + currByte);
           }
 
-          for (int j = 0; j < 512; j++)
+          for (uint16_t j = 0; j < 512; j++)
           {
             if (OSCR::Storage::Shared::buffer[j] != 0xFF)
             {
@@ -2935,7 +2935,7 @@ namespace OSCR::Cores
             // Set ROM bank
             writeByteSRAM(0xA000, currBank);
 
-            for (int currByte = 0; currByte < 128; currByte++)
+            for (uint8_t currByte = 0; currByte < 128; currByte++)
             {
               // Write current byte
               writeByte(currAddr + currByte, OSCR::Storage::Shared::buffer[currByte]);
@@ -2954,7 +2954,7 @@ namespace OSCR::Cores
           {
             OSCR::Storage::Shared::fill();
 
-            for (int currByte = 0; currByte < 512; currByte++)
+            for (uint16_t currByte = 0; currByte < 512; currByte++)
             {
               toggle = true;
               // Write current byte
@@ -3025,7 +3025,7 @@ namespace OSCR::Cores
           OSCR::Storage::Shared::fill();
 
           // Compare
-          for (int i = 0; i < 512; i++)
+          for (uint16_t i = 0; i < 512; i++)
           {
             if (readByte(romAddress + i) != OSCR::Storage::Shared::buffer[i])
             {
@@ -3077,7 +3077,7 @@ namespace OSCR::Cores
       // Read banks and save to SD
       while (startAddress <= finalAddress)
       {
-        for (int i = 0; i < 512; i++)
+        for (uint16_t i = 0; i < 512; i++)
         {
           OSCR::Storage::Shared::buffer[i] = readByte(startAddress + i);
         }
@@ -3113,7 +3113,7 @@ namespace OSCR::Cores
         // Read banks and save to SD
         while (startAddress <= finalAddress)
         {
-          for (int i = 0; i < 512; i++)
+          for (uint16_t i = 0; i < 512; i++)
           {
             OSCR::Storage::Shared::buffer[i] = readByte(startAddress + i);
           }
@@ -3200,12 +3200,12 @@ namespace OSCR::Cores
 
         for (uint16_t currAddr = 0x4000; currAddr < 0x8000; currAddr += 0x200)
         {
-          for (int currByte = 0; currByte < 512; currByte++)
+          for (uint16_t currByte = 0; currByte < 512; currByte++)
           {
             OSCR::Storage::Shared::buffer[currByte] = readByte(currAddr + currByte);
           }
 
-          for (int j = 0; j < 512; j++)
+          for (uint16_t j = 0; j < 512; j++)
           {
             if (OSCR::Storage::Shared::buffer[j] != 0xFF)
             {
@@ -3247,7 +3247,7 @@ namespace OSCR::Cores
         {
           OSCR::Storage::Shared::fill();
 
-          for (int currByte = 0; currByte < 512; currByte++)
+          for (uint16_t currByte = 0; currByte < 512; currByte++)
           {
             toggle = true;
             // Write current byte
@@ -3319,7 +3319,7 @@ namespace OSCR::Cores
           OSCR::Storage::Shared::fill();
 
           // Compare
-          for (int i = 0; i < 512; i++)
+          for (uint16_t i = 0; i < 512; i++)
           {
             if (readByte(romAddress + i) != OSCR::Storage::Shared::buffer[i])
             {
@@ -3417,7 +3417,7 @@ namespace OSCR::Cores
         // Read banks and save to SD
         while (startAddress <= finalAddress)
         {
-          for (int i = 0; i < 512; i++)
+          for (uint16_t i = 0; i < 512; i++)
           {
             OSCR::Storage::Shared::buffer[i] = readByte(startAddress + i);
           }
@@ -3500,12 +3500,12 @@ namespace OSCR::Cores
 
         for (uint16_t currAddr = 0x4000; currAddr < 0x6000; currAddr += 0x200)
         {
-          for (int currByte = 0; currByte < 512; currByte++)
+          for (uint16_t currByte = 0; currByte < 512; currByte++)
           {
             OSCR::Storage::Shared::buffer[currByte] = readByte(currAddr + currByte);
           }
 
-          for (int j = 0; j < 512; j++)
+          for (uint16_t j = 0; j < 512; j++)
           {
             if (OSCR::Storage::Shared::buffer[j] != 0xFF)
             {
@@ -3534,7 +3534,7 @@ namespace OSCR::Cores
         {
           OSCR::Storage::Shared::fill();
 
-          for (int currByte = 0; currByte < 512; currByte++)
+          for (uint16_t currByte = 0; currByte < 512; currByte++)
           {
             // Write command sequence
             sendGamesharkCommand(0xA0);
@@ -3588,7 +3588,7 @@ namespace OSCR::Cores
           OSCR::Storage::Shared::fill();
 
           // Compare
-          for (int i = 0; i < 512; i++)
+          for (uint16_t i = 0; i < 512; i++)
           {
             if (readByte(romAddress + i) != OSCR::Storage::Shared::buffer[i])
             {

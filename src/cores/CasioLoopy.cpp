@@ -68,6 +68,8 @@ namespace OSCR::Cores::CasioLoopy
   // By @partlyhuman
   // Special thanks to @kasamikona
 
+  using OSCR::Storage::Endian;
+
   // SH-1 memory map locations, ROM starts here
   constexpr uint32_t const LOOPY_MAP_ROM_ZERO = 0x0E000000;
   constexpr uint32_t const LOOPY_MAP_SRAM_ZERO = 0x02000000;
@@ -506,31 +508,24 @@ namespace OSCR::Cores::CasioLoopy
 
     OSCR::UI::ProgressBar::init((uint32_t)(cartSize));
 
-    constexpr size_t const sdBufferSize = 512;
     uint32_t sum = 0;
 
     digitalWrite(LOOPY_ROMCE, LOW);
 
-    for (uint32_t ptr = 0; ptr < cartSize;)
+    for (uint32_t currentAddress = 0; currentAddress < cartSize;)
     {
-      uint16_t myWord = readWord(ptr);
-
-      // aggregate checksum over 16-bit words, starting at 80h, this address is stored in header but never varies
-      if (ptr >= loopyChecksumStart)
+      for (uint16_t i = 0; i < OSCR::Storage::kBufferSize; i += 2, currentAddress += 2)
       {
+        uint16_t const myWord = readWord(currentAddress);
+        OSCR::Storage::Shared::putWord(i, myWord, Endian::MSBFirst);
+
+        if (currentAddress < loopyChecksumStart) continue;
+        
+        // aggregate checksum over 16-bit words, starting at 80h, this address is stored in header but never varies
         sum += myWord;
       }
 
-      // Store in buffer
-      OSCR::Storage::Shared::buffer[ptr++ % sdBufferSize] = (myWord >> 8) & 0xFF;
-      OSCR::Storage::Shared::buffer[ptr++ % sdBufferSize] = myWord & 0xFF;
-
-      // Flush when buffer full
-      if (ptr % sdBufferSize == 0)
-      {
-        OSCR::Storage::Shared::writeBuffer();
-      }
-
+      OSCR::Storage::Shared::writeBuffer();
       OSCR::UI::ProgressBar::advance(512);
     }
 
@@ -597,12 +592,12 @@ namespace OSCR::Cores::CasioLoopy
 
     for (uint32_t currBuffer = 0; currBuffer < sramSize; currBuffer += 512)
     {
-      for (int currByte = 0; currByte < 512; currByte++)
+      for (uint16_t currByte = 0; currByte < 512; currByte++)
       {
         OSCR::Storage::Shared::buffer[currByte] = readByte(currBuffer + currByte);
       }
 
-      for (int i = 0; i < 512; i++)
+      for (uint16_t i = 0; i < 512; i++)
       {
         if (OSCR::Storage::Shared::sharedFile.read() != OSCR::Storage::Shared::buffer[i])
         {

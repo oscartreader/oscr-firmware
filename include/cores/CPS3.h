@@ -60,7 +60,7 @@ namespace OSCR::Cores::CPS3
   void eraseSIMM4x8();
   void readSIMM4x8();
   void writeSIMM4x8();
-  void printSIMM4x8(int numBytes);
+  void printSIMM4x8(uint8_t numBytes);
   void resetFlash2x8(uint32_t bank);
   void idFlash2x8(uint32_t bank);
   void eraseFlash2x8(uint32_t bank);

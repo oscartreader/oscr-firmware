@@ -43,6 +43,8 @@ namespace OSCR::Cores::Flash
   uint32_t flashSize;
   uint32_t blank;
 
+  using OSCR::Storage::Endian;
+
 #if defined(ENABLE_FLASH8) || defined(ENABLE_FLASH16) || defined(NEEDS_FLASH8) || defined(NEEDS_FLASH16)
   using OSCR::Databases::Flash::flashDetail;
   using OSCR::Databases::Flash::flashRecord;
@@ -1496,7 +1498,7 @@ namespace OSCR::Cores::Flash
 
       int blockfailcnt = 0;
 
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         uint8_t datum = OSCR::Storage::Shared::buffer[c];
         uint8_t d = readByte(currByte + c);
@@ -1731,7 +1733,7 @@ namespace OSCR::Cores::Flash
       // Fill buffer
       OSCR::Storage::Shared::fill();
 
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         // Write command sequence
         writeByte(0x555 << 1, 0xAA);
@@ -1769,7 +1771,7 @@ namespace OSCR::Cores::Flash
         OSCR::Storage::Shared::fill();
 
         // Write bufferSize bytes at a time
-        for (int currWriteBuffer = 0; currWriteBuffer < 512; currWriteBuffer += bufferSize)
+        for (uint16_t currWriteBuffer = 0; currWriteBuffer < 512; currWriteBuffer += bufferSize)
         {
           // 2 unlock commands
           writeByte(0x555 << 1, 0xAA);
@@ -1815,7 +1817,7 @@ namespace OSCR::Cores::Flash
     {
       OSCR::Storage::Shared::fill();
 
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         // Write command sequence
         writeByteCommandShift(0xA0);
@@ -1978,7 +1980,7 @@ namespace OSCR::Cores::Flash
     for (uint32_t currBuffer = 0; (currBuffer < flashSize) && (blank); currBuffer += 512)
     {
       // Fill buffer
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         // Read byte
         OSCR::Storage::Shared::buffer[c] = readByte(currBuffer + c);
@@ -2037,7 +2039,7 @@ namespace OSCR::Cores::Flash
 
       OSCR::Storage::Shared::fill();
 
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         if (readByte(currByte + c) != OSCR::Storage::Shared::buffer[c])
         {
@@ -2068,7 +2070,7 @@ namespace OSCR::Cores::Flash
 
     for (uint32_t currByte = 0; currByte < flashSize; currByte += 512)
     {
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         OSCR::Storage::Shared::buffer[c] = readByte(currByte + c);
       }
@@ -2084,11 +2086,11 @@ namespace OSCR::Cores::Flash
     OSCR::Storage::Shared::close();
   }
 
-  void printFlash(int numBytes)
+  void printFlash(uint8_t numBytes)
   {
-    for (int currByte = 0; currByte < numBytes; currByte += 10)
+    for (uint8_t currByte = 0; currByte < numBytes; currByte += 10)
     {
-      for (int c = 0; c < 10; c++)
+      for (uint8_t c = 0; c < 10; c++)
       {
         // Now print the significant bits
         OSCR::UI::printHex<false>(readByte(currByte + c));
@@ -2292,10 +2294,7 @@ namespace OSCR::Cores::Flash
       for (uint16_t c = 0, d = 0; c < 256; c++, d+=2)
       {
         uint16_t currWord = readWord(currByte + c);
-
-        // Split word into two bytes
-        OSCR::Storage::Shared::buffer[d + 1] = ((currWord >> 8) & 0xFF); // Right
-        OSCR::Storage::Shared::buffer[d] = (currWord & 0xFF); // Left
+        OSCR::Storage::Shared::putWord(d, currWord, Endian::LSBFirst);
       }
 
       OSCR::Storage::Shared::writeBuffer(512);
@@ -2306,12 +2305,12 @@ namespace OSCR::Cores::Flash
     OSCR::UI::printLine(FS(OSCR::Strings::Common::DONE));
   }
 
-  void printFlash16(int numBytes)
+  void printFlash16(uint8_t numBytes)
   {
-    for (int currByte = 0; currByte < numBytes / 2; currByte += 5)
+    for (uint16_t currByte = 0; currByte < numBytes / 2; currByte += 5)
     {
       // 5 words per line
-      for (int c = 0; c < 5; c++)
+      for (uint8_t c = 0; c < 5; c++)
       {
         uint16_t const currWord = readWord(currByte + c);
 
@@ -2513,10 +2512,7 @@ namespace OSCR::Cores::Flash
       for (uint16_t c = 0, d = 0; c < 256; c++, d+=2)
       {
         uint16_t myWord = readWord_Eprom(currWord + c);
-
-        // Split word into two bytes
-        OSCR::Storage::Shared::buffer[d + 1] = ((myWord >> 8) & 0xFF); // Right
-        OSCR::Storage::Shared::buffer[d] = (myWord & 0xFF); // Left
+        OSCR::Storage::Shared::putWord(d, myWord, Endian::LSBFirst);
       }
 
       OSCR::Storage::Shared::writeBuffer();
@@ -2600,12 +2596,12 @@ namespace OSCR::Cores::Flash
     }
   }
 
-  void print_Eprom(int numBytes)
+  void print_Eprom(uint8_t numBytes)
   {
-    for (int currByte = 0; currByte < numBytes / 2; currByte += 5)
+    for (uint8_t currByte = 0; currByte < numBytes / 2; currByte += 5)
     {
       // 5 words per line
-      for (int c = 0; c < 5; c++)
+      for (uint8_t c = 0; c < 5; c++)
       {
         uint16_t const currWord = readWord_Eprom(currByte + c);
 
@@ -2981,7 +2977,7 @@ namespace OSCR::Cores::Flash
 
       OSCR::Storage::Shared::fill();
 
-      for (int currByte = 0; currByte < 512; currByte++)
+      for (uint16_t currByte = 0; currByte < 512; currByte++)
       {
         // Write command sequence
         sendCFICommand(0xA0);

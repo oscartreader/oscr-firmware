@@ -845,7 +845,7 @@ namespace OSCR::Cores::SMS
       for (uint16_t currBuffer = 0; currBuffer < bankSize; currBuffer += 512)
       {
         // Fill SD buffer
-        for (int currByte = 0; currByte < 512; currByte++)
+        for (uint16_t currByte = 0; currByte < 512; currByte++)
         {
           OSCR::Storage::Shared::buffer[currByte] = readByte(((adapterMode == SMSMode::SG1000Raphnet) || (cartSize == 32768) ? 0 : 0x8000) + currBuffer + currByte);
         }
@@ -901,7 +901,7 @@ namespace OSCR::Cores::SMS
       for (uint16_t currBuffer = 0; currBuffer < bankSize; currBuffer += 512)
       {
         // Fill SD buffer
-        for (int currByte = 0; currByte < 512; currByte++)
+        for (uint16_t currByte = 0; currByte < 512; currByte++)
         {
           OSCR::Storage::Shared::buffer[currByte] = readByte(0x8000 + currBuffer + currByte);
         }
@@ -950,7 +950,7 @@ namespace OSCR::Cores::SMS
 
       OSCR::Storage::Shared::readBuffer();
 
-      for (int x = 0; x < 512; x++)
+      for (uint16_t x = 0; x < 512; x++)
       {
         writeByte(0x8000 + page_address + x, OSCR::Storage::Shared::buffer[x]);
       }

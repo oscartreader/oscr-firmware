@@ -330,7 +330,7 @@ namespace OSCR::Cores::GPC
     OSCR::UI::setLineRel(-2); // go back
 
     // Disable ram cassette write protection
-    for (int countProtect = 0; countProtect < 15; countProtect++)
+    for (uint8_t countProtect = 0; countProtect < 15; countProtect++)
     {
       writeBank(0x20, 0x6000, 0x00);
     }

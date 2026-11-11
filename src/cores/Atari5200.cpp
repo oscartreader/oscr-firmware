@@ -204,7 +204,7 @@ namespace OSCR::Cores::Atari5200
   {
     for (uint16_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int w = 0; w < 512; w++)
+      for (uint16_t w = 0; w < 512; w++)
       {
         uint8_t temp = readData(addr + w);
         OSCR::Storage::Shared::buffer[w] = temp;
@@ -216,12 +216,12 @@ namespace OSCR::Cores::Atari5200
 
   void readBankBountyBob(uint16_t startaddr)
   {
-    for (int w = 0; w < 4; w++) {
+    for (uint8_t w = 0; w < 4; w++) {
       readData(startaddr + 0xFF6 + w);
       readSegment(startaddr, startaddr + 0xE00);
 
       // Split Read of Last 0x200 bytes
-      for (int x = 0; x < 0x1F6; x++)
+      for (uint16_t x = 0; x < 0x1F6; x++)
       {
         OSCR::Storage::Shared::buffer[x] = readData(startaddr + 0xE00 + x);
       }
@@ -229,7 +229,7 @@ namespace OSCR::Cores::Atari5200
       OSCR::Storage::Shared::writeBuffer(502);
 
       // Bank Registers 0xFF6-0xFF9
-      for (int y = 0; y < 4; y++)
+      for (uint8_t y = 0; y < 4; y++)
       {
         readData(startaddr + 0xFFF);  // Reset Bank
         OSCR::Storage::Shared::buffer[y] = readData(startaddr + 0xFF6 + y);
@@ -239,7 +239,7 @@ namespace OSCR::Cores::Atari5200
       readData(startaddr + 0xFFF);      // Reset Bank
       readData(startaddr + 0xFF6 + w);  // Set Bank
 
-      for (int z = 4; z < 10; z++)
+      for (uint8_t z = 4; z < 10; z++)
       {
         OSCR::Storage::Shared::buffer[z] = readData(startaddr + 0xFF6 + z);  // 0xFFA-0xFFF
       }

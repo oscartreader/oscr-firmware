@@ -698,7 +698,7 @@ namespace OSCR::Cores::PCEngine
 
     pin_read_write();
 
-    for (int block_index = 0; block_index < 4; block_index++)
+    for (uint8_t block_index = 0; block_index < 4; block_index++)
     {
       //Unlock Tennokoe Bank RAM
 
@@ -717,9 +717,9 @@ namespace OSCR::Cores::PCEngine
       interrupts();
 
       // hexdump:
-      // for (int c = 0; c < 512; c += 16)
+      // for (uint16_t c = 0; c < 512; c += 16)
       // {
-      //   for (int i = 0; i < 16; i++)
+      //   for (uint8_t i = 0; i < 16; i++)
       //   {
       //     uint8_t b = OSCR::Storage::Shared::buffer[c + i];
       //     OSCR::UI::printHex(b);
@@ -732,7 +732,7 @@ namespace OSCR::Cores::PCEngine
       {
         OSCR::UI::print(F("Header: "));
 
-        for (int i = 0; i < 4; i++)
+        for (uint8_t i = 0; i < 4; i++)
         {
           uint8_t b = OSCR::Storage::Shared::buffer[i];
           OSCR::UI::printHex<false>(b);
@@ -784,7 +784,7 @@ namespace OSCR::Cores::PCEngine
 
     pin_read_write();
 
-    for (int block_index = 0; block_index < 4; block_index++)
+    for (uint8_t block_index = 0; block_index < 4; block_index++)
     {
       OSCR::Storage::Shared::fill();
 
@@ -815,7 +815,7 @@ namespace OSCR::Cores::PCEngine
 
     OSCR::Storage::Shared::rewind();
 
-    for (int block_index = 0; block_index < 4; block_index++)
+    for (uint8_t block_index = 0; block_index < 4; block_index++)
     {
       //Unlock Tennokoe Bank RAM
 
@@ -1054,7 +1054,7 @@ namespace OSCR::Cores::PCEngine
     {
       OSCR::Storage::Shared::fill();
 
-      for (int currByte = 0; currByte < 512; currByte++)
+      for (uint16_t currByte = 0; currByte < 512; currByte++)
       {
         // BYTE PROGRAM
         uint8_t b = OSCR::Storage::Shared::buffer[currByte];

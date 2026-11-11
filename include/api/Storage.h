@@ -41,6 +41,14 @@ namespace OSCR
       Summed,
     };
 
+    enum class Endian : bool
+    {
+      MSBFirst = false,
+      LSBFirst = true,
+      BigEndian = MSBFirst,
+      LittleEndian = LSBFirst,
+    };
+
     extern SdFs sd;
 
     extern void setup();
@@ -256,6 +264,8 @@ namespace OSCR
 
       size_t writeNewLine();
 #endif /* OPTION_OPTIMIZE_FILE_WRITE */
+
+      void putWord(uint16_t idx, uint16_t word, Endian endianness);
 
 #if (OPTION_OPTIMIZE_FILE_READ)
       __optimize_file_read
@@ -633,6 +643,19 @@ namespace OSCR
        * @return Success/failure
        */
       extern bool rename_P(char const * baseName, __StringHelper const * fileExt);
+
+      /**
+       * Place a word (16-bit data) of the specified endianness into
+       * the shared storage buffer.
+       *
+       * @param idx The starting array index in the buffer.
+       * @param word The word to store.
+       * @param endianness The endianness of the word.
+       * 
+       * @note No validation is done on the array index. Do not pass
+       *       an out-of-bounds index or the program will crash.
+       */
+      extern void putWord(uint16_t idx, uint16_t word, Endian endianness);
 
 #if (OPTION_OPTIMIZE_SHARED_FILE)
       __optimize_shared_file

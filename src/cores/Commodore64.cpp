@@ -440,7 +440,7 @@ namespace OSCR::Cores::Commodore64
       case 9:          // Atomic Power (32K)
         ROML_ENABLE;
 
-        for (int x = 0; x < 4; x++)
+        for (uint8_t x = 0; x < 4; x++)
         {
           bankSwitch(0xDE00, x << 3);   // Switch Bank using D3-D4
           readSegment(0x8000, 0xA000);  // 8K *4 = 32K
@@ -457,7 +457,7 @@ namespace OSCR::Cores::Commodore64
         break;
 
       case 3:           // Final Cartridge III (64K)
-        for (int x = 0; x < 4; x++)
+        for (uint8_t x = 0; x < 4; x++)
         {
           bankSwitch(0xDFFF, 0x40 + x);  // Switch Bank using $DFFF
           readSegment16k();
@@ -518,7 +518,7 @@ namespace OSCR::Cores::Commodore64
       case 7:          // Fun Play, Power Play (128K)
         ROML_ENABLE;
 
-        for (int x = 0; x < 8; x++)
+        for (uint8_t x = 0; x < 8; x++)
         {
           bankSwitch(0xDE00, x * 8);    // Switch Bank 0-8
           readSegment(0x8000, 0xA000);  // 8K * 8 = 64K
@@ -527,7 +527,7 @@ namespace OSCR::Cores::Commodore64
         ROML_DISABLE;
         ROMH_ENABLE;
 
-        for (int x = 0; x < 8; x++)
+        for (uint8_t x = 0; x < 8; x++)
         {
           bankSwitch(0xDE00, (x * 8) + 1);  // Switch Bank 9-15
           readSegment(0x8000, 0xA000);      // 8K * 8 = +64K = 128K
@@ -538,7 +538,7 @@ namespace OSCR::Cores::Commodore64
         break;
 
       case 8: // Super Games (64K)
-        for (int x = 0; x < 4; x++)
+        for (uint8_t x = 0; x < 4; x++)
         {
           bankSwitch(0xDF00, x);  // Switch Bank
           readSegment16k();
@@ -569,7 +569,7 @@ namespace OSCR::Cores::Commodore64
 
       case 14: // Magic Formel (64K)
         ROMH_ENABLE;
-        for (int x = 0; x < 8; x++)
+        for (uint8_t x = 0; x < 8; x++)
         {
           bankSwitch(0xDF00 + x, 0);     // Switch Bank using A0-A2
           readSegment(0xE000, 0x10000);  // 8K * 8 = 64K
@@ -600,7 +600,7 @@ namespace OSCR::Cores::Commodore64
         break;
 
       case 20:  // Super Snapshot 5 (64K)
-        for (int x = 0; x < 4; x++)
+        for (uint8_t x = 0; x < 4; x++)
         {
           int bank = (((x & 2) << 3) | (0 << 3) | ((x & 1) << 2));
           bankSwitch(0xDE00, bank);  // Switch Bank using D2-D4 (D3 == 0 Enable ROM)
@@ -609,7 +609,7 @@ namespace OSCR::Cores::Commodore64
         break;
 
       case 21:  // Comal-80 (64K)
-        for (int x = 0; x < 4; x++)
+        for (uint8_t x = 0; x < 4; x++)
         {
           bankSwitch(0xDE00, x + 0x80);  // Switch Bank
           readSegment16k();

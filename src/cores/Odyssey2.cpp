@@ -207,7 +207,7 @@ namespace OSCR::Cores::Odyssey2
   {
     for (uint16_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int w = 0; w < 512; w++)
+      for (uint16_t w = 0; w < 512; w++)
       {
         uint8_t temp = readData(addr + w);
         OSCR::Storage::Shared::buffer[w] = temp;
@@ -282,7 +282,7 @@ namespace OSCR::Cores::Odyssey2
       // Videopac+ 60:  Trans American Rally 16K = 2K x 8 Banks
       uint8_t ody2banks = (ody2size * 4) / 2;
 
-      for (int x = (ody2banks - 1); x >= 0; x--)
+      for (uint8_t x = (ody2banks - 1); x >= 0; x--)
       {
         bankSwitch(0x80, ~x);
         readSegment(0x0400, 0x0C00);  // 2K x 6/8 = 12K/16K

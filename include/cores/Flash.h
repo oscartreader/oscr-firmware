@@ -12,7 +12,7 @@
  */
 namespace OSCR::Cores::Flash
 {
-# if HAS_FLASH
+# if HAS_FLASH || HAS_FLASH8
   extern char const * const menuOptionsFlash[];
   extern uint8_t const kMenuOptionFlashMax;
 # endif /* HAS_FLASH */
@@ -44,30 +44,28 @@ namespace OSCR::Cores::Flash
   extern uint32_t flashBanks;
   extern bool flashX16Mode;
   extern bool flashSwitchLastBits;
-  extern FlashType flashromType;
   extern uint8_t secondID;
   extern uint32_t time;
   extern uint32_t sectorSize;
   extern uint16_t bufferSize;
-  extern bool byteCtrl;
 
   void menu();
-  void menuFlash8();
-  void menuFlash16();
-  void menuEPROM();
+# endif
+
+# if HAS_FLASH8
+  extern FlashType flashromType;
+  extern bool byteCtrl;
 
   void printHeader();
 
+  void menuFlash8();
+
   void setupCFI();
-  void printFlashSize(int index);
-  void printFlashType(int index);
-  uint8_t selectFlashtype(bool option);
+  FlashType selectFlashType();
   bool getFlashDetail();
   void id8();
-  void id16();
   void setupVoltage();
   void setup8();
-  void setup16();
   void setup_Eprom();
   void dataIn();
   void dataOut();
@@ -107,8 +105,31 @@ namespace OSCR::Cores::Flash
   void verifyFlash(bool closeFile = true);
   void verifyFlash(uint8_t currChip, uint8_t totalChips, bool reversed, bool closeFile = true);
   void readFlash();
-  void printFlash(int numBytes);
+  void printFlash(uint8_t numBytes);
   void resetFlash8();
+  uint16_t writeWord_Eprom(uint32_t myAddress, uint16_t myData);
+  uint16_t readWord_Eprom(uint32_t myAddress);
+  void blankcheck_Eprom();
+  void read_Eprom();
+  void write_Eprom();
+  void verify_Eprom();
+  void print_Eprom(uint8_t numBytes);
+  void sendCFICommand(uint8_t cmd);
+  uint8_t readByteCompensated(int address);
+  void writeByteCompensated(int address, uint8_t data);
+  void startCFIMode(bool x16Mode);
+  bool identifyCFIbyIds(bool x16Mode = false);
+  void identifyCFI();
+  void adjustFileSizeOffset(uint8_t currChip, uint8_t totalChips, bool reversed);
+  void writeCFI(uint8_t currChip, uint8_t totalChips, bool reversed);
+# endif /* HAS_FLASH8 */
+
+# if HAS_FLASH16
+  void menuFlash16();
+  void menuEPROM();
+
+  void id16();
+  void setup16();
   void resetFlash16();
   void writeFlash16();
   void writeFlash16_29F1601();
@@ -118,26 +139,11 @@ namespace OSCR::Cores::Flash
   void blankcheck16();
   void verifyFlash16(bool closeFile = true);
   void readFlash16();
-  void printFlash16(int numBytes);
+  void printFlash16(uint8_t numBytes);
   void busyCheck16();
   void busyCheck16_29LV640(uint32_t myAddress, uint16_t myData);
   void writeFlash16_29LV640();
-  uint16_t writeWord_Eprom(uint32_t myAddress, uint16_t myData);
-  uint16_t readWord_Eprom(uint32_t myAddress);
-  void blankcheck_Eprom();
-  void read_Eprom();
-  void write_Eprom();
-  void verify_Eprom();
-  void print_Eprom(int numBytes);
-  void sendCFICommand(uint8_t cmd);
-  uint8_t readByteCompensated(int address);
-  void writeByteCompensated(int address, uint8_t data);
-  void startCFIMode(bool x16Mode);
-  bool identifyCFIbyIds(bool x16Mode = false);
-  void identifyCFI();
-  void adjustFileSizeOffset(uint8_t currChip, uint8_t totalChips, bool reversed);
-  void writeCFI(uint8_t currChip, uint8_t totalChips, bool reversed);
-# endif /* HAS_FLASH */
+# endif /* HAS_FLASH16 */
 
 } /* namespace OSCR::Cores::Flash */
 

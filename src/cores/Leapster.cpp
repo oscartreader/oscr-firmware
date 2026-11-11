@@ -520,7 +520,7 @@ namespace OSCR::Cores::Leapster
 
     CE_LOW;
 
-    for (int x = 0; x < 10; x++)
+    for (uint8_t x = 0; x < 10; x++)
     {
       tempword = read_rom_word((versionAddr / 2) + x);
 
@@ -532,7 +532,7 @@ namespace OSCR::Cores::Leapster
 
     CE_LOW;
 
-    for (int x = 0; x < 25; x++)
+    for (uint8_t x = 0; x < 25; x++)
     {
       tempword = read_rom_word((titleAddr / 2) + x);
 
@@ -829,7 +829,7 @@ namespace OSCR::Cores::Leapster
 
   void eepromSetDeviceAddress(uint32_t addrhi)
   {
-    for (int i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; i++)
     {
       if ((addrhi >> 2) & 0x1) // Bit is HIGH
       {
@@ -881,7 +881,7 @@ namespace OSCR::Cores::Leapster
   {
     DDRH &= ~(1 << 4); // SDA to INPUT
 
-    for (int i = 0; i < 8; i++)
+    for (uint8_t i = 0; i < 8; i++)
     {
       SCL_LOW;
       SDA_LOW;
@@ -908,7 +908,7 @@ namespace OSCR::Cores::Leapster
 
   void eepromWriteData(uint8_t data)
   {
-    for (int i = 0; i < 8; i++)
+    for (uint8_t i = 0; i < 8; i++)
     {
       if ((data >> 7) & 0x1) // Bit is HIGH
       {
@@ -947,7 +947,7 @@ namespace OSCR::Cores::Leapster
 
   void eepromSetAddress(uint16_t address)
   {
-    for (int i = 0; i < 8; i++)
+    for (uint8_t i = 0; i < 8; i++)
     {
       if ((address >> 7) & 0x1) // Bit is HIGH
       {
@@ -1010,7 +1010,7 @@ namespace OSCR::Cores::Leapster
 
     for (uint16_t currByte = 0; currByte < 2048; currByte += 256)
     {
-      for (int i = 0; i < 256; i++)
+      for (uint16_t i = 0; i < 256; i++)
       {
         readEepromByte(currByte + i);
       }
@@ -1049,7 +1049,7 @@ namespace OSCR::Cores::Leapster
     {
       OSCR::Storage::Shared::readBuffer(256);
 
-      for (int i = 0; i < 256; i++)
+      for (uint16_t i = 0; i < 256; i++)
       {
         writeEepromByte(currByte + i);
         delay(50);

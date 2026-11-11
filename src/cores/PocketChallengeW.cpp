@@ -698,7 +698,7 @@ namespace OSCR::Cores::PocketChallengeW
         OSCR::Storage::Shared::buffer[x] = myByte;
       }
 
-      for (int i = 0; i < 512; i++)
+      for (uint16_t i = 0; i < 512; i++)
       {
         if (OSCR::Storage::Shared::sharedFile.read() != OSCR::Storage::Shared::buffer[i])
         {

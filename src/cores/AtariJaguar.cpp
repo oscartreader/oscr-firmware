@@ -23,6 +23,7 @@ namespace OSCR::Cores::AtariJaguar
   //                       PORTG: RCLK (PG5)
   // EEPROM PINS - EEPDO (PA5), EEPSK (PA6), EEPCS (PA7), [EEPDI = DATA D0 (PF0)]
   // CONTROL PINS - PORTH: OEH (PH3), OEL (PH4), CE (PH5), WE (PH6)
+  using OSCR::Storage::Endian;
 
   using OSCR::Databases::Standard::romDetail;
   using OSCR::Databases::Standard::romRecord;
@@ -422,7 +423,7 @@ namespace OSCR::Cores::AtariJaguar
   // LATCH HI AFTER LAST SHIFOUT
   void shiftOutFAST(uint8_t addr)
   {
-    for (int i = 7; i >= 0; i--) // MSB
+    for (int8_t i = 7; i >= 0; i--) // MSB
     {
       CLOCK_CLEAR;
 
@@ -539,17 +540,15 @@ namespace OSCR::Cores::AtariJaguar
     //Initialize progress bar
     OSCR::UI::ProgressBar::init((uint32_t)(cartSize));
 
-    for (uint32_t currBuffer = 0, d = 0; currBuffer < cartSize; currBuffer += 512)
+    for (uint32_t currBuffer = 0; currBuffer < cartSize; currBuffer += 512)
     {
       // MaskROM does not use A0 + A1 - Shift Address *4
-      for (int currWord = 0; currWord < 512; currWord += 4, d += 4)
+      for (uint16_t currWord = 0; currWord < 512; currWord += 4)
       {
         readData(currBuffer + currWord);
         // Move WORD into SD Buffer
-        OSCR::Storage::Shared::buffer[d] = (tempDataHI >> 8) & 0xFF;
-        OSCR::Storage::Shared::buffer[d + 1] = tempDataHI & 0xFF;
-        OSCR::Storage::Shared::buffer[d + 2] = (tempDataLO >> 8) & 0xFF;
-        OSCR::Storage::Shared::buffer[d + 3] = tempDataLO & 0xFF;
+        OSCR::Storage::Shared::putWord(currWord, tempDataHI, Endian::MSBFirst);
+        OSCR::Storage::Shared::putWord(currWord + 2, tempDataLO, Endian::MSBFirst);
       }
 
       OSCR::Storage::Shared::writeBuffer();
@@ -634,7 +633,8 @@ namespace OSCR::Cores::AtariJaguar
     eepromreadData();
     EEP_CS_CLEAR;
     // OR 16 bits into two bytes
-    for (int j = 0; j < 16; j += 8) {
+    for (uint8_t j = 0; j < 16; j += 8)
+    {
       eepBuf[(j / 8)] = eepBit[0 + j] << 7 | eepBit[1 + j] << 6 | eepBit[2 + j] << 5 | eepBit[3 + j] << 4 | eepBit[4 + j] << 3 | eepBit[5 + j] << 2 | eepBit[6 + j] << 1 | eepBit[7 + j];
     }
   }
@@ -642,7 +642,8 @@ namespace OSCR::Cores::AtariJaguar
   // Capture 2 bytes in 16 bits into bit array eepBit[]
   void eepromreadData()
   {
-    for (int i = 0; i < 16; i++) {
+    for (uint8_t i = 0; i < 16; i++)
+    {
       EEP_SK_SET;
       _delay_us(1);                         // minimum 250ns
       eepBit[i] = ((PINA & 0x20) >> 5);  // Read DO (PA5) - PINA with Mask 0x20
@@ -671,19 +672,27 @@ namespace OSCR::Cores::AtariJaguar
   {
     uint8_t UPPER = eepBuf[1];
     uint8_t LOWER = eepBuf[0];
-    for (int i = 0; i < 8; i++) {
-      if (((UPPER >> 7) & 0x1) == 1) {  // Bit is HIGH
+    for (uint8_t i = 0; i < 8; i++)
+    {
+      if (((UPPER >> 7) & 0x1) == 1) // Bit is HIGH
+      {
         eeprom1();
-      } else {  // Bit is LOW
+      }
+      else // Bit is LOW
+      {
         eeprom0();
       }
       // rotate to the next bit
       UPPER <<= 1;
     }
-    for (int j = 0; j < 8; j++) {
-      if (((LOWER >> 7) & 0x1) == 1) {  // Bit is HIGH
+    for (uint8_t j = 0; j < 8; j++)
+    {
+      if (((LOWER >> 7) & 0x1) == 1) // Bit is HIGH
+      {
         eeprom1();
-      } else {  // Bit is LOW
+      }
+      else // Bit is LOW
+      {
         eeprom0();
       }
       // rotate to the next bit
@@ -694,10 +703,14 @@ namespace OSCR::Cores::AtariJaguar
   void eepromSetAddress(uint16_t addr)
   {  // 16bit
     uint8_t shiftaddr = eepSize + 6;      // 93C46 = 0 + 6, 93C56 = 7, 93C66 = 8, 93C76 = 9, 93C86 = 10
-    for (int i = 0; i < shiftaddr; i++) {
-      if (((addr >> shiftaddr) & 1) == 1) {  // Bit is HIGH
+    for (uint8_t i = 0; i < shiftaddr; i++)
+    {
+      if (((addr >> shiftaddr) & 1) == 1) // Bit is HIGH
+      {
         eeprom1();
-      } else {  // Bit is LOW
+      }
+      else // Bit is LOW
+      {
         eeprom0();
       }
       // rotate to the next bit
@@ -834,7 +847,7 @@ namespace OSCR::Cores::AtariJaguar
     {
       for (uint16_t currWord = 0; currWord < eepEnd; currWord += 256)
       {
-        for (int i = 0; i < 256; i++)
+        for (uint16_t i = 0; i < 256; i++)
         {
           eepromRead((currWord + i) * 2);
           OSCR::Storage::Shared::buffer[(i * 2)] = eepBuf[1];
@@ -881,7 +894,7 @@ namespace OSCR::Cores::AtariJaguar
       {
         OSCR::Storage::Shared::fill();
 
-        for (int i = 0; i < 256; i++)
+        for (uint16_t i = 0; i < 256; i++)
         {
           eepBuf[0] = OSCR::Storage::Shared::buffer[(i * 2)];
           eepBuf[1] = OSCR::Storage::Shared::buffer[(i * 2) + 1];
@@ -1187,7 +1200,7 @@ namespace OSCR::Cores::AtariJaguar
     writeBYTE_FLASH(0xAAA8, 0x55);   // 0x2AAA
     writeBYTE_FLASH(0x15554, 0xA0);  // 0x5555
 
-    for (int i = 0; i < 128; i++)
+    for (uint8_t i = 0; i < 128; i++)
     {
       SRCLR_CLEAR;
       SRCLR_SET;
@@ -1255,7 +1268,7 @@ namespace OSCR::Cores::AtariJaguar
 
     for (uint32_t currBuffer = 0; currBuffer < cartSize; currBuffer += 512)
     {
-      for (int currByte = 0; currByte < 512; currByte++)
+      for (uint16_t currByte = 0; currByte < 512; currByte++)
       {
         OSCR::Storage::Shared::buffer[currByte] = readBYTE_MEMROM(currBuffer + currByte);
       }
@@ -1295,7 +1308,7 @@ namespace OSCR::Cores::AtariJaguar
 
     for (uint32_t currByte = 0; currByte < flaSize; currByte += 512)
     {
-      for (int i = 0; i < 512; i++)
+      for (uint16_t i = 0; i < 512; i++)
       {
         OSCR::Storage::Shared::buffer[i] = readBYTE_FLASH((currByte + i) * 4); // Address Shift A2..A18
       }
@@ -1355,13 +1368,13 @@ namespace OSCR::Cores::AtariJaguar
 
     for (uint32_t currByte = 0; currByte < flaSize; currByte += 512)
     {
-      for (int i = 0; i < 512; i++)
+      for (uint16_t i = 0; i < 512; i++)
       {
         OSCR::Storage::Shared::buffer[i] = readBYTE_FLASH((currByte + i) * 4);
       }
 
       // Check buffer content against file on sd card
-      for (int j = 0; j < 512; j++)
+      for (uint16_t j = 0; j < 512; j++)
       {
         if (OSCR::Storage::Shared::sharedFile.read() != OSCR::Storage::Shared::buffer[j])
         {

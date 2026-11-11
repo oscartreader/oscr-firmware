@@ -20,6 +20,9 @@ namespace OSCR::Strings::CPS3
 
 namespace OSCR::Cores::CPS3
 {
+  using OSCR::Storage::Endian;
+
+  using OSCR::Cores::Flash::FlashType;
   using OSCR::Cores::Flash::menuOptionsFlash;
   using OSCR::Cores::Flash::kMenuOptionFlashMax;
   using OSCR::Cores::Flash::flashid;
@@ -148,7 +151,7 @@ namespace OSCR::Cores::CPS3
         break;
 
       case 1:
-        if (flashromType == 0)
+        if (flashromType == FlashType::Unknown)
         {
           OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CartridgeError));
           OSCR::UI::error(FS(OSCR::Strings::Errors::NotSupportedByCart));
@@ -162,9 +165,10 @@ namespace OSCR::Cores::CPS3
 
         switch (flashromType)
         {
-        case 1: eraseFlash29F032(); break;
-        case 2: eraseFlash29F1610(); break;
-        case 3: eraseFlash28FXXX(); break;
+        case FlashType::IC_29F032:    eraseFlash29F032();   break;
+        case FlashType::IC_29F1610:   eraseFlash29F1610();  break;
+        case FlashType::IC_LH28F0XX:  eraseFlash28FXXX();   break;
+        default: break;
         }
 
         resetFlash8();
@@ -176,7 +180,7 @@ namespace OSCR::Cores::CPS3
         break;
 
       case 3:
-        if (flashromType == 0)
+        if (flashromType == FlashType::Unknown)
         {
           OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CartridgeError));
           OSCR::UI::error(FS(OSCR::Strings::Errors::NotSupportedByCart));
@@ -194,10 +198,10 @@ namespace OSCR::Cores::CPS3
 
         switch (flashromType)
         {
-        case 1:
+        case FlashType::IC_29F032:
           break;
 
-        case 2:
+        case FlashType::IC_29F1610:
           if ((flashid == 0x0458) || (flashid == 0x0158) || (flashid == 0x01AB) || (flashid == 0x0422) || (flashid == 0x0423))
           {
             writeCartridge(cartCD);
@@ -209,8 +213,10 @@ namespace OSCR::Cores::CPS3
           }
           break;
 
-        case 3:
+        case FlashType::IC_LH28F0XX:
           break;
+
+        default: break;
         }
 
         delay(100);
@@ -224,10 +230,11 @@ namespace OSCR::Cores::CPS3
 
         switch (flashromType)
         {
-        case 0: break;
-        case 1: idFlash29F032(); break;
-        case 2: idFlash29F1610(); break;
-        case 3: idFlash28FXXX(); break;
+        case FlashType::Unknown: break;
+        case FlashType::IC_29F032: idFlash29F032(); break;
+        case FlashType::IC_29F1610: idFlash29F1610(); break;
+        case FlashType::IC_LH28F0XX: idFlash28FXXX(); break;
+        default: break;
         }
 
         OSCR::UI::printLine();
@@ -276,7 +283,7 @@ namespace OSCR::Cores::CPS3
         break;
 
       case 1:
-        if (flashromType == 0)
+        if (flashromType == FlashType::Unknown)
         {
           OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CartridgeError));
           OSCR::UI::error(FS(OSCR::Strings::Errors::NotSupportedByCart));
@@ -290,7 +297,7 @@ namespace OSCR::Cores::CPS3
 
         switch (flashromType)
         {
-        case 1:
+        case FlashType::IC_29F032:
           eraseSIMM2x8();
           break;
 
@@ -308,7 +315,7 @@ namespace OSCR::Cores::CPS3
         break;
 
       case 3:
-        if (flashromType == 0)
+        if (flashromType == FlashType::Unknown)
         {
           OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CartridgeError));
           OSCR::UI::error(FS(OSCR::Strings::Errors::NotSupportedByCart));
@@ -317,7 +324,7 @@ namespace OSCR::Cores::CPS3
 
         switch (flashromType)
         {
-        case 1:
+        case FlashType::IC_29F032:
           if (flashid == 0x04AD)
             writeSIMM2x8();
           break;
@@ -334,7 +341,7 @@ namespace OSCR::Cores::CPS3
 
         switch (flashromType)
         {
-        case 1:
+        case FlashType::IC_29F032:
           idFlash2x8(0x0);
           break;
 
@@ -385,7 +392,7 @@ namespace OSCR::Cores::CPS3
         break;
 
       case 1:
-        if (flashromType == 0)
+        if (flashromType == FlashType::Unknown)
         {
           OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CartridgeError));
           OSCR::UI::error(FS(OSCR::Strings::Errors::NotSupportedByCart));
@@ -399,7 +406,7 @@ namespace OSCR::Cores::CPS3
 
         switch (flashromType)
         {
-        case 1:
+        case FlashType::IC_29F032:
           eraseSIMM4x8();
           break;
 
@@ -416,7 +423,7 @@ namespace OSCR::Cores::CPS3
         break;
 
       case 3:
-        if (flashromType == 0)
+        if (flashromType == FlashType::Unknown)
         {
           OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CartridgeError));
           OSCR::UI::error(FS(OSCR::Strings::Errors::NotSupportedByCart));
@@ -427,7 +434,7 @@ namespace OSCR::Cores::CPS3
 
         switch (flashromType)
         {
-        case 1:
+        case FlashType::IC_29F032:
           if (flashid == 0x04AD)
             writeSIMM4x8();
           break;
@@ -446,7 +453,7 @@ namespace OSCR::Cores::CPS3
 
         switch (flashromType)
         {
-        case 1:
+        case FlashType::IC_29F032:
           enable64MSB();
           idFlash2x8(0x0);
           enable64LSB();
@@ -624,7 +631,7 @@ namespace OSCR::Cores::CPS3
 
     for (uint32_t currByte = 0; currByte < flashSize; currByte += 512)
     {
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         OSCR::Storage::Shared::buffer[c] = readByte(currByte + c);
       }
@@ -656,7 +663,7 @@ namespace OSCR::Cores::CPS3
     {
       OSCR::Storage::Shared::fill();
 
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         // Write command sequence
         writeByteCommandShift(0xA0);
@@ -724,7 +731,7 @@ namespace OSCR::Cores::CPS3
     {
       OSCR::Storage::Shared::fill();
 
-      for (int c = 0; c < 512; c++)
+      for (uint16_t c = 0; c < 512; c++)
       {
         // Verify patch to avoid region menu
         if ((currByte + c) == 0x405F && cartCD.region > 0 && cartCD.multiCart == 1 && readByte(currByte + c) == (cartCD.multiCartPatch1 & 0xFF))
@@ -826,15 +833,15 @@ namespace OSCR::Cores::CPS3
     {
       if (okFlash == 2 && ngFlash == 6)
       {
-        flashromType = 1;
+        flashromType = FlashType::IC_29F032;
       }
       else if (okFlash == 8)
       {
-        flashromType = 1;
+        flashromType = FlashType::IC_29F032;
       }
       else if (okFlash > 2)
       {
-        flashromType = 0;
+        flashromType = FlashType::Unknown;
       }
 
       flashSize = 0x200000 * okFlash;
@@ -846,7 +853,7 @@ namespace OSCR::Cores::CPS3
     {
       // ID not found
       flashSize = 0x1000000;
-      flashromType = 0;
+      flashromType = FlashType::Unknown;
 
       OSCR::UI::printHeader(FS(OSCR::Strings::CPS3::SIMMWriter));
 
@@ -888,8 +895,7 @@ namespace OSCR::Cores::CPS3
       for (uint16_t c = 0, d = 0, currWord = 0; c < 256; c++, d+=2)
       {
         currWord = readWord(currBuffer + c);
-        OSCR::Storage::Shared::buffer[d + 1] = ((currWord >> 8) & 0xFF); // Read byte right
-        OSCR::Storage::Shared::buffer[d] = (currWord & 0xFF); // Read byte left
+        OSCR::Storage::Shared::putWord(d, currWord, Endian::LSBFirst);
       }
 
       // Check if all bytes are 0xFF
@@ -927,8 +933,7 @@ namespace OSCR::Cores::CPS3
       for (uint16_t c = 0, d = 0, currWord = 0; c < 256; c++, d+=2)
       {
         currWord = readWord(currByte + c);
-        OSCR::Storage::Shared::buffer[d + 1] = ((currWord >> 8) & 0xFF); // Right
-        OSCR::Storage::Shared::buffer[d] = (currWord & 0xFF); // Left
+        OSCR::Storage::Shared::putWord(d, currWord, Endian::LSBFirst);
       }
 
       OSCR::Storage::Shared::writeBuffer();
@@ -956,8 +961,7 @@ namespace OSCR::Cores::CPS3
       for (uint16_t c = 0, d = 0, currWord = 0; c < 256; c++, d+=2)
       {
         currWord = readWord(currByte + c);
-        OSCR::Storage::Shared::buffer[d + 1] = ((currWord >> 8) & 0xFF); // Right
-        OSCR::Storage::Shared::buffer[d] = (currWord & 0xFF); // Left
+        OSCR::Storage::Shared::putWord(d, currWord, Endian::LSBFirst);
       }
 
       OSCR::Storage::Shared::writeBuffer();
@@ -996,7 +1000,7 @@ namespace OSCR::Cores::CPS3
 
       noInterrupts();
 
-      for (int c = 0; c < 256; c++)
+      for (uint16_t c = 0; c < 256; c++)
       {
         uint16_t myWord = ((OSCR::Storage::Shared::buffer[(c * 2) + 1] & 0xFF) << 8) | (OSCR::Storage::Shared::buffer[c * 2] & 0xFF);
         uint32_t simmAddress = currByte + c;
@@ -1120,11 +1124,11 @@ namespace OSCR::Cores::CPS3
     OSCR::UI::printLine(FS(OSCR::Strings::Common::OK));
 
     flashSize = mapperDetail->sizeLow * 4;
-    flashromType = mapperDetail->meta1;
+    flashromType = static_cast<FlashType>(mapperDetail->meta1);
 
     if (okFlash != 4)
     {
-      flashromType = 0;
+      flashromType = FlashType::Unknown;
       OSCR::UI::printErrorHeader(FS(OSCR::Strings::Headings::CartridgeError));
     }
 
@@ -1159,13 +1163,11 @@ namespace OSCR::Cores::CPS3
       {
         enable64MSB();
         currWord = readWord(currBuffer + c);
-        OSCR::Storage::Shared::buffer[d + 1] = ((currWord >> 8) & 0xFF); // Read byte right
-        OSCR::Storage::Shared::buffer[d] = (currWord & 0xFF); // Read byte left
+        OSCR::Storage::Shared::putWord(d, currWord, Endian::LSBFirst);
 
         enable64LSB();
         currWord = readWord(currBuffer + c);
-        OSCR::Storage::Shared::buffer[d + 3] = ((currWord >> 8) & 0xFF); // Read byte right
-        OSCR::Storage::Shared::buffer[d + 2] = (currWord & 0xFF); // Read byte left
+        OSCR::Storage::Shared::putWord(d + 2, currWord, Endian::LSBFirst);
       }
 
       // Check if all bytes are 0xFF
@@ -1211,13 +1213,11 @@ namespace OSCR::Cores::CPS3
       {
         enable64MSB();
         currWord = readWord(currByte + c);
-        OSCR::Storage::Shared::buffer[d + 1] = ((currWord >> 8) & 0xFF); // Right
-        OSCR::Storage::Shared::buffer[d] = (currWord & 0xFF); // Left
+        OSCR::Storage::Shared::putWord(d, currWord, Endian::LSBFirst);
 
         enable64LSB();
         currWord = readWord(currByte + c);
-        OSCR::Storage::Shared::buffer[d + 3] = ((currWord >> 8) & 0xFF); // Right
-        OSCR::Storage::Shared::buffer[d + 2] = (currWord & 0xFF); // Left
+        OSCR::Storage::Shared::putWord(d + 2, currWord, Endian::LSBFirst);
       }
 
       OSCR::Storage::Shared::writeBuffer();
@@ -1242,7 +1242,7 @@ namespace OSCR::Cores::CPS3
 
       noInterrupts();
 
-      for (int c = 0; c < 128; c++)
+      for (uint8_t c = 0; c < 128; c++)
       {
         // 0600 0EA0
         enable64MSB();
@@ -1323,9 +1323,9 @@ namespace OSCR::Cores::CPS3
     OSCR::Storage::Shared::close();
   }
 
-  void printSIMM4x8(int numBytes)
+  void printSIMM4x8(uint8_t numBytes)
   {
-    for (int currByte = 0; currByte < numBytes / 4; currByte += 4)
+    for (uint8_t currByte = 0; currByte < numBytes / 4; currByte += 4)
     {
       // 2 dwords per line
       for (uint8_t c = 0; c < 2; c++)

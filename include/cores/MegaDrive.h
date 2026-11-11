@@ -13,7 +13,7 @@
  */
 namespace OSCR::Cores::MegaDrive
 {
-  void pulse_clock(int n);
+  void pulse_clock(uint8_t n);
   void menu();
   void cartMenu();
   void segaCDMenu();

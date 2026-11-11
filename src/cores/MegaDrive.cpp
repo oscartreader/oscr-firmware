@@ -25,6 +25,7 @@ namespace OSCR::Cores::MegaDrive
   using OSCR::Cores::Flash::flashid;
   using OSCR::Cores::Flash::flashSize;
   using OSCR::Cores::Flash::blank;
+  using OSCR::Storage::Endian;
 
   //***********************************************
   // EEPROM SAVE TYPES
@@ -128,9 +129,9 @@ namespace OSCR::Cores::MegaDrive
   /******************************************
      Configuration
   *****************************************/
-  void pulse_clock(int n)
+  void pulse_clock(uint8_t n)
   {
-    for (int i = 0; i < n; i++)
+    for (uint8_t i = 0; i < n; i++)
       PORTH ^= (1 << 1);
   }
 
@@ -711,8 +712,10 @@ namespace OSCR::Cores::MegaDrive
   {
     uint8_t myLength = 0;
 
-    for (uint8_t i = 0; i < 48; i++) {
-      if (((input[i] >= '0' && input[i] <= '9') || (input[i] >= 'A' && input[i] <= 'z')) && myLength < length) {
+    for (uint8_t i = 0; i < 48; i++)
+    {
+      if (((input[i] >= '0' && input[i] <= '9') || (input[i] >= 'A' && input[i] <= 'z')) && myLength < length)
+      {
         output[myLength++] = input[i];
       }
     }
@@ -757,8 +760,7 @@ namespace OSCR::Cores::MegaDrive
       uint16_t myWord = readWord((0x150 + c) / 2);
 
       // write to buffer
-      OSCR::Storage::Shared::buffer[c] = myWord >> 8;
-      OSCR::Storage::Shared::buffer[c + 1] = myWord & 0xFF;
+      OSCR::Storage::Shared::putWord(c, myWord, Endian::MSBFirst);
     }
 
     fileName[copyToRomName(fileName, OSCR::Storage::Shared::buffer, kFileNameMax - 1)] = 0;
@@ -1108,11 +1110,12 @@ namespace OSCR::Cores::MegaDrive
     }
 
     // Serial EEPROM Check
-    for (int i = 0; i < eepcount; i++)
+    for (uint8_t i = 0; i < eepcount; i++)
     {
       int index = i * 2;
       uint16_t eepcheck = pgm_read_word(eepid + index);
-      if (eepcheck == chksum) {
+      if (eepcheck == chksum)
+      {
         eepdata = pgm_read_word(eepid + index + 1);
         eepType = eepdata & 0x7;
         eepSize = eepdata & 0xFFF8;
@@ -1884,7 +1887,7 @@ namespace OSCR::Cores::MegaDrive
 
     for (uint32_t currBuffer = sramBase; currBuffer < sramBase + sramSize; currBuffer += 256)
     {
-      for (int currWord = 0; currWord < 256; currWord++)
+      for (uint16_t currWord = 0; currWord < 256; currWord++)
       {
         uint16_t myWord = readWord(currBuffer + currWord);
 
@@ -1916,8 +1919,7 @@ namespace OSCR::Cores::MegaDrive
         }
         else if (saveType == 3) // BOTH
         {
-          OSCR::Storage::Shared::buffer[currWord * 2] = ((myWord >> 8) & 0xFF);
-          OSCR::Storage::Shared::buffer[(currWord * 2) + 1] = (myWord & 0xFF);
+          OSCR::Storage::Shared::putWord(currWord * 2, myWord, Endian::MSBFirst);
         }
       }
 
@@ -1927,7 +1929,7 @@ namespace OSCR::Cores::MegaDrive
     if (segaSram16bit == 2)
     {
       // pad to 64KB
-      for (int i = 0; i < 512; i++)
+      for (uint16_t i = 0; i < 512; i++)
       {
         OSCR::Storage::Shared::buffer[i] = 0xFF;
       }
@@ -1950,7 +1952,7 @@ namespace OSCR::Cores::MegaDrive
 
     for (uint32_t currBuffer = sramBase; currBuffer < sramBase + sramSize; currBuffer += 256)
     {
-      for (int currWord = 0; currWord < 256; currWord++)
+      for (uint16_t currWord = 0; currWord < 256; currWord++)
       {
         uint16_t myWord = readWord(currBuffer + currWord);
 
@@ -2089,7 +2091,7 @@ namespace OSCR::Cores::MegaDrive
     {
       OSCR::Storage::Shared::readBuffer();
 
-      for (int currWriteBuffer = 0; currWriteBuffer < 512; currWriteBuffer += 32)
+      for (uint16_t currWriteBuffer = 0; currWriteBuffer < 512; currWriteBuffer += 32)
       {
         // Two unlock cycles
         writeFlash(0x555, 0xAA);
@@ -2245,7 +2247,7 @@ namespace OSCR::Cores::MegaDrive
     {
       OSCR::Storage::Shared::fill();
 
-      for (int c = 0, d = 0; c < 256; c++, d+=2)
+      for (uint16_t c = 0, d = 0; c < 256; c++, d+=2)
       {
         uint16_t currWord = ((OSCR::Storage::Shared::buffer[d] << 8) | OSCR::Storage::Shared::buffer[d + 1]);
 
@@ -2551,7 +2553,8 @@ namespace OSCR::Cores::MegaDrive
 
   void EepromSetDeviceAddress(uint16_t addrhi)
   {  // 24C02+
-    for (int i = 0; i < 3; i++) {
+    for (uint8_t i = 0; i < 3; i++)
+    {
       if ((addrhi >> 2) & 0x1)  // Bit is HIGH
         EepromSet1();
       else  // Bit is LOW
@@ -2630,16 +2633,21 @@ namespace OSCR::Cores::MegaDrive
 
   void EepromReadData()
   {
-    if (eepType == 1) {  // Acclaim Type 1
-      for (int i = 0; i < 8; i++) {
+    if (eepType == 1) // Acclaim Type 1
+    {
+      for (uint8_t i = 0; i < 8; i++)
+      {
         writeWord(0x100000, 0x03);  // sda high, scl high
         dataIn();
         eepbit[i] = ((readWord(0x100000) >> 1) & 0x1);  // Read 0x100000 with Mask 0x1 (bit 1)
         dataOut();
         writeWord(0x100000, 0x01);  // sda high, scl low
       }
-    } else if (eepType == 2) {  // Acclaim Type 2
-      for (int i = 0; i < 8; i++) {
+    }
+    else if (eepType == 2) // Acclaim Type 2
+    {
+      for (uint8_t i = 0; i < 8; i++)
+      {
         writeWord_SDA(0x100000, 0x01);  // sda high
         writeWord_SCL(0x100000, 0x01);  // scl high
         dataIn();
@@ -2648,24 +2656,33 @@ namespace OSCR::Cores::MegaDrive
         writeWord_SDA(0x100000, 0x01);  // sda high
         writeWord_SCL(0x100000, 0x00);  // scl low
       }
-    } else if (eepType == 3) {  // Capcom/Sega
-      for (int i = 0; i < 8; i++) {
+    }
+    else if (eepType == 3) // Capcom/Sega
+    {
+      for (uint8_t i = 0; i < 8; i++)
+      {
         writeWord(0x100000, 0x03);  // sda high, scl high
         dataIn();
         eepbit[i] = (readWord(0x100000) & 0x1);  // Read 0x100000 with Mask 0x1 (bit 0)
         dataOut();
         writeWord(0x100000, 0x01);  // sda high, scl low
       }
-    } else if (eepType == 4) {  // EA
-      for (int i = 0; i < 8; i++) {
+    }
+    else if (eepType == 4) // EA
+    {
+      for (uint8_t i = 0; i < 8; i++)
+      {
         writeWord(0x100000, 0xC0);  // sda high, scl high
         dataIn();
         eepbit[i] = ((readWord(0x100000) >> 7) & 0x1);  // Read 0x100000 with Mask (bit 7)
         dataOut();
         writeWord(0x100000, 0x80);  // sda high, scl low
       }
-    } else if (eepType == 5) {  // Codemasters
-      for (int i = 0; i < 8; i++) {
+    }
+    else if (eepType == 5) // Codemasters
+    {
+      for (uint8_t i = 0; i < 8; i++)
+      {
         writeWord_CM(0x180000, 0x03);  // sda high, scl high
         dataIn();
         eepbit[i] = ((readWord(0x1C0000) >> 7) & 0x1);  // Read 0x1C0000 with Mask 0x1 (bit 7)
@@ -2677,7 +2694,8 @@ namespace OSCR::Cores::MegaDrive
 
   void EepromWriteData(uint8_t data)
   {
-    for (int i = 0; i < 8; i++) {
+    for (uint8_t i = 0; i < 8; i++)
+    {
       if ((data >> 7) & 0x1)  // Bit is HIGH
         EepromSet1();
       else  // Bit is LOW
@@ -2755,8 +2773,10 @@ namespace OSCR::Cores::MegaDrive
 
   void EepromSetAddress(uint16_t address)
   {
-    if (eepSize > 0x80) {  // 24C02+
-      for (int i = 0; i < 8; i++) {
+    if (eepSize > 0x80) // 24C02+
+    {
+      for (uint8_t i = 0; i < 8; i++)
+      {
         if ((address >> 7) & 0x1)  // Bit is HIGH
           EepromSet1();
         else  // Bit is LOW
@@ -2764,8 +2784,11 @@ namespace OSCR::Cores::MegaDrive
         address <<= 1;  // rotate to the next bit
       }
       EepromStatus();  // ACK
-    } else {           // 24C01
-      for (int i = 0; i < 7; i++) {
+    }
+    else // 24C01
+    {
+      for (uint8_t i = 0; i < 7; i++)
+      {
         if ((address >> 6) & 0x1)  // Bit is HIGH
           EepromSet1();
         else  // Bit is LOW
@@ -2874,7 +2897,7 @@ namespace OSCR::Cores::MegaDrive
     {
       for (uint16_t currByte = 0; currByte < eepSize; currByte += 256)
       {
-        for (int i = 0; i < 256; i++)
+        for (uint16_t i = 0; i < 256; i++)
         {
           readEepromByte(currByte + i);
         }
@@ -2910,7 +2933,7 @@ namespace OSCR::Cores::MegaDrive
       {
         OSCR::Storage::Shared::readBuffer(256);
 
-        for (int i = 0; i < 256; i++)
+        for (uint16_t i = 0; i < 256; i++)
         {
           writeEepromByte(currByte + i);
           delay(50);  // DELAY NEEDED
@@ -2960,7 +2983,7 @@ namespace OSCR::Cores::MegaDrive
 
     for (uint32_t currByte = 0; currByte < bramSize; currByte += 512)
     {
-      for (int i = 0; i < 512; i++)
+      for (uint16_t i = 0; i < 512; i++)
       {
         OSCR::Storage::Shared::buffer[i] = readWord(0x300000 + currByte + i);
       }
@@ -2986,7 +3009,7 @@ namespace OSCR::Cores::MegaDrive
     {
       OSCR::Storage::Shared::fill();
 
-      for (int i = 0; i < 512; i++)
+      for (uint16_t i = 0; i < 512; i++)
       {
         writeWord(0x300000 + currByte + i, OSCR::Storage::Shared::buffer[i]);
       }
@@ -3042,11 +3065,7 @@ namespace OSCR::Cores::MegaDrive
       for (uint16_t currWord = 0, d = 0; currWord < 256; currWord++, d+=2)
       {
         uint16_t myWord = readWord(currBuffer + currWord);
-        // Split word into two bytes
-        // Left
-        OSCR::Storage::Shared::buffer[d] = ((myWord >> 8) & 0xFF);
-        // Right
-        OSCR::Storage::Shared::buffer[d + 1] = (myWord & 0xFF);
+        OSCR::Storage::Shared::putWord(d, myWord, Endian::MSBFirst);
       }
 
       OSCR::Storage::Shared::writeBuffer();

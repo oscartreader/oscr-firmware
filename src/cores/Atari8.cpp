@@ -252,7 +252,7 @@ namespace OSCR::Cores::Atari8
   {
     for (uint16_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int w = 0; w < 512; w++)
+      for (uint16_t w = 0; w < 512; w++)
       {
         OSCR::Storage::Shared::buffer[w] = readData(addr + w);
       }
@@ -269,7 +269,7 @@ namespace OSCR::Cores::Atari8
       readSegment(startaddr, startaddr + 0x0E00);
 
       // Split Read of Last 0x200 bytes
-      for (int x = 0; x < 0x1F6; x++)
+      for (uint16_t x = 0; x < 0x1F6; x++)
       {
         OSCR::Storage::Shared::buffer[x] = readData(startaddr + 0x0E00 + x);
       }
@@ -277,7 +277,7 @@ namespace OSCR::Cores::Atari8
       OSCR::Storage::Shared::sharedFile.write((size_t)502);
 
       // Bank Registers 0xFF6-0xFF9
-      for (int y = 0; y < 4; y++)
+      for (uint8_t y = 0; y < 4; y++)
       {
         readData(startaddr + 0x0FFF); // Reset Bank
         OSCR::Storage::Shared::buffer[y] = readData(startaddr + 0x0FF6 + y);
@@ -288,7 +288,7 @@ namespace OSCR::Cores::Atari8
       readData(startaddr + 0x0FFF); // Reset Bank
       readData(startaddr + 0x0FF6 + w); // Set Bank
 
-      for (int z = 4; z < 10; z++)
+      for (uint8_t z = 4; z < 10; z++)
       {
         OSCR::Storage::Shared::buffer[z] = readData(startaddr + 0x0FF6 + z); // 0xFFA-0xFFF
       }
@@ -329,7 +329,7 @@ namespace OSCR::Cores::Atari8
     // Pulse Clock
     // CPU CLOCK 1.7897725MHz(NTSC)/1.7734470MHz(PAL/SECAM)
     // 1.7897725MHz = 1 cycle = 558.73023ns = 279.365115/279.365115
-    for (int i = 0; i < 2; i++)
+    for (uint8_t i = 0; i < 2; i++)
     {
       PORTH ^= (1 << 1);
       // NOP (62.5ns) x 4 = 250ns = 0.25us
@@ -393,9 +393,9 @@ namespace OSCR::Cores::Atari8
     else if (romSize > 1) // XE Carts 32K/64K/128K
     {
       // Bug Hunt and Lode Runner dump as 128K.  Trim beginning 64K as both carts start from Bank 8.
-      int banks = (romSizes[romSize] / 8) - 1;
+      uint8_t banks = (romSizes[romSize] / 8) - 1;
 
-      for (int x = 0; x < banks; x++)
+      for (uint8_t x = 0; x < banks; x++)
       {
         bankSwitch(x);
 

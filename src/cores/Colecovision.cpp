@@ -198,7 +198,7 @@ namespace OSCR::Cores::Colecovision
   {
     for (uint32_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int w = 0; w < 512; w++)
+      for (uint16_t w = 0; w < 512; w++)
       {
         uint8_t temp = readData(addr + w);
         OSCR::Storage::Shared::buffer[w] = temp;

@@ -229,7 +229,7 @@ namespace OSCR::Cores::VIC20
   {
     for (uint32_t addr = startaddr; addr < endaddr; addr += 512)
     {
-      for (int w = 0; w < 512; w++)
+      for (uint16_t w = 0; w < 512; w++)
       {
         uint8_t temp = readData(addr + w);
 
@@ -252,7 +252,7 @@ namespace OSCR::Cores::VIC20
     uint8_t romsize = 0;
 
     // Split into Individual ROM Files
-    for (int x = 0; x < 2; x++) // ROM0/ROM1
+    for (uint8_t x = 0; x < 2; x++) // ROM0/ROM1
     {
       if (x == 1)
       {

@@ -284,7 +284,7 @@ namespace OSCR::Cores::GameBoyMem
 
       for (uint16_t currAddress = (currBank > 1) ? 0x4000 : 0; currAddress < 0x7FFF; currAddress += 512)
       {
-        for (int currByte = 0; currByte < 512; currByte++)
+        for (uint16_t currByte = 0; currByte < 512; currByte++)
         {
           OSCR::Storage::Shared::buffer[currByte] = readByte(currAddress + currByte);
         }
