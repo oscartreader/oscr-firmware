@@ -495,8 +495,8 @@ namespace OSCR::Cores::VirtualBoy
 
     romSize = cartSize / 2;
 
-    uint8_t const startAddress = (cartSize == 0x400000) ? 0x1000000 - romSize : 0;
-    uint8_t const endAddress = (cartSize == 0x400000) ? 0x1000000 : romSize;
+    uint32_t const startAddress = (cartSize == 0x400000) ? 0x1000000 - romSize : 0;
+    uint32_t const endAddress   = (cartSize == 0x400000) ? 0x1000000 : romSize;
 
     for (uint32_t blockAddress = startAddress; blockAddress < endAddress; blockAddress += 256)
     {
